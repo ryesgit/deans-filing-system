@@ -1,15 +1,22 @@
 import React, { useState } from "react";
+import { useAuth } from "./AuthContext";
 
 export const LoginPage = () => {
+  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login submitted", { username, password });
+    setError(""); // Clear previous errors
+    const result = await login({ username, password });
+    if (!result.success) {
+      setError(result.message || "An unexpected error occurred.");
+    }
   };
 
   const handleResetPassword = () => {
@@ -27,6 +34,16 @@ export const LoginPage = () => {
 
       {/* Right side - Login panel (overlapping) */}
       <div className="absolute top-0 left-[661px] right-0 h-full">
+        {/* Error Message */}
+        {error && (
+          <div
+            className="absolute top-16 left-1/2 -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg z-20"
+            role="alert"
+          >
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
         <div className="w-full h-full bg-white rounded-l-[55px] relative">
           <div className="absolute top-14 left-11">
             <img
@@ -168,7 +185,7 @@ export const LoginPage = () => {
           {/* Login button */}
           <div className="absolute top-[573px] left-[155px] w-[532px] h-[60px]">
             <button
-              type="button"
+              type="submit"
               onClick={handleSubmit}
               className="w-[530px] h-[60px] bg-[#800000] rounded-[16.38px] cursor-pointer hover:bg-[#a00000] transition-colors border-0"
               aria-label="Log In"

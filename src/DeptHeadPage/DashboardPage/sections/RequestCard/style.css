@@ -1,0 +1,171 @@
+.request-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px #00000026;
+  padding: 20px;
+  position: absolute;
+  left: 302px;
+  top: 779px;
+  width: 1105px;
+  height: auto; /* Add this */
+  margin-bottom: 40px; /* Add spacing at the bottom */
+}
+
+.request-card-header {
+  margin-bottom: 20px;
+}
+
+.request-card-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  margin: 0;
+}
+
+.request-table {
+  width: 100%;
+}
+
+.request-table-header {
+  display: grid;
+  grid-template-columns: 100px 180px 180px 220px 140px 180px;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.header-cell {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.request-table-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.request-row {
+  display: grid;
+  grid-template-columns: 100px 180px 180px 220px 140px 180px;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.request-row:hover {
+  background-color: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.table-cell {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.approve-btn,
+.decline-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 20px;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: -0.3px;
+}
+
+.approve-btn {
+  background-color: #4ccf47;
+  color: #ffffff;
+}
+
+.approve-btn:hover {
+  background-color: #3db838;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 207, 71, 0.3);
+}
+
+.decline-btn {
+  background-color: #dd0303;
+  color: #ffffff;
+}
+
+.decline-btn:hover {
+  background-color: #b80202;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(221, 3, 3, 0.3);
+}
+
+.approve-btn:active,
+.decline-btn:active {
+  transform: translateY(0);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  text-align: center;
+}
+
+.status-badge.approved {
+  background-color: #4ccf47;
+  color: #ffffff;
+}
+
+.status-badge.declined {
+  background-color: #dd0303;
+  color: #ffffff;
+}
+
+.request-id-col {
+  justify-self: start;
+}
+
+.faculty-name-col {
+  justify-self: start;
+}
+
+.department-col {
+  justify-self: start;
+}
+
+.file-name-col {
+  justify-self: start;
+}
+
+.date-col {
+  justify-self: start;
+}
+
+.status-col {
+  justify-self: center;
+}

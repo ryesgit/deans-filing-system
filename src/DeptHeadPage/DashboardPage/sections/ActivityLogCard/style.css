@@ -1,0 +1,95 @@
+.activity-log-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px #00000026;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 254px;
+  left: 858px;
+  position: absolute;
+  top: 157px;
+  width: 549px;
+}
+
+.activity-log-card .profile-details {
+  height: 41px;
+  margin-left: 46px;
+  margin-top: 29px;
+  position: relative;
+  width: 376px;
+}
+
+.activity-log-card .p {
+  color: transparent;
+  font-family: "Poppins", Helvetica;
+  font-size: 15px;
+  font-weight: 400;
+  left: 58px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+}
+
+.activity-log-card .span {
+  color: #1e1e1e;
+  letter-spacing: -0.15px;
+}
+
+.activity-log-card .text-wrapper-27 {
+  color: #800000;
+  font-weight: 600;
+  letter-spacing: -1px;
+}
+
+.activity-log-card .due-oct {
+  color: #8c8c8c;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 400;
+  left: 58px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 21px;
+}
+
+.activity-log-card .text-wrapper-28 {
+  font-weight: 700;
+  letter-spacing: -0.06px;
+}
+
+.activity-log-card .text-wrapper-29 {
+  letter-spacing: -0.06px;
+}
+
+.activity-log-card .profile {
+  height: 41px;
+  left: 0;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  width: 41px;
+}
+
+.activity-log-card .profile-details-2 {
+  height: 41px;
+  margin-left: 46px;
+  position: relative;
+  width: 465px;
+}
+
+.activity-log-card .profile-details-3 {
+  height: 41px;
+  margin-left: 46px;
+  position: relative;
+  width: 422px;
+}
+
+.activity-log-card .profile-details-4 {
+  height: 41px;
+  margin-left: 46px;
+  position: relative;
+  width: 408px;
+}

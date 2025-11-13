@@ -1,0 +1,117 @@
+.quick-action-card {
+  height: 164px;
+  left: 302px;
+  position: absolute;
+  top: 440px;
+  width: 530px;
+}
+
+.quick-action-card .img {
+  height: 190px;
+  left: -10px;
+  object-fit: cover;
+  position: absolute;
+  top: -10px;
+  width: 552px;
+}
+
+.quick-action-card .add-member-button,
+.quick-action-card .request-button,
+.quick-action-card .add-file-button {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quick-action-card .add-member-button:hover,
+.quick-action-card .request-button:hover,
+.quick-action-card .add-file-button:hover {
+  transform: translateY(-2px);
+}
+
+.quick-action-card .add-member-button:active,
+.quick-action-card .request-button:active,
+.quick-action-card .add-file-button:active {
+  transform: translateY(0);
+}
+
+.quick-action-card .add-member-button {
+  height: 41px;
+  left: 368px;
+  position: absolute;
+  top: 102px;
+  width: 132px;
+}
+
+.quick-action-card .rectangle-4 {
+  background-color: #ffffff;
+  border-radius: 20px;
+  height: 41px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 130px;
+}
+
+.quick-action-card .text-wrapper-30 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 18px;
+  font-weight: 600;
+  left: 10px;
+  letter-spacing: -1.08px;
+  line-height: normal;
+  position: absolute;
+  top: 7px;
+}
+
+.quick-action-card .request-button {
+  height: 41px;
+  left: 198px;
+  position: absolute;
+  top: 102px;
+  width: 132px;
+}
+
+.quick-action-card .text-wrapper-31 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 28px;
+  letter-spacing: -1.20px;
+  line-height: normal;
+  position: absolute;
+  top: 6px;
+}
+
+.quick-action-card .add-file-button {
+  height: 41px;
+  left: 28px;
+  position: absolute;
+  top: 102px;
+  width: 132px;
+}
+
+.quick-action-card .instruction {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 400;
+  left: 126px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 68px;
+}
+
+.quick-action-card .text-wrapper-32 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 32px;
+  font-weight: 600;
+  left: 170px;
+  letter-spacing: -1.92px;
+  line-height: normal;
+  position: absolute;
+  top: 26px;
+}

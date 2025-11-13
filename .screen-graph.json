@@ -1,4 +1,37 @@
 {
-  "nodes": [],
-  "edges": []
+  "nodes": [
+    {
+      "id": "src/components/Modal/LoginPage.jsx",
+      "label": "LoginPage",
+      "routes": [
+        "/login"
+      ]
+    },
+    {
+      "id": "src/components/ProtectedRoute.jsx",
+      "label": "ProtectedRoute",
+      "routes": [
+        "/"
+      ],
+      "isRoot": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "src/components/ProtectedRoute.jsx:10:11-to-src/components/Modal/LoginPage.jsx",
+      "source": "src/components/ProtectedRoute.jsx",
+      "target": "src/components/Modal/LoginPage.jsx",
+      "data": {
+        "viaRoute": "/login",
+        "trigger": {
+          "element": "<Navigate to=\"/login\" state={{ from: location }} replace />",
+          "line": 10,
+          "endLine": 10,
+          "column": 11,
+          "endColumn": 70,
+          "sourceFile": "src/components/ProtectedRoute.jsx"
+        }
+      }
+    }
+  ]
 }

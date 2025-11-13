@@ -1,0 +1,488 @@
+.department-head-page {
+  background-color: #ffffff;
+  min-height: 1200px; /* Increase from 1024px to 1200px or more */
+  min-width: 1440px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  width: 100%;
+  padding-bottom: 60px; /* Add padding at the bottom */
+}
+
+.department-head-page .files-card,
+.department-head-page .borrowing-card,
+.department-head-page .approval-card,
+.department-head-page .overdue-files-card {
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.department-head-page .files-card:hover,
+.department-head-page .borrowing-card:hover,
+.department-head-page .approval-card:hover,
+.department-head-page .overdue-files-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.department-head-page .files-card {
+  height: 117px;
+  left: 303px;
+  position: absolute;
+  top: 633px;
+  width: 264px;
+}
+
+.department-head-page .rectangle-7 {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px #00000026;
+  height: 117px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 254px;
+}
+
+.department-head-page .text-wrapper-58 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 148px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+  width: 76px;
+}
+
+.department-head-page .text-wrapper-59 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 174px;
+  letter-spacing: -1.20px;
+  line-height: normal;
+  position: absolute;
+  top: 65px;
+  width: 23px;
+}
+
+.department-head-page .linev-2 {
+  height: 37px;
+  left: 126px;
+  object-fit: cover;
+  position: absolute;
+  top: 68px;
+  width: 1px;
+}
+
+.department-head-page .text-wrapper-60 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 42px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+  width: 56px;
+}
+
+.department-head-page .text-wrapper-61 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 48px;
+  letter-spacing: -1.20px;
+  line-height: normal;
+  position: absolute;
+  top: 65px;
+  width: 43px;
+}
+
+.department-head-page .lineh-2 {
+  height: 1px;
+  left: 20px;
+  object-fit: cover;
+  position: absolute;
+  top: 56px;
+  width: 213px;
+}
+
+.department-head-page .text-wrapper-62 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 63px;
+  letter-spacing: -1.20px;
+  line-height: normal;
+  position: absolute;
+  top: 16px;
+  width: 42px;
+}
+
+.department-head-page .files-icon {
+  height: 15.38%;
+  left: 8.71%;
+  position: absolute;
+  top: 17.95%;
+  width: 5.30%;
+}
+
+.department-head-page .borrowing-card {
+  height: 117px;
+  left: 586px;
+  position: absolute;
+  top: 633px;
+  width: 264px;
+}
+
+.department-head-page .text-wrapper-63 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 142px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+}
+
+.department-head-page .text-wrapper-64 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 25px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+}
+
+.department-head-page .text-wrapper-65 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 63px;
+  letter-spacing: -1.20px;
+  line-height: normal;
+  position: absolute;
+  top: 16px;
+}
+
+.department-head-page .borrowing-icon {
+  height: 13.68%;
+  left: 8.33%;
+  position: absolute;
+  top: 18.80%;
+  width: 7.45%;
+}
+
+.department-head-page .approval-card {
+  height: 117px;
+  left: 869px;
+  position: absolute;
+  top: 633px;
+  width: 264px;
+}
+
+.department-head-page .text-wrapper-66 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 158px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+}
+
+.department-head-page .text-wrapper-67 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 47px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+}
+
+.department-head-page .approval-icon {
+  height: 15.67%;
+  left: 8.74%;
+  position: absolute;
+  top: 17.88%;
+  width: 6.08%;
+}
+
+.department-head-page .overdue-files-card {
+  height: 117px;
+  left: 1152px;
+  position: absolute;
+  top: 633px;
+  width: 264px;
+}
+
+.department-head-page .text-wrapper-68 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 160px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+}
+
+.department-head-page .lineh-3 {
+  height: 1px;
+  left: 18px;
+  object-fit: cover;
+  position: absolute;
+  top: 56px;
+  width: 213px;
+}
+
+.department-head-page .text-wrapper-69 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  left: 45px;
+  letter-spacing: -0.72px;
+  line-height: normal;
+  position: absolute;
+  top: 90px;
+}
+
+.department-head-page .overdue-files-icon {
+  height: 15.38%;
+  left: 8.33%;
+  position: absolute;
+  top: 17.95%;
+  width: 6.82%;
+}
+
+.department-head-page .notification-button-wrapper {
+  position: absolute;
+  left: 1356px;
+  top: 75px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.department-head-page .notification-button-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.department-head-page .notification-button {
+  height: 42px;
+  width: 42px;
+}
+
+.department-head-page .notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dd0303;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "Poppins", Helvetica;
+}
+
+.department-head-page .search-wrapper {
+  position: absolute;
+  left: 870px;
+  top: 72px;
+  width: 472px;
+  height: 54px;
+}
+
+.department-head-page .search-form {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.department-head-page .search-input {
+  width: 100%;
+  height: 100%;
+  border-radius: 27px;
+  border: 2px solid #f0f0f0;
+  padding: 0 20px 0 50px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.department-head-page .search-input:focus {
+  border-color: #800000;
+}
+
+.department-head-page .search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  pointer-events: none;
+}
+
+.department-head-page .text-wrapper-70 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 52.9px;
+  font-weight: 600;
+  left: 302px;
+  letter-spacing: -3.17px;
+  line-height: normal;
+  position: absolute;
+  top: 72px;
+}
+
+.department-head-page .text-wrapper-71 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 35.2px;
+  font-weight: 600;
+  left: 302px;
+  letter-spacing: -2.11px;
+  line-height: normal;
+  position: absolute;
+  top: 43px;
+}
+
+.department-head-page .notification-card {
+  height: 164px;
+  left: 858px;
+  position: absolute;
+  top: 440px;
+  width: 551px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.department-head-page .notification-card:hover {
+  transform: translateY(-3px);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px;
+  border: 2px solid #f0f0f0;
+  border-radius: 10px;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #800000;
+}
+
+.submit-btn {
+  background: #800000;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.submit-btn:hover {
+  background: #a00000;
+  transform: translateY(-2px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+  .department-head-page {
+    min-width: 100%;
+  }
+  
+  .side-panel {
+    width: 80px;
+  }
+  
+  .side-panel .text-wrapper-51,
+  .side-panel .text-wrapper-52,
+  .side-panel .text-wrapper-53,
+  .side-panel .text-wrapper-54,
+  .side-panel .text-wrapper-55,
+  .side-panel .text-wrapper-56,
+  .side-panel .text-wrapper-57 {
+    display: none;
+  }
+}
+
+.department-head-page .rectangle-8 {
+  background-color: #800000;
+  border-radius: 20px;
+  height: 164px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 549px;
+}
+
+.department-head-page .text-wrapper-72 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 36px;
+  font-weight: 600;
+  left: 74px;
+  letter-spacing: -2.16px;
+  line-height: normal;
+  position: absolute;
+  top: 63px;
+  width: 378px;
+}

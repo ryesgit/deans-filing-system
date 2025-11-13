@@ -1,0 +1,260 @@
+.personal-information {
+  height: 254px;
+  left: 303px;
+  position: absolute;
+  top: 157px;
+  width: 558px;
+}
+
+.personal-information .rectangle-5 {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px #00000026;
+  height: 254px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 526px;
+}
+
+.personal-information .text-wrapper-33 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 33px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 181px;
+}
+
+.personal-information .text-wrapper-34 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 500;
+  left: 55px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 205px;
+}
+
+.personal-information .profile-2 {
+  height: 142px;
+  left: 43px;
+  object-fit: cover;
+  position: absolute;
+  top: 35px;
+  width: 142px;
+}
+
+.personal-information .linev {
+  height: 215px;
+  left: 225px;
+  position: absolute;
+  top: 19px;
+  width: 1px;
+}
+
+.personal-information .text-wrapper-35 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 398px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 65px;
+  width: 66px;
+}
+
+.personal-information .text-wrapper-36 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 248px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 104px;
+}
+
+.personal-information .text-wrapper-37 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 399px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 104px;
+}
+
+.personal-information .text-wrapper-38 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 248px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 152px;
+}
+
+.personal-information .text-wrapper-39 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 399px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 152px;
+}
+
+.personal-information .text-wrapper-40 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 247px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 200px;
+}
+
+.personal-information .text-wrapper-41 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 399px;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 201px;
+}
+
+.personal-information .group {
+  height: 35px;
+  left: 247px;
+  position: absolute;
+  top: 45px;
+  width: 83px;
+}
+
+.personal-information .text-wrapper-42 {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 10px;
+  font-weight: 600;
+  left: 0;
+  letter-spacing: -0.60px;
+  line-height: normal;
+  position: absolute;
+  top: 20px;
+}
+
+.personal-information .text-wrapper-43 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 0;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+}
+
+.personal-information .text-wrapper-44 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 398px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 45px;
+}
+
+.personal-information .text-wrapper-45 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 248px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 130px;
+}
+
+.personal-information .text-wrapper-46 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 399px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 130px;
+}
+
+.personal-information .text-wrapper-47 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 248px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 83px;
+}
+
+.personal-information .text-wrapper-48 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 399px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 83px;
+}
+
+.personal-information .text-wrapper-49 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 246px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 178px;
+}
+
+.personal-information .text-wrapper-50 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 399px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 178px;
+}
