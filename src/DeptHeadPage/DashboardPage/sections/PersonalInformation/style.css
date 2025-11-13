@@ -1,9 +1,12 @@
 .personal-information {
   height: 254px;
-  left: 303px;
+  left: 21%;
   position: absolute;
-  top: 157px;
-  width: 558px;
+  top: 15.3%;
+  width: 38.7%;
+  max-width: 558px;
+  min-width: 420px;
+  z-index: 2;
 }
 
 .personal-information .rectangle-5 {

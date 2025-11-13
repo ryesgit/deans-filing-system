@@ -4,11 +4,13 @@
   box-shadow: 3px 3px 13px #00000026;
   padding: 20px;
   position: absolute;
-  left: 302px;
-  top: 779px;
-  width: 1105px;
-  height: auto; /* Add this */
-  margin-bottom: 40px; /* Add spacing at the bottom */
+  left: 21%;
+  right: 2%;
+  top: 82%;
+  width: auto;
+  height: auto;
+  margin-bottom: 40px;
+  z-index: 1;
 }
 
 .request-card-header {
@@ -30,7 +32,7 @@
 
 .request-table-header {
   display: grid;
-  grid-template-columns: 100px 180px 180px 220px 140px 180px;
+  grid-template-columns: 1fr 2fr 2fr 2.5fr 1.5fr 2fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #f9f9f9;
@@ -54,7 +56,7 @@
 
 .request-row {
   display: grid;
-  grid-template-columns: 100px 180px 180px 220px 140px 180px;
+  grid-template-columns: 1fr 2fr 2fr 2.5fr 1.5fr 2fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #ffffff;
