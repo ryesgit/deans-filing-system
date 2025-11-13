@@ -1,6 +1,7 @@
 .department-head-page {
   background-color: #ffffff;
-  min-height: 100vh;
+  min-height: 1400px;
+  height: auto;
   width: 100vw;
   overflow-x: hidden;
   overflow-y: auto;
