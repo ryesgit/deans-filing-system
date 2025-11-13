@@ -9,17 +9,20 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.8.1",
-    "lucide-react": "^0.263.1"
+    "react-router-dom": "^6.8.1"
   },
-
   "devDependencies": {
     "@animaapp/vite-plugin-screen-graph": "^0.1.5",
     "@vitejs/plugin-react": "4.3.4",
+    "autoprefixer": "^10.4.22",
     "esbuild": "0.24.0",
     "globals": "15.12.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
     "vite": "6.0.4"
   }
 }

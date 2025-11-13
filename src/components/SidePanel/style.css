@@ -1,0 +1,393 @@
+.side-panel {
+  height: 100vh;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 271px;
+  z-index: 100;
+}
+
+.side-panel .rectangle-6 {
+  background-color: #800000;
+  border-radius: 0px 60px 60px 0px;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 269px;
+}
+
+.side-panel .logout {
+  height: 24px;
+  left: 41px;
+  position: absolute;
+  top: 680px;
+  width: 87px;
+}
+
+.side-panel .text-wrapper-51 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 31px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.side-panel .vector {
+  height: 66.67%;
+  left: 0;
+  position: absolute;
+  top: 16.67%;
+  width: 18.39%;
+}
+
+.side-panel .settings {
+  height: 24px;
+  left: 38px;
+  position: absolute;
+  top: 540px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.side-panel .text-wrapper-52 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 400;
+  left: 40px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.side-panel .vector-2 {
+  height: 78.56%;
+  left: 0;
+  position: absolute;
+  top: 9.38%;
+  width: 21.27%;
+}
+
+.side-panel .report-log {
+  height: 24px;
+  left: 38px;
+  position: absolute;
+  top: 475px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.side-panel .text-wrapper-53 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 400;
+  left: 36px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.side-panel .vector-3 {
+  height: 75.00%;
+  left: 0;
+  position: absolute;
+  top: 9.38%;
+  width: 12.31%;
+}
+
+.side-panel .user-management {
+  height: 24px;
+  left: 38px;
+  position: absolute;
+  top: 410px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.side-panel .vector-4 {
+  height: 79.17%;
+  left: 0;
+  position: absolute;
+  top: 5.21%;
+  width: 9.10%;
+}
+
+.side-panel .request {
+  height: 24px;
+  left: 38px;
+  position: absolute;
+  top: 345px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.side-panel .text-wrapper-54 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 400;
+  left: 37px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.side-panel .vector-5 {
+  height: 50.00%;
+  left: 0;
+  position: absolute;
+  top: 21.87%;
+  width: 17.63%;
+}
+
+.side-panel .file-management {
+  height: 24px;
+  left: 38px;
+  position: absolute;
+  top: 280px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.side-panel .text-wrapper-55 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 400;
+  left: 38px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.side-panel .vector-6 {
+  height: 79.17%;
+  left: 0;
+  position: absolute;
+  top: 5.21%;
+  width: 11.87%;
+}
+
+.side-panel .selected-shape {
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: 21px;
+  position: absolute;
+  width: 217px;
+  transition: top 0.3s ease;
+  display: none;
+}
+
+.side-panel .dashboard,
+.side-panel .file-management,
+.side-panel .request,
+.side-panel .user-management,
+.side-panel .report-log,
+.side-panel .settings,
+.side-panel .logout {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.side-panel .dashboard:hover,
+.side-panel .file-management:hover,
+.side-panel .request:hover,
+.side-panel .user-management:hover,
+.side-panel .report-log:hover,
+.side-panel .settings:hover {
+  transform: translateX(5px);
+}
+
+.side-panel .logout:hover {
+  opacity: 0.8;
+}
+
+.side-panel .dashboard {
+  height: 24px;
+  left: 38px;
+  position: absolute;
+  top: 215px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.side-panel .dashboard.active .text-wrapper-56 {
+  color: #800000;
+}
+
+.side-panel .dashboard.active,
+.side-panel .file-management.active,
+.side-panel .request.active,
+.side-panel .user-management.active,
+.side-panel .report-log.active,
+.side-panel .settings.active {
+  position: relative;
+  z-index: 2;
+}
+
+.side-panel .dashboard.active::before {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: -17px;
+  top: -8px;
+  width: auto;
+  min-width: 217px;
+  right: -30px;
+  z-index: -1;
+}
+
+.side-panel .file-management.active::before {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: -17px;
+  top: -8px;
+  width: auto;
+  min-width: 217px;
+  right: -30px;
+  z-index: -1;
+}
+
+.side-panel .request.active::before {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: -17px;
+  top: -8px;
+  width: auto;
+  min-width: 217px;
+  right: -30px;
+  z-index: -1;
+}
+
+.side-panel .user-management.active::before {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: -17px;
+  top: -8px;
+  width: auto;
+  min-width: 217px;
+  right: -30px;
+  z-index: -1;
+}
+
+.side-panel .report-log.active::before {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: -17px;
+  top: -8px;
+  width: auto;
+  min-width: 217px;
+  right: -30px;
+  z-index: -1;
+}
+
+.side-panel .settings.active::before {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 50px;
+  height: 40px;
+  left: -17px;
+  top: -8px;
+  width: auto;
+  min-width: 217px;
+  right: -30px;
+  z-index: -1;
+}
+
+.side-panel .dashboard.active .text-wrapper-56,
+.side-panel .file-management.active .text-wrapper-55,
+.side-panel .request.active .text-wrapper-54,
+.side-panel .user-management.active .text-wrapper-53,
+.side-panel .report-log.active .text-wrapper-53,
+.side-panel .settings.active .text-wrapper-52 {
+  color: #ff0000;
+  font-weight: 600;
+}
+
+.side-panel .vector-7,
+.side-panel .vector-6,
+.side-panel .vector-5,
+.side-panel .vector-4,
+.side-panel .vector-3,
+.side-panel .vector-2 {
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+.side-panel .dashboard.active .vector-7,
+.side-panel .file-management.active .vector-6,
+.side-panel .request.active .vector-5,
+.side-panel .user-management.active .vector-4,
+.side-panel .report-log.active .vector-3,
+.side-panel .settings.active .vector-2 {
+  filter: brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(7426%) hue-rotate(0deg) brightness(100%) contrast(107%);
+}
+
+.side-panel .vector-7 {
+  height: 79.17%;
+  left: 0;
+  position: absolute;
+  top: 22%;
+  width: 19.38%;
+}
+
+.side-panel .text-wrapper-56 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 400;
+  left: 40px;
+  letter-spacing: -0.96px;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.side-panel .text-wrapper-57 {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 25px;
+  letter-spacing: -1.20px;
+  line-height: normal;
+  position: absolute;
+  top: 165px;
+}

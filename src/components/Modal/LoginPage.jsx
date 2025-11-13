@@ -24,16 +24,16 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="bg-[#c2c2c2] w-full h-screen relative overflow-hidden">
+    <div className="bg-[#c2c2c2] w-screen h-screen overflow-hidden relative flex">
       {/* Left side - Background Image */}
       <img
-        className="absolute top-0 left-0 w-[705px] h-full object-cover"
+        className="w-[49%] h-full object-cover"
         alt="Frame"
         src="public/Frame 2.png"
       />
 
       {/* Right side - Login panel (overlapping) */}
-      <div className="absolute top-0 left-[661px] right-0 h-full">
+      <div className="w-[51%] h-full relative">
         {/* Error Message */}
         {error && (
           <div
@@ -44,37 +44,35 @@ export const LoginPage = () => {
           </div>
         )}
 
-        <div className="w-full h-full bg-white rounded-l-[55px] relative">
-          <div className="absolute top-14 left-11">
-            <img
-              className="w-[489px] h-[53px] object-contain"
-              alt="Polytechnic University of the Philippines Logo"
-              src="https://c.animaapp.com/JQfrdw9b/img/pup-logo@2x.png"
-            />
-          </div>
+        <div className="absolute inset-0 bg-white rounded-l-[55px]">
+          <img
+            className="absolute top-[5.5%] left-[5.5%] w-[61%] h-[5.2%] object-cover"
+            alt="Polytechnic University of the Philippines Logo"
+            src="https://c.animaapp.com/JQfrdw9b/img/pup-logo@2x.png"
+          />
 
-          <h1 className="absolute top-[225px] left-[155px] [font-family:'Poppins',Helvetica] font-semibold text-[#800000] text-[65px] tracking-[-3.5px] leading-[normal]">
+          <h1 className="absolute top-[24%] left-1/2 transform -translate-x-1/2 [font-family:'Poppins',Helvetica] font-semibold text-[#800000] text-[4.3vw] tracking-[-4.19px] leading-[normal] whitespace-nowrap">
             Welcome Back!
           </h1>
 
-          <p className="absolute top-[300px] left-[155px] w-[502px] [font-family:'Poppins',Helvetica] font-normal text-black text-[20px] tracking-[-1.1px] leading-[normal]">
+          <p className="absolute top-[36%] left-1/2 transform -translate-x-1/2 w-[63%] [font-family:'Poppins',Helvetica] font-normal text-black text-[21.8px] tracking-[-1.31px] leading-[normal] mb-4">
             Lorem ipsum dolor sit amet consectetur. Risus enim.
           </p>
 
           {/* Username field */}
-          <div className="absolute top-[360px] left-[155px] w-[532px] h-[76px]">
+          <div className="absolute bottom-[55%] left-1/2 transform -translate-x-1/2 w-[67%] h-[7.5%]">
             <div
-              className={`absolute top-4 left-0 w-[530px] h-[60px] rounded-[16.38px] border-[3.28px] border-solid transition-colors duration-300 ${
+              className={`absolute top-4 left-0 w-full h-[78%] rounded-[16.38px] border-[3.28px] border-solid transition-colors duration-300 ${
                 usernameFocused ? "border-[#800000]" : "border-[#d9d9d9]"
               }`}
             />
 
             <label
               htmlFor="username"
-              className="left-[21px] w-[119px] h-[33px] bg-white absolute top-0 z-10"
+              className="absolute top-0 left-[4%] w-[22%] h-[43%] bg-white z-10"
             >
               <span
-                className={`absolute top-0 left-[18px] [font-family:'Poppins',Helvetica] font-normal text-[18px] tracking-[-1.1px] leading-[normal] transition-colors duration-300 ${
+                className={`absolute top-0 left-2 [font-family:'Poppins',Helvetica] font-normal text-[21.8px] tracking-[-1.31px] leading-[normal] transition-colors duration-300 ${
                   usernameFocused ? "text-[#800000]" : "text-[#c2c2c2]"
                 }`}
               >
@@ -82,20 +80,11 @@ export const LoginPage = () => {
               </span>
             </label>
 
-            <div className="absolute w-[19px] h-[18px] top-[37px] left-[19px] pointer-events-none z-10">
-              <svg className={`w-full h-full transition-all duration-300`}>
-                <image
-                  href="https://c.animaapp.com/JQfrdw9b/img/username-icon.svg"
-                  width="19"
-                  height="18"
-                  style={{
-                    filter: usernameFocused
-                      ? "brightness(0) saturate(100%) invert(10%) sepia(100%) saturate(7500%) hue-rotate(0deg) brightness(50%) contrast(150%)"
-                      : "none",
-                  }}
-                />
-              </svg>
-            </div>
+            <img
+              className="absolute w-[3.57%] h-[18%] top-[63%] left-[3.57%] pointer-events-none"
+              alt=""
+              src="https://c.animaapp.com/JQfrdw9b/img/username-icon.svg"
+            />
 
             <input
               type="text"
@@ -105,26 +94,27 @@ export const LoginPage = () => {
               onChange={(e) => setUsername(e.target.value)}
               onFocus={() => setUsernameFocused(true)}
               onBlur={() => setUsernameFocused(false)}
-              className="absolute top-4 left-[50px] w-[460px] h-[60px] bg-transparent border-0 outline-none [font-family:'Poppins',Helvetica] font-normal text-black text-[18px] tracking-[-1.1px] leading-[normal] px-2"
+              placeholder=""
+              className="absolute top-4 left-[9.4%] w-[86%] h-[78%] [font-family:'Poppins',Helvetica] font-normal text-black text-[21.8px] tracking-[-1.31px] leading-[normal] px-2 border-none outline-none bg-transparent"
               aria-label="Username"
               required
             />
           </div>
 
           {/* Password field */}
-          <div className="absolute top-[458px] left-[155px] w-[532px] h-[76px]">
+          <div className="absolute bottom-[45.5%] left-1/2 transform -translate-x-1/2 w-[67%] h-[7.5%]">
             <div
-              className={`absolute top-4 left-0 w-[530px] h-[60px] rounded-[16.38px] border-[3.28px] border-solid transition-colors duration-300 ${
+              className={`absolute top-4 left-0 w-full h-[78%] rounded-[16.38px] border-[3.28px] border-solid transition-colors duration-300 ${
                 passwordFocused ? "border-[#800000]" : "border-[#d9d9d9]"
               }`}
             />
 
             <label
               htmlFor="password"
-              className="left-[21px] w-[111px] h-[33px] bg-white absolute top-0 z-10"
+              className="absolute top-0 left-[4%] w-[21%] h-[43%] bg-white z-10"
             >
               <span
-                className={`absolute top-0 left-[18px] [font-family:'Poppins',Helvetica] font-normal text-[18px] tracking-[-1.1px] leading-[normal] transition-colors duration-300 ${
+                className={`absolute top-0 left-2 [font-family:'Poppins',Helvetica] font-normal text-[21.8px] tracking-[-1.31px] leading-[normal] transition-colors duration-300 ${
                   passwordFocused ? "text-[#800000]" : "text-[#c2c2c2]"
                 }`}
               >
@@ -132,20 +122,11 @@ export const LoginPage = () => {
               </span>
             </label>
 
-            <div className="absolute w-[16px] h-[18px] top-[37px] left-[20px] pointer-events-none z-10">
-              <svg className={`w-full h-full transition-all duration-300`}>
-                <image
-                  href="https://c.animaapp.com/JQfrdw9b/img/password-icon.svg"
-                  width="16"
-                  height="18"
-                  style={{
-                    filter: passwordFocused
-                      ? "brightness(0) saturate(100%) invert(10%) sepia(100%) saturate(7500%) hue-rotate(0deg) brightness(50%) contrast(150%)"
-                      : "none",
-                  }}
-                />
-              </svg>
-            </div>
+            <img
+              className="absolute w-[3.01%] h-[18%] top-[65%] left-[4%] pointer-events-none"
+              alt=""
+              src="https://c.animaapp.com/JQfrdw9b/img/password-icon.svg"
+            />
 
             <input
               type={showPassword ? "text" : "password"}
@@ -155,7 +136,8 @@ export const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setPasswordFocused(true)}
               onBlur={() => setPasswordFocused(false)}
-              className="absolute top-4 left-[50px] w-[420px] h-[60px] bg-transparent border-0 outline-none [font-family:'Poppins',Helvetica] font-normal text-black text-[18px] tracking-[-1.1px] leading-[normal] px-2"
+              placeholder=""
+              className="absolute top-4 left-[9.4%] w-[79%] h-[78%] [font-family:'Poppins',Helvetica] font-normal text-black text-[21.8px] tracking-[-1.31px] leading-[normal] px-2 border-none outline-none bg-transparent"
               aria-label="Password"
               required
             />
@@ -163,20 +145,20 @@ export const LoginPage = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute w-[20px] h-[14px] top-[39px] left-[490px] cursor-pointer bg-transparent border-0 p-0 z-10"
+              className="absolute w-[3.78%] h-[14.5%] top-[67%] left-[92.17%] cursor-pointer"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <img
-                  src="public/Show Icon.svg"
+                  src="public/View Icon.svg"
                   alt="Hide password"
                   className="w-full h-full"
                 />
               ) : (
                 <img
-                  src="public/View Icon.svg"
+                  src="public/Show Icon.svg"
                   alt="Show password"
-                  className="w-full h-full opacity-50"
+                  className="w-full h-full"
                 />
               )}
             </button>
