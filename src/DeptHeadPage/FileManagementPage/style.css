@@ -5,7 +5,7 @@
 
 .group {
   display: grid;
-  gap: 30px;
+  gap: 1%;
   grid-template-columns: 1fr;
   grid-template-rows: auto auto auto auto;
   grid-template-areas:
@@ -21,6 +21,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 3%;
+
 }
 
 .welcome-message .text-wrapper-77 {
@@ -401,7 +403,7 @@
 
 .group .files-table-header {
   display: grid;
-  grid-template-columns: 80px 1fr 150px 180px 120px 200px;
+  grid-template-columns: 8% 27% 10% 18% 10% 20%;
   gap: 15px;
   padding-bottom: 15px;
   border-bottom: 2px solid #e0e0e0;
@@ -418,7 +420,7 @@
 
 .group .file-row {
   display: grid;
-  grid-template-columns: 80px 1fr 150px 180px 120px 200px;
+  grid-template-columns: 8% 27% 10% 18% 10% 20%;
   gap: 15px;
   padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -446,6 +448,7 @@
 
 .group .file-actions {
   display: flex;
+  margin-right: 20%;
   gap: 8px;
   justify-content: flex-end;
 }
