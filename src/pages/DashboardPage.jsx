@@ -3,7 +3,8 @@ import { SidePanel } from "../components/SidePanel";
 import { ActivityLogCard } from "../DeptHeadPage/DashboardPage/sections/ActivityLogCard";
 import { PersonalInformation } from "../DeptHeadPage/DashboardPage/sections/PersonalInformation";
 import { QuickActionCard } from "../DeptHeadPage/DashboardPage/sections/QuickActionCard";
-import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard";
+import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
+import { NotificationCard } from "../DeptHeadPage/DashboardPage/sections/NotificationCard";
 import { Modal } from "../components/Modal";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { userData, statsData, notifications } from "../data/mockData";
@@ -24,13 +25,202 @@ export const DashboardPage = () => {
   return (
     <>
       <SidePanel />
-      <div
-        className="department-head-page"
-        style={{
-          paddingBottom: "100px",
-        }}
-        data-model-id="176:157"
-      >
+      <div className="department-head-page" data-model-id="176:157">
+        <header className="dashboard-header">
+          <div className="welcome-message">
+            <div className="text-wrapper-71">Welcome Back,</div>
+            <div className="text-wrapper-70">
+              {userData.name.split(" ")[0]} {userData.name.split(" ")[1]}{" "}
+              {userData.name.split(" ")[2]}!
+            </div>
+          </div>
+          <div className="header-actions">
+            <div className="search-wrapper">
+              <form onSubmit={handleSearch} className="search-form">
+                <svg
+                  className="search-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search files, users, or requests..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </form>
+            </div>
+            <div
+              className="notification-button-wrapper"
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+            >
+              <img
+                className="notification-button"
+                alt="Notification button"
+                src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
+              />
+              {notifications.filter((n) => !n.read).length > 0 && (
+                <span className="notification-badge">
+                  {notifications.filter((n) => !n.read).length}
+                </span>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <PersonalInformation />
+        <ActivityLogCard />
+        <QuickActionCard
+          onAddFile={() => setIsAddFileModalOpen(true)}
+          onRequest={() => setIsRequestModalOpen(true)}
+          onAddMember={() => setIsAddMemberModalOpen(true)}
+        />
+        <NotificationCard />
+
+        <div className="files-card">
+          <div className="rectangle-7" />
+          <div className="text-wrapper-62">Files</div>
+          <img
+            className="files-icon"
+            alt="Files icon"
+            src="https://c.animaapp.com/27o9iVJi/img/files-icon.svg"
+          />
+          <img
+            className="lineh-2"
+            alt="Lineh"
+            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
+          />
+          <div className="stats-content">
+            <div className="stat-item">
+              <div className="text-wrapper-61">{statsData.files.total}</div>
+              <div className="text-wrapper-60">Total Files</div>
+            </div>
+            <img
+              className="linev-2"
+              alt="Linev"
+              src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
+            />
+            <div className="stat-item">
+              <div className="text-wrapper-59">
+                {statsData.files.newlyAdded}
+              </div>
+              <div className="text-wrapper-58">Newly Added</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="borrowing-card">
+          <div className="rectangle-7" />
+          <div className="text-wrapper-65">Borrowing</div>
+          <img
+            className="borrowing-icon"
+            alt="Borrowing icon"
+            src="https://c.animaapp.com/27o9iVJi/img/borrowing-icon.svg"
+          />
+          <img
+            className="lineh-2"
+            alt="Lineh"
+            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
+          />
+          <div className="stats-content">
+            <div className="stat-item">
+              <div className="text-wrapper-61">
+                {statsData.borrowing.activeBorrowed}
+              </div>
+              <div className="text-wrapper-64">Active Borrowed</div>
+            </div>
+            <img
+              className="linev-2"
+              alt="Linev"
+              src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
+            />
+            <div className="stat-item">
+              <div className="text-wrapper-59">
+                {statsData.borrowing.returnedToday}
+              </div>
+              <div className="text-wrapper-63">Returned Today</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="approval-card">
+          <div className="rectangle-7" />
+          <div className="text-wrapper-65">Approvals</div>
+          <img
+            className="approval-icon"
+            alt="Approval icon"
+            src="https://c.animaapp.com/27o9iVJi/img/approval-icon.svg"
+          />
+          <img
+            className="lineh-2"
+            alt="Lineh"
+            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
+          />
+          <div className="stats-content">
+            <div className="stat-item">
+              <div className="text-wrapper-61">
+                {statsData.approvals.pending}
+              </div>
+              <div className="text-wrapper-67">Pending</div>
+            </div>
+            <img
+              className="linev-2"
+              alt="Linev"
+              src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
+            />
+            <div className="stat-item">
+              <div className="text-wrapper-59">
+                {statsData.approvals.approved}
+              </div>
+              <div className="text-wrapper-66">Approved</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="overdue-files-card">
+          <div className="rectangle-7" />
+          <div className="text-wrapper-65">Overdue</div>
+          <img
+            className="overdue-files-icon"
+            alt="Overdue files icon"
+            src="https://c.animaapp.com/27o9iVJi/img/overdue-files-icon.svg"
+          />
+          <img
+            className="lineh-3"
+            alt="Lineh"
+            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
+          />
+          <div className="stats-content">
+            <div className="stat-item">
+              <div className="text-wrapper-61">
+                {statsData.overdueFiles.overdue}
+              </div>
+              <div className="text-wrapper-69">Overdue</div>
+            </div>
+            <img
+              className="linev-2"
+              alt="Linev"
+              src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
+            />
+            <div className="stat-item">
+              <div className="text-wrapper-59">
+                {statsData.overdueFiles.resolved}
+              </div>
+              <div className="text-wrapper-68">Resolved</div>
+            </div>
+          </div>
+        </div>
+
         <RequestCard />
 
         <Modal
@@ -133,171 +323,6 @@ export const DashboardPage = () => {
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />
-
-        <div className="files-card">
-          <div className="rectangle-7" />
-          <div className="text-wrapper-58">Newly Added</div>
-          <div className="text-wrapper-59">{statsData.files.newlyAdded}</div>
-          <img
-            className="linev-2"
-            alt="Linev"
-            src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
-          />
-          <div className="text-wrapper-60">Total Files</div>
-          <div className="text-wrapper-61">{statsData.files.total}</div>
-          <img
-            className="lineh-2"
-            alt="Lineh"
-            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
-          />
-          <div className="text-wrapper-62">Files</div>
-          <img
-            className="files-icon"
-            alt="Files icon"
-            src="https://c.animaapp.com/27o9iVJi/img/files-icon.svg"
-          />
-        </div>
-
-        <div className="borrowing-card">
-          <div className="rectangle-7" />
-          <div className="text-wrapper-63">Returned Today</div>
-          <div className="text-wrapper-59">
-            {statsData.borrowing.returnedToday}
-          </div>
-          <img
-            className="linev-2"
-            alt="Linev"
-            src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
-          />
-          <div className="text-wrapper-64">Active Borrowed</div>
-          <div className="text-wrapper-61">
-            {statsData.borrowing.activeBorrowed}
-          </div>
-          <img
-            className="lineh-2"
-            alt="Lineh"
-            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
-          />
-          <div className="text-wrapper-65">Borrowing</div>
-          <img
-            className="borrowing-icon"
-            alt="Borrowing icon"
-            src="https://c.animaapp.com/27o9iVJi/img/borrowing-icon.svg"
-          />
-        </div>
-
-        <div className="approval-card">
-          <div className="rectangle-7" />
-          <div className="text-wrapper-66">Approved</div>
-          <div className="text-wrapper-59">{statsData.approvals.approved}</div>
-          <img
-            className="linev-2"
-            alt="Linev"
-            src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
-          />
-          <div className="text-wrapper-67">Pending</div>
-          <div className="text-wrapper-61">{statsData.approvals.pending}</div>
-          <img
-            className="lineh-2"
-            alt="Lineh"
-            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
-          />
-          <div className="text-wrapper-65">Approvals</div>
-          <img
-            className="approval-icon"
-            alt="Approval icon"
-            src="https://c.animaapp.com/27o9iVJi/img/approval-icon.svg"
-          />
-        </div>
-
-        <div className="overdue-files-card">
-          <div className="rectangle-7" />
-          <div className="text-wrapper-65">Overdue Files</div>
-          <div className="text-wrapper-59">
-            {statsData.overdueFiles.overdue}
-          </div>
-          <img
-            className="linev-2"
-            alt="Linev"
-            src="https://c.animaapp.com/27o9iVJi/img/linev-05.svg"
-          />
-          <div className="text-wrapper-68">Resolved</div>
-          <div className="text-wrapper-61">
-            {statsData.overdueFiles.resolved}
-          </div>
-          <img
-            className="lineh-3"
-            alt="Lineh"
-            src="https://c.animaapp.com/27o9iVJi/img/lineh-04.svg"
-          />
-          <div className="text-wrapper-69">Overdue</div>
-          <img
-            className="overdue-files-icon"
-            alt="Overdue files icon"
-            src="https://c.animaapp.com/27o9iVJi/img/overdue-files-icon.svg"
-          />
-        </div>
-
-        <ActivityLogCard />
-        <QuickActionCard
-          onAddFile={() => setIsAddFileModalOpen(true)}
-          onRequest={() => setIsRequestModalOpen(true)}
-          onAddMember={() => setIsAddMemberModalOpen(true)}
-        />
-        <PersonalInformation />
-
-        <div
-          className="notification-button-wrapper"
-          onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-        >
-          <img
-            className="notification-button"
-            alt="Notification button"
-            src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
-          />
-          {notifications.filter((n) => !n.read).length > 0 && (
-            <span className="notification-badge">
-              {notifications.filter((n) => !n.read).length}
-            </span>
-          )}
-        </div>
-
-        <div className="search-wrapper">
-          <form onSubmit={handleSearch} className="search-form">
-            <svg
-              className="search-icon"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search files, users, or requests..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
-        </div>
-
-        <div className="text-wrapper-70">
-          {userData.name.split(" ")[0]} {userData.name.split(" ")[1]}{" "}
-          {userData.name.split(" ")[2]}!
-        </div>
-        <div className="text-wrapper-71">Welcome Back,</div>
-
-        <div className="notification-card">
-          <div className="rectangle-8" />
-          <div className="text-wrapper-72">Notification + Calendar</div>
-        </div>
       </div>
     </>
   );

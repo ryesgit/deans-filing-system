@@ -21,7 +21,7 @@
   height: 24px;
   left: 41px;
   position: absolute;
-  top: 680px;
+  top: 90%;
   width: 87px;
 }
 
@@ -54,6 +54,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  width: 94px;
 }
 
 .side-panel .text-wrapper-52 {
@@ -62,6 +63,7 @@
   font-size: 16px;
   font-weight: 400;
   left: 40px;
+  left: 34px;
   letter-spacing: -0.96px;
   line-height: normal;
   position: absolute;
@@ -85,6 +87,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  width: 130px;
 }
 
 .side-panel .text-wrapper-53 {
@@ -93,6 +96,7 @@
   font-size: 16px;
   font-weight: 400;
   left: 36px;
+  left: 30px;
   letter-spacing: -0.96px;
   line-height: normal;
   position: absolute;
@@ -101,7 +105,7 @@
 }
 
 .side-panel .vector-3 {
-  height: 75.00%;
+  height: 75%;
   left: 0;
   position: absolute;
   top: 9.38%;
@@ -116,6 +120,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  width: 167px;
 }
 
 .side-panel .vector-4 {
@@ -123,7 +128,7 @@
   left: 0;
   position: absolute;
   top: 5.21%;
-  width: 9.10%;
+  width: 9.1%;
 }
 
 .side-panel .request {
@@ -134,6 +139,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  width: 93px;
 }
 
 .side-panel .text-wrapper-54 {
@@ -142,6 +148,7 @@
   font-size: 16px;
   font-weight: 400;
   left: 37px;
+  left: 31px;
   letter-spacing: -0.96px;
   line-height: normal;
   position: absolute;
@@ -150,7 +157,7 @@
 }
 
 .side-panel .vector-5 {
-  height: 50.00%;
+  height: 50%;
   left: 0;
   position: absolute;
   top: 21.87%;
@@ -165,6 +172,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  width: 160px;
 }
 
 .side-panel .text-wrapper-55 {
@@ -173,6 +181,7 @@
   font-size: 16px;
   font-weight: 400;
   left: 38px;
+  left: 32px;
   letter-spacing: -0.96px;
   line-height: normal;
   position: absolute;
@@ -194,9 +203,9 @@
   height: 40px;
   left: 21px;
   position: absolute;
+  top: 207px;
   width: 217px;
-  transition: top 0.3s ease;
-  display: none;
+  transition: top 0.3s ease-in-out;
 }
 
 .side-panel .dashboard,
@@ -231,6 +240,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  width: 120px;
 }
 
 .side-panel .dashboard.active .text-wrapper-56 {
@@ -248,7 +258,7 @@
 }
 
 .side-panel .dashboard.active::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: #ffffff;
   border-radius: 50px;
@@ -262,7 +272,7 @@
 }
 
 .side-panel .file-management.active::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: #ffffff;
   border-radius: 50px;
@@ -276,7 +286,7 @@
 }
 
 .side-panel .request.active::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: #ffffff;
   border-radius: 50px;
@@ -290,7 +300,7 @@
 }
 
 .side-panel .user-management.active::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: #ffffff;
   border-radius: 50px;
@@ -304,7 +314,7 @@
 }
 
 .side-panel .report-log.active::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: #ffffff;
   border-radius: 50px;
@@ -318,7 +328,7 @@
 }
 
 .side-panel .settings.active::before {
-  content: '';
+  content: "";
   position: absolute;
   background-color: #ffffff;
   border-radius: 50px;
@@ -337,7 +347,7 @@
 .side-panel .user-management.active .text-wrapper-53,
 .side-panel .report-log.active .text-wrapper-53,
 .side-panel .settings.active .text-wrapper-52 {
-  color: #ff0000;
+  color: #800000;
   font-weight: 600;
 }
 
@@ -356,14 +366,15 @@
 .side-panel .user-management.active .vector-4,
 .side-panel .report-log.active .vector-3,
 .side-panel .settings.active .vector-2 {
-  filter: brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(7426%) hue-rotate(0deg) brightness(100%) contrast(107%);
+  filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5478%)
+    hue-rotate(357deg) brightness(83%) contrast(119%);
 }
 
 .side-panel .vector-7 {
   height: 79.17%;
   left: 0;
   position: absolute;
-  top: 22%;
+  top: 10%;
   width: 19.38%;
 }
 
@@ -373,10 +384,11 @@
   font-size: 16px;
   font-weight: 400;
   left: 40px;
+  left: 34px;
   letter-spacing: -0.96px;
   line-height: normal;
   position: absolute;
-  top: 0;
+  top: 3px;
   white-space: nowrap;
 }
 
@@ -386,7 +398,8 @@
   font-size: 20px;
   font-weight: 600;
   left: 25px;
-  letter-spacing: -1.20px;
+  letter-spacing: -1.2px;
+  letter-spacing: -1.2px;
   line-height: normal;
   position: absolute;
   top: 165px;

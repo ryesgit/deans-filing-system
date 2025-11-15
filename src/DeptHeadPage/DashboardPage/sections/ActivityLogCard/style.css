@@ -1,24 +1,41 @@
+/* Main Activity Log card */
 .activity-log-card {
+  position: relative;
+  grid-area: activity-log;
+  width: 100%;
+  min-height: 254px;
+  overflow: hidden;
+  padding: 20px;
+
+  --scale: clamp(0.75, 1vw + 0.5, 1);
+
   background-color: #ffffff;
   border-radius: 20px;
   box-shadow: 3px 3px 13px #00000026;
+
+  display: flex;
+  justify-content: center; /* center content horizontally */
+  align-items: flex-start;
+}
+
+/* NEW wrapper that scales as a whole */
+.al-content {
+  position: relative;
+  width: 100%;
+  max-width: 500px;     /* adjust this to match actual card width */
+  transform: scale(var(--scale));
+  transform-origin: top center;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: 254px;
-  left: 59.6%;
-  right: 2%;
-  position: absolute;
-  top: 15.3%;
-  width: auto;
-  min-width: 400px;
-  z-index: 2;
 }
+
+/* EVERYTHING BELOW STAYS THE SAME */
 
 .activity-log-card .profile-details {
   height: 41px;
-  margin-left: 46px;
-  margin-top: 29px;
+  margin-left: 35px;
+  margin-top: 10px;
   position: relative;
   width: 376px;
 }
@@ -52,7 +69,7 @@
   font-size: 10px;
   font-weight: 400;
   left: 58px;
-  letter-spacing: -0.60px;
+  letter-spacing: -0.6px;
   line-height: normal;
   position: absolute;
   top: 21px;
@@ -78,21 +95,21 @@
 
 .activity-log-card .profile-details-2 {
   height: 41px;
-  margin-left: 46px;
+  margin-left: 35px;
   position: relative;
   width: 465px;
 }
 
 .activity-log-card .profile-details-3 {
   height: 41px;
-  margin-left: 46px;
+  margin-left: 35px;
   position: relative;
   width: 422px;
 }
 
 .activity-log-card .profile-details-4 {
   height: 41px;
-  margin-left: 46px;
+  margin-left: 35px;
   position: relative;
   width: 408px;
 }

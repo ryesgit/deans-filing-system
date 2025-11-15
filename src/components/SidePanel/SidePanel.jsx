@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./style.css";
 
 export const SidePanel = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const [activeItem, setActiveItem] = useState("dashboard");
 
   const getActiveItem = () => {
     const path = location.pathname;
@@ -17,26 +17,43 @@ export const SidePanel = () => {
     return "";
   };
 
-  const activeItem = getActiveItem();
-
-  const handleLogout = () => {
-    navigate("/login");
+  const handleNavigation = (item) => {
+    setActiveItem(item);
   };
+
+  // The activeItem from the URL will take precedence
+  const currentActiveItem = getActiveItem() || activeItem;
 
   return (
     <div className="side-panel">
       <div className="rectangle-6" />
 
-      <div className="logout" onClick={handleLogout}>
+      <img
+        className="side-panel-logo"
+        alt="Logo"
+        src="public/PUP Logo.png"
+      />
+
+      <Link
+        to="/login"
+        className="logout"
+        onClick={() => handleNavigation("logout")}
+      >
         <div className="text-wrapper-51">Log out</div>
         <img
           className="vector"
           alt="Vector"
           src="https://c.animaapp.com/27o9iVJi/img/vector.svg"
         />
-      </div>
+      </Link>
 
-      <Link to="/settings" className={`settings ${activeItem === "settings" ? "active" : ""}`}>
+      <Link
+        to="/settings"
+        className={`settings ${
+          currentActiveItem === "settings" ? "active" : ""
+        }`}
+        onClick={() => handleNavigation("settings")}
+      >
         <div className="text-wrapper-52">Settings</div>
         <img
           className="vector-2"
@@ -45,7 +62,13 @@ export const SidePanel = () => {
         />
       </Link>
 
-      <Link to="/reports" className={`report-log ${activeItem === "report-log" ? "active" : ""}`}>
+      <Link
+        to="/reports"
+        className={`report-log ${
+          currentActiveItem === "report-log" ? "active" : ""
+        }`}
+        onClick={() => handleNavigation("report-log")}
+      >
         <div className="text-wrapper-53">Reports &amp; Log</div>
         <img
           className="vector-3"
@@ -54,7 +77,13 @@ export const SidePanel = () => {
         />
       </Link>
 
-      <Link to="/user-management" className={`user-management ${activeItem === "user-management" ? "active" : ""}`}>
+      <Link
+        to="/user-management"
+        className={`user-management ${
+          currentActiveItem === "user-management" ? "active" : ""
+        }`}
+        onClick={() => handleNavigation("user-management")}
+      >
         <div className="text-wrapper-53">User Management</div>
         <img
           className="vector-4"
@@ -63,7 +92,11 @@ export const SidePanel = () => {
         />
       </Link>
 
-      <Link to="/request" className={`request ${activeItem === "request" ? "active" : ""}`}>
+      <Link
+        to="/request"
+        className={`request ${currentActiveItem === "request" ? "active" : ""}`}
+        onClick={() => handleNavigation("request")}
+      >
         <div className="text-wrapper-54">Request</div>
         <img
           className="vector-5"
@@ -72,7 +105,13 @@ export const SidePanel = () => {
         />
       </Link>
 
-      <Link to="/file-management" className={`file-management ${activeItem === "file-management" ? "active" : ""}`}>
+      <Link
+        to="/file-management"
+        className={`file-management ${
+          currentActiveItem === "file-management" ? "active" : ""
+        }`}
+        onClick={() => handleNavigation("file-management")}
+      >
         <div className="text-wrapper-55">File Management</div>
         <img
           className="vector-6"
@@ -81,13 +120,14 @@ export const SidePanel = () => {
         />
       </Link>
 
-
-      <Link to="/dashboard" className={`dashboard ${activeItem === "dashboard" ? "active" : ""}`}>
-        <img
-          className="vector-7"
-          alt="Vector"
-          src="public/Vector.svg"
-        />
+      <Link
+        to="/dashboard"
+        className={`dashboard ${
+          currentActiveItem === "dashboard" ? "active" : ""
+        }`}
+        onClick={() => handleNavigation("dashboard")}
+      >
+        <img className="vector-7" alt="Vector" src="public/Vector.svg" />
         <div className="text-wrapper-56">Dashboard</div>
       </Link>
 

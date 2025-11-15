@@ -1,121 +1,78 @@
 .quick-action-card {
-  height: 164px;
-  left: 21%;
-  position: absolute;
-  top: 35%;
-  width: 38.7%;
-  max-width: 558px;
-  min-width: 420px;
-  z-index: 2;
-}
-
-.quick-action-card .img {
-  height: 190px;
-  left: -10px;
-  right: -10px;
-  object-fit: cover;
-  position: absolute;
-  top: -10px;
-  width: auto;
-}
-
-.quick-action-card .add-member-button,
-.quick-action-card .request-button,
-.quick-action-card .add-file-button {
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.quick-action-card .add-member-button:hover,
-.quick-action-card .request-button:hover,
-.quick-action-card .add-file-button:hover {
-  transform: translateY(-2px);
-}
-
-.quick-action-card .add-member-button:active,
-.quick-action-card .request-button:active,
-.quick-action-card .add-file-button:active {
-  transform: translateY(0);
-}
-
-.quick-action-card .add-member-button {
-  height: 41px;
-  left: 368px;
-  position: absolute;
-  top: 102px;
-  width: 132px;
-}
-
-.quick-action-card .rectangle-4 {
-  background-color: #ffffff;
   border-radius: 20px;
-  height: 41px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 130px;
+  box-shadow: 3px 3px 13px #00000026;
+  padding: 20px;
+  grid-area: quick-actions;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  height: 164px; /* Adjust height as needed */
+  width: 100%; /* Ensure it takes full width of the grid area */
+  position: relative;
+  overflow: hidden; /* Ensures pseudo-element stays within border-radius */
+
+  /* Add your background image here */
+  background-image: url("public/Rectangle 24.png");
+  background-size: 120%;
+  background-position: center;
+  color: #ffffff; /* Change default text color to white for better contrast */
 }
 
-.quick-action-card .text-wrapper-30 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 18px;
-  font-weight: 600;
-  left: 10px;
-  letter-spacing: -1.08px;
-  line-height: normal;
-  position: absolute;
-  top: 7px;
+.quick-action-header {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.quick-action-card .request-button {
-  height: 41px;
-  left: 198px;
-  position: absolute;
-  top: 102px;
-  width: 132px;
-}
-
-.quick-action-card .text-wrapper-31 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 20px;
-  font-weight: 600;
-  left: 28px;
-  letter-spacing: -1.20px;
-  line-height: normal;
-  position: absolute;
-  top: 6px;
-}
-
-.quick-action-card .add-file-button {
-  height: 41px;
-  left: 28px;
-  position: absolute;
-  top: 102px;
-  width: 132px;
-}
-
-.quick-action-card .instruction {
+.quick-action-title {
   color: #ffffff;
   font-family: "Poppins", Helvetica;
-  font-size: 12px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  margin: 5px;
+}
+
+.quick-action-instruction {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 15px;
   font-weight: 400;
-  left: 126px;
-  letter-spacing: -0.72px;
-  line-height: normal;
-  position: absolute;
-  top: 68px;
+  letter-spacing: -1.2px;
+  margin: 2;
 }
 
-.quick-action-card .text-wrapper-32 {
-  color: #ffffff;
+.quick-action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.action-btn {
+  flex: 1;
+  max-width: 150px; /* Max width for buttons */
+  padding: 15px 25px;
+  border: none;
+  border-radius: 30px;
   font-family: "Poppins", Helvetica;
-  font-size: 32px;
+  font-size: 15px;
   font-weight: 600;
-  left: 170px;
-  letter-spacing: -1.92px;
-  line-height: normal;
-  position: absolute;
-  top: 26px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: -0.5px;
+  color: #8a0000;
+  background: linear-gradient(145deg, #ffffff, #ffffff);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.action-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(138, 0, 0, 0.35);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
 }

@@ -14,20 +14,20 @@ export const userData = {
 
 export const statsData = {
   files: {
-    total: 1240,
+    total: 120,
     newlyAdded: 32
   },
   borrowing: {
-    activeBorrowed: 1240,
-    returnedToday: 32
+    activeBorrowed: 2240,
+    returnedToday: 55
   },
   approvals: {
-    pending: 1240,
-    approved: 32
+    pending: 40,
+    approved: 22
   },
   overdueFiles: {
-    overdue: 32,
-    resolved: 1240
+    overdue: 320,
+    resolved: 2240
   }
 };
 
@@ -63,7 +63,17 @@ export const recentRequests = [
     fileName: "ResearchGrantList.pdf",
     dateRequested: "Oct 19, 2025",
     status: "declined"
+  },
+
+   {
+    id: "REQ-0004",
+    facultyName: "Prof. Carlo Reyes",
+    department: "Mechanical Engineering",
+    fileName: "ResearchGrantList.pdf",
+    dateRequested: "Oct 19, 2025",
+    status: "declined"
   }
+
 ];
 
 export const activityLog = [
@@ -92,7 +102,7 @@ export const activityLog = [
     avatar: "https://c.animaapp.com/27o9iVJi/img/profile-04.svg"
   },
   {
-    id: 4,
+    id: 5,
     name: "Prof. Carlo Reyes",
     action: "returned",
     fileName: "ResearchGrantList.pdf",

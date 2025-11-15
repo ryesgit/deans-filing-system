@@ -33,27 +33,36 @@
 }
 
 .login-panel {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  left: -10%;
+  width: 110%;
+  height: 100%;
   background-color: white;
   border-radius: 55px 0 0 55px;
+}
+
+.login-panel-content {
+  position: relative;
+  left: 9.09%;
+  inset: 0;
+  height: 100%;
 }
 
 .login-logo {
   position: absolute;
   top: 5.5%;
   left: 5.5%;
-  width: 61%;
-  height: 5.2%;
+  width: 63%;
+  height: 7%;
   object-fit: cover;
 }
 
 .login-title {
   position: absolute;
   top: 24%;
-  left: 50%;
+  left: 47%;
   transform: translateX(-50%);
-  font-family: 'Poppins', Helvetica;
+  font-family: "Poppins", Helvetica;
   font-weight: 600;
   color: #800000;
   font-size: 4.3vw;
@@ -64,14 +73,14 @@
 
 .login-subtitle {
   position: absolute;
-  top: 36%;
-  left: 50%;
+  top: 34%;
+  left: 52%;
   transform: translateX(-50%);
   width: 63%;
-  font-family: 'Poppins', Helvetica;
+  font-family: "Poppins", Helvetica;
   font-weight: 400;
   color: black;
-  font-size: 21.8px;
+  font-size: 1.5vw;
   letter-spacing: -1.31px;
   line-height: normal;
   margin-bottom: 1rem;
@@ -79,25 +88,25 @@
 
 .login-field {
   position: absolute;
-  left: 50%;
+  left: 53%;
   transform: translateX(-50%);
   width: 67%;
   height: 7.5%;
 }
 
 .login-field.username {
-  bottom: 55%;
+  bottom: 48%;
 }
 
 .login-field.password {
-  bottom: 45.5%;
+  bottom: 38%;
 }
 
 .login-field-border {
   position: absolute;
   top: 1rem;
   left: 0;
-  width: 100%;
+  width: 500px;
   height: 78%;
   border-radius: 16.38px;
   border: 3.28px solid;
@@ -122,20 +131,20 @@
 }
 
 .login-field-label.username-label {
-  width: 22%;
+  width: 19%;
 }
 
 .login-field-label.password-label {
-  width: 21%;
+  width: 18%;
 }
 
 .login-field-label-text {
   position: absolute;
   top: 0;
-  left: 0.5rem;
-  font-family: 'Poppins', Helvetica;
+  left: 0.6rem;
+  font-family: "Poppins", Helvetica;
   font-weight: 400;
-  font-size: 21.8px;
+  font-size: 19px;
   letter-spacing: -1.31px;
   line-height: normal;
   transition: color 0.3s;
@@ -156,27 +165,28 @@
 }
 
 .login-field-icon.username-icon {
-  width: 3.57%;
-  height: 18%;
-  left: 3.57%;
+  width: 30%;
+  height: 30%;
+  left: -10%;
+  top: 32px;
 }
 
 .login-field-icon.password-icon {
-  width: 3.01%;
-  height: 18%;
-  top: 65%;
-  left: 4%;
+  width: 30%;
+  height: 30%;
+  left: -10%;
+  top: 32px;
 }
 
 .login-field-input {
   position: absolute;
   top: 1rem;
   left: 9.4%;
-  height: 78%;
-  font-family: 'Poppins', Helvetica;
+  height: 85%;
+  font-family: "Poppins", Helvetica;
   font-weight: 400;
-  color: black;
-  font-size: 21.8px;
+  color: #c4c4c4;
+  font-size: 20x;
   letter-spacing: -1.31px;
   line-height: normal;
   padding: 0 0.5rem;
@@ -195,14 +205,13 @@
 
 .password-toggle {
   position: absolute;
-  width: 3.78%;
-  height: 14.5%;
-  top: 67%;
-  left: 92.17%;
+  width: 30%;
+  height: 30%;
+  top: 50%;
+  left: 70%;
   cursor: pointer;
   background: transparent;
   border: none;
-  padding: 0;
 }
 
 .password-toggle img {
@@ -212,14 +221,14 @@
 
 .login-button-wrapper {
   position: absolute;
-  top: 573px;
-  left: 155px;
-  width: 532px;
+  top: 65%;
+  left: 19.7%;
+  width: 500px;
   height: 60px;
 }
 
 .login-button {
-  width: 530px;
+  width: 500px;
   height: 60px;
   background-color: #800000;
   border-radius: 16.38px;
@@ -233,7 +242,7 @@
 }
 
 .login-button-text {
-  font-family: 'Poppins', Helvetica;
+  font-family: "Poppins", Helvetica;
   font-weight: 500;
   color: white;
   font-size: 20px;
@@ -243,8 +252,8 @@
 
 .reset-password-button {
   position: absolute;
-  top: 688px;
-  left: 178px;
+  top: 85%;
+  left: 21%;
   width: 485px;
   height: 33px;
   cursor: pointer;
@@ -274,7 +283,7 @@
   position: absolute;
   top: 3px;
   left: 164.5px;
-  font-family: 'Poppins', Helvetica;
+  font-family: "Poppins", Helvetica;
   font-weight: 400;
   color: #800000;
   font-size: 14.5px;

@@ -1,0 +1,12 @@
+.notification-card {
+  cursor: pointer;
+  transition: transform 0.3s;
+  position: relative;
+  grid-area: notifications;
+  width: 100%;
+  height: 164px; /* Maintain height */
+}
+
+.notification-card:hover {
+  transform: translateY(-3px);
+}

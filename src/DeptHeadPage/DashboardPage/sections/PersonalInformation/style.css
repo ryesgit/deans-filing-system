@@ -1,33 +1,52 @@
+/* MAIN CONTAINER — now centers scaled content */
 .personal-information {
-  height: 254px;
-  left: 21%;
-  position: absolute;
-  top: 15.3%;
-  width: 38.7%;
-  max-width: 558px;
-  min-width: 420px;
-  z-index: 2;
-}
+  position: relative;
+  grid-area: personal-info;
+  width: 100%;
+  min-height: 254px;
+  overflow: hidden;
+  padding-bottom: 20px;
 
-.personal-information .rectangle-5 {
+  --scale: clamp(0.75, 1vw + 0.5, 1);
+
   background-color: #ffffff;
   border-radius: 20px;
   box-shadow: 3px 3px 13px #00000026;
-  height: 254px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 526px;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* keep anchored at the top */
 }
 
+/* NEW WRAPPER — this is what scales */
+.pi-content {
+  position: relative;
+  width: 100%;
+  max-width: 550px; /* adjust if needed */
+  transform: scale(var(--scale));
+  transform-origin: top center;
+}
+
+/* Background layer */
+.personal-information .rectangle-5 {
+  background-color: transparent;
+  border-radius: 20px;
+  width: 100%;
+  height: 100%;
+  min-height: 254px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* EXISTING ABSOLUTE ELEMENTS — UNCHANGED */
 .personal-information .text-wrapper-33 {
   color: #800000;
   font-family: "Poppins", Helvetica;
   font-size: 16px;
   font-weight: 600;
-  left: 33px;
+  left: 6%;
   letter-spacing: -0.96px;
-  line-height: normal;
   position: absolute;
   top: 181px;
 }
@@ -37,28 +56,27 @@
   font-family: "Poppins", Helvetica;
   font-size: 10px;
   font-weight: 500;
-  left: 55px;
-  letter-spacing: -0.60px;
-  line-height: normal;
+  left: 9.5%;
+  letter-spacing: -0.6px;
   position: absolute;
   top: 205px;
 }
 
 .personal-information .profile-2 {
   height: 142px;
-  left: 43px;
+  width: 142px;
   object-fit: cover;
   position: absolute;
+  left: 7%;
   top: 35px;
-  width: 142px;
 }
 
 .personal-information .linev {
   height: 215px;
-  left: 225px;
-  position: absolute;
-  top: 19px;
   width: 1px;
+  position: absolute;
+  left: 225px;
+  top: 19px;
 }
 
 .personal-information .text-wrapper-35 {
@@ -67,11 +85,8 @@
   font-size: 10px;
   font-weight: 600;
   left: 398px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 65px;
-  width: 66px;
 }
 
 .personal-information .text-wrapper-36 {
@@ -80,8 +95,6 @@
   font-size: 10px;
   font-weight: 600;
   left: 248px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 104px;
 }
@@ -92,8 +105,6 @@
   font-size: 10px;
   font-weight: 600;
   left: 399px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 104px;
 }
@@ -104,8 +115,6 @@
   font-size: 10px;
   font-weight: 600;
   left: 248px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 152px;
 }
@@ -116,8 +125,6 @@
   font-size: 10px;
   font-weight: 600;
   left: 399px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 152px;
 }
@@ -128,8 +135,6 @@
   font-size: 10px;
   font-weight: 600;
   left: 247px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 200px;
 }
@@ -140,18 +145,19 @@
   font-size: 10px;
   font-weight: 600;
   left: 399px;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 201px;
 }
 
 .personal-information .group {
-  height: 35px;
-  left: 247px;
   position: absolute;
+  left: 247px;
   top: 45px;
+  height: 35px;
   width: 83px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .personal-information .text-wrapper-42 {
@@ -160,8 +166,6 @@
   font-size: 10px;
   font-weight: 600;
   left: 0;
-  letter-spacing: -0.60px;
-  line-height: normal;
   position: absolute;
   top: 20px;
 }
@@ -169,95 +173,32 @@
 .personal-information .text-wrapper-43 {
   color: #800000;
   font-family: "Poppins", Helvetica;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   left: 0;
-  letter-spacing: -0.96px;
-  line-height: normal;
   position: absolute;
   top: 0;
 }
 
-.personal-information .text-wrapper-44 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 16px;
-  font-weight: 600;
-  left: 398px;
-  letter-spacing: -0.96px;
-  line-height: normal;
-  position: absolute;
-  top: 45px;
-}
-
-.personal-information .text-wrapper-45 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 16px;
-  font-weight: 600;
-  left: 248px;
-  letter-spacing: -0.96px;
-  line-height: normal;
-  position: absolute;
-  top: 130px;
-}
-
-.personal-information .text-wrapper-46 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 16px;
-  font-weight: 600;
-  left: 399px;
-  letter-spacing: -0.96px;
-  line-height: normal;
-  position: absolute;
-  top: 130px;
-}
-
-.personal-information .text-wrapper-47 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 16px;
-  font-weight: 600;
-  left: 248px;
-  letter-spacing: -0.96px;
-  line-height: normal;
-  position: absolute;
-  top: 83px;
-}
-
-.personal-information .text-wrapper-48 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 16px;
-  font-weight: 600;
-  left: 399px;
-  letter-spacing: -0.96px;
-  line-height: normal;
-  position: absolute;
-  top: 83px;
-}
-
-.personal-information .text-wrapper-49 {
-  color: #800000;
-  font-family: "Poppins", Helvetica;
-  font-size: 16px;
-  font-weight: 600;
-  left: 246px;
-  letter-spacing: -0.96px;
-  line-height: normal;
-  position: absolute;
-  top: 178px;
-}
-
+.personal-information .text-wrapper-44,
+.personal-information .text-wrapper-45,
+.personal-information .text-wrapper-46,
+.personal-information .text-wrapper-47,
+.personal-information .text-wrapper-48,
+.personal-information .text-wrapper-49,
 .personal-information .text-wrapper-50 {
   color: #800000;
   font-family: "Poppins", Helvetica;
   font-size: 16px;
   font-weight: 600;
-  left: 399px;
   letter-spacing: -0.96px;
-  line-height: normal;
   position: absolute;
-  top: 178px;
 }
+
+.personal-information .text-wrapper-44 { left: 398px; top: 45px; }
+.personal-information .text-wrapper-45 { left: 248px; top: 130px; }
+.personal-information .text-wrapper-46 { left: 399px; top: 130px; }
+.personal-information .text-wrapper-47 { left: 248px; top: 83px; }
+.personal-information .text-wrapper-48 { left: 399px; top: 83px; }
+.personal-information .text-wrapper-49 { left: 246px; top: 178px; }
+.personal-information .text-wrapper-50 { left: 399px; top: 178px; }
