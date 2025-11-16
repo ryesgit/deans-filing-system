@@ -420,7 +420,7 @@
 
 .group .file-row {
   display: grid;
-  grid-template-columns: 8% 27% 10% 18% 10% 20%;
+  grid-template-columns: 8% 27% 10% 18% 10% 16%;
   gap: 15px;
   padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -448,9 +448,7 @@
 
 .group .file-actions {
   display: flex;
-  margin-right: 20%;
   gap: 8px;
-  justify-content: flex-end;
 }
 
 .group .file-action-btn {
