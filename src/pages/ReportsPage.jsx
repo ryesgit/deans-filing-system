@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import React, { useState } from "react";
 import { SidePanel } from "../components/SidePanel";
 import "../DeptHeadPage/ReportsPage/ReportsPage.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
