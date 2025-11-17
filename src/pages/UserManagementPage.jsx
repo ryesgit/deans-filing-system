@@ -243,11 +243,43 @@ export const UserManagementPage = () => {
                   setViewMode(viewMode === "grid" ? "list" : "grid")
                 }
               >
-                <img
-                  className="view-icon"
-                  alt="View icon"
-                  src="https://c.animaapp.com/0TqWl1mS/img/filter-icon.svg"
-                />
+                {viewMode === "grid" ? (
+                  <svg
+                    className="view-icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                ) : (
+                  <svg
+                    className="view-icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                )}
                 <span className="button-text">
                   {viewMode === "grid" ? "List View" : "Grid View"}
                 </span>
@@ -268,7 +300,12 @@ export const UserManagementPage = () => {
                 <div
                   key={user.id}
                   className="user-card"
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setTimeout(() => {
+                      setSelectedUser(null); // Deselect after modal is likely closed
+                    }, 3000); // Keep selected for a few seconds
+                  }}
                 >
                   <div className="rectangle" />
                   <div className="text-wrapper">{user.name}</div>
@@ -292,7 +329,12 @@ export const UserManagementPage = () => {
                 <div
                   key={user.id}
                   className="list-item"
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setTimeout(() => {
+                      setSelectedUser(null); // Deselect after modal is likely closed
+                    }, 3000); // Keep selected for a few seconds
+                  }}
                 >
                   <div className="list-photo" />
                   <div
@@ -512,7 +554,7 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
         <h2 className="modal-title">Filter Users</h2>
 
         <div className="filter-options">
-          <div className="filter-option">
+          <div className={`filter-option ${filters.showAll ? "selected" : ""}`}>
             <label className="filter-label">
               <input
                 type="checkbox"
@@ -524,7 +566,9 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
             </label>
           </div>
 
-          <div className="filter-option">
+          <div
+            className={`filter-option ${filters.showActive ? "selected" : ""}`}
+          >
             <label className="filter-label">
               <input
                 type="checkbox"
@@ -536,7 +580,9 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
             </label>
           </div>
 
-          <div className="filter-option">
+          <div
+            className={`filter-option ${filters.showFaculty ? "selected" : ""}`}
+          >
             <label className="filter-label">
               <input
                 type="checkbox"
@@ -548,7 +594,9 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
             </label>
           </div>
 
-          <div className="filter-option">
+          <div
+            className={`filter-option ${filters.showHeads ? "selected" : ""}`}
+          >
             <label className="filter-label">
               <input
                 type="checkbox"
