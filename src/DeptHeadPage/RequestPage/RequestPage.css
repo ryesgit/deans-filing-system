@@ -1,0 +1,737 @@
+.request-page {
+  padding: 2rem;
+}
+
+/* Page Title */
+.request-page .page-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: clamp(32px, 3.7vw, 52.9px); /* Responsive font size */
+  font-weight: 600;
+  letter-spacing: -3.17px;
+  line-height: normal;
+  margin: 0;
+  position: relative;
+  top: 25px;
+}
+
+/* Request Page Container */
+.request-page > .request-page-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "form form" "qr status";
+  gap: 2rem;
+  width: 100%;
+  margin-top: 2rem; /* Add space below the header */
+}
+
+
+/* Form Card Styles */
+.request-page .form-card {
+  grid-area: form;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
+}
+
+.request-page .form-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  letter-spacing: -1.5px;
+}
+
+.request-page .form-row-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.request-page .form-row-two {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.request-page .form-row {
+  margin-bottom: 1.5rem;
+}
+
+.request-page .form-field,
+.request-page .form-field-full {
+  display: flex;
+  position: relative; /* Needed for placeholder positioning */
+  flex-direction: column;
+}
+
+.form-label {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.request-page .form-input,
+.request-page .form-select,
+.request-page .form-textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 3px solid #d9d9d9;
+  border-radius: 16px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  color: #1e1e1e;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #ffffff;
+}
+
+.request-page .form-input:focus,
+.request-page .form-select:focus,
+.request-page .form-textarea:focus {
+  border-color: #800000;
+  box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+}
+
+.request-page .form-input::placeholder,
+.request-page .form-textarea::placeholder {
+  color: #c2c2c2;
+}
+
+.request-page .form-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23800000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.request-page .form-select option:first-child {
+  color: #c2c2c2;
+}
+
+.request-page .form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.request-page .copy-type-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.copy-type-label {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.request-page .copy-type-btn {
+  /* This is a custom radio-button like implementation, so we hide the actual radio button */
+  display: none;
+}
+
+.request-page .copy-type-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.request-page .copy-type-label-btn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border: 3px solid #d9d9d9;
+  border-radius: 16px;
+  background: white;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e1e1e;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.request-page .copy-type-label-btn:hover {
+  border-color: #800000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(128, 0, 0, 0.15);
+}
+
+.request-page .copy-type-label-btn.active {
+  background-color: #800000;
+  color: white;
+  border-color: #800000;
+}
+
+.request-page .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.request-page .btn-clear,
+.request-page .btn-submit {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.request-page .btn-clear {
+  background-color: #800000;
+  color: #ffffff;
+}
+
+.request-page .btn-clear:hover {
+  background-color: #a00000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+}
+
+.request-page .btn-submit {
+  background-color: #800000;
+  color: #ffffff;
+}
+
+.request-page .btn-submit:hover {
+  background-color: #a00000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+}
+
+.request-page .btn-clear:active,
+.request-page .btn-submit:active {
+  transform: translateY(0);
+}
+
+/* QR Card Styles */
+.request-page .qr-card {
+  grid-area: qr;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 320px;
+  height: 450px;
+  min-height: 450px; /* Ensure a minimum height */
+}
+
+.request-page .qr-card-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.request-page .qr-code-wrapper {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 1rem;
+  border: 2px solid #f0f0f0;
+}
+
+.request-page .qr-code-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(128, 0, 0, 0.2);
+  border-color: #800000;
+}
+
+.request-page .qr-code-svg {
+  display: block;
+}
+
+.request-page .qr-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.request-page .qr-btn-download {
+  background-color: #800000;
+  color: white;
+}
+
+.request-page .qr-btn-download:hover {
+  background-color: #a00000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+}
+
+.request-page .qr-btn:active {
+  transform: translateY(0);
+}
+
+.request-page .qr-file-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fef5f5;
+  border-radius: 12px;
+}
+
+.request-page .qr-file-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.request-page .qr-file-stat-label {
+  font-family: "Poppins", Helvetica;
+  font-size: 13px;
+  font-weight: 500;
+  color: #800000;
+}
+
+.request-page .qr-file-stat-value {
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  color: #800000;
+  background-color: #ffffff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* Request Card Styles */
+.request-page .request-card {
+  grid-area: status;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  width: 100%;
+  overflow: hidden;
+  height: 450px;
+}
+
+.request-page .request-card-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.request-page .table-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  min-height: 0;
+}
+
+.request-page .request-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Poppins", Helvetica;
+}
+
+.request-page .request-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  z-index: 10;
+}
+
+.request-page .request-table th {
+  padding: 1rem;
+  text-align: left;
+  color: #800000;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  border-bottom: 3px solid #800000;
+  background-color: #ffffff;
+}
+
+.request-page .request-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.request-page .request-table tbody tr:hover {
+  background-color: #fef5f5;
+}
+
+.request-page .request-table td {
+  padding: 1rem;
+  color: #1e1e1e;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.3px;
+}
+
+.request-page .file-name-cell {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.request-page .no-requests-row {
+  text-align: center;
+  color: #c2c2c2;
+  font-size: 16px;
+  padding: 3rem !important;
+}
+
+.request-page .status-badge {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.request-page .status-pending {
+  background-color: #5e47cf;
+  color: #ffffff;
+}
+
+.request-page .status-approved {
+  background-color: #4ccf47;
+  color: #ffffff;
+}
+
+.request-page .status-borrowed {
+  background-color: #cfc147;
+  color: #ffffff;
+}
+
+.request-page .status-returned {
+  background-color: #47cf9e;
+  color: #ffffff;
+}
+
+.request-page .status-declined {
+  background-color: #dd0303;
+  color: #ffffff;
+}
+
+.request-page .status-view-pdf {
+  background-color: #cf4747;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.request-page .status-view-pdf:hover {
+  background-color: #b03d3d;
+  transform: scale(1.05);
+}
+
+/* Confirm Modal Styles */
+.request-page .confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.request-page .confirm-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.request-page .confirm-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #800000;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.request-page .confirm-modal-close:hover {
+  background-color: #f0f0f0;
+}
+
+.request-page .confirm-modal-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-right: 2rem;
+}
+
+.request-page .confirm-modal-body {
+  margin-bottom: 2rem;
+}
+
+.request-page .confirm-detail-row {
+  display: flex;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+}
+
+.request-page .confirm-detail-label {
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  color: #800000;
+  min-width: 120px;
+  margin-right: 1rem;
+}
+
+.request-page .confirm-detail-value {
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  color: #1e1e1e;
+  flex: 1;
+  word-break: break-word;
+}
+
+.request-page .confirm-modal-message {
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  color: #1e1e1e;
+  text-align: center;
+  padding: 1rem;
+}
+
+.request-page .confirm-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.request-page .confirm-modal-btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.request-page .confirm-modal-cancel {
+  background-color: #e2e2e2;
+  color: #1e1e1e;
+}
+
+.request-page .confirm-modal-cancel:hover {
+  background-color: #d0d0d0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.request-page .confirm-modal-confirm {
+  background-color: #800000;
+  color: #ffffff;
+}
+
+.request-page .confirm-modal-confirm:hover {
+  background-color: #a00000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+}
+
+.request-page .confirm-modal-btn:active {
+  transform: translateY(0);
+}
+
+/* QR Modal Styles */
+.request-page .qr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.request-page .qr-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.request-page .qr-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #800000;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.request-page .qr-modal-close:hover {
+  background-color: #f0f0f0;
+}
+
+.request-page .qr-modal-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 28px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.request-page .qr-modal-code {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
+
+.request-page .qr-modal-user {
+  text-align: center;
+  margin-top: 20px;
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .request-page .qr-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .request-page .form-row-three {
+    grid-template-columns: 1fr;
+  }
+  
+  .request-page .form-row-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .request-page .table-container {
+    max-height: 300px;
+  }
+  
+  .request-page .request-table th,
+  .request-page .request-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 12px;
+  }
+  
+  .request-page .file-name-cell {
+    max-width: 150px;
+  }
+}
