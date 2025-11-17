@@ -22,6 +22,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1%;
+  margin-top: 2%;
 }
 
 .department-head-page .files-card {

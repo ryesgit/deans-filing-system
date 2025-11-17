@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { SidePanel } from "../components/SidePanel";
 import "../DeptHeadPage/ReportsPage/ReportsPage.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
-import { notifications } from "../data/mockData";
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
 const mockData = {
   request: [
@@ -127,6 +127,7 @@ export const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState("request");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { notifications, unreadCount } = useNotifications();
 
   const handleExport = () => {
     const data = mockData[activeTab];
@@ -236,9 +237,9 @@ export const ReportsPage = () => {
       <SidePanel />
       <div className="page-content-wrapper">
         <div className="reports-main-content">
-          <header className="dashboard-header">
+          <header className="reports-header">
             <div className="welcome-message">
-              <h1 className="page-title">Report & Log</h1>
+              <h1 className="text-wrapper-77">Report & Log</h1>
             </div>
             <div className="header-actions">
               <div className="search-wrapper">
@@ -278,10 +279,8 @@ export const ReportsPage = () => {
                   alt="Notification button"
                   src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
                 />
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="notification-badge">
-                    {notifications.filter((n) => !n.read).length}
-                  </span>
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
                 )}
               </div>
             </div>

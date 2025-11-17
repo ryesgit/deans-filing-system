@@ -12,11 +12,12 @@
 }
 
 /* Header Section */
-.dashboard-header {
+.usermanagement-header {
   grid-area: header;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1%;
 }
 
 .welcome-message .text-wrapper-77 {
@@ -280,6 +281,7 @@
 .users-section .view-icon {
   height: 18px;
   width: 18px;
+  filter: brightness(0) invert(1);
 }
 
 .users-section .cards-container {
@@ -675,13 +677,23 @@
   align-items: center;
 }
 
+.filter-option.selected {
+  background-color: #800000;
+  border-radius: 20px;
+}
+
+.filter-option.selected .filter-text {
+  font-weight: 600;
+  color: #ffffff;
+}
+
 .filter-label {
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
   width: 100%;
-  padding: 8px 0;
+  padding: 8px 12px;
 }
 
 .filter-checkbox {
@@ -853,7 +865,7 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .dashboard-header {
+  .usermanagement-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;

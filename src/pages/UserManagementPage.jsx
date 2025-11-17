@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import "../DeptHeadPage/UserManagementPage/UserManagement.css";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
 export const UserManagementPage = () => {
   const [users, setUsers] = useState([
@@ -61,17 +62,6 @@ export const UserManagementPage = () => {
     },
   ]);
 
-  // Mock notifications data for demonstration
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "New user 'Alex' was added.", read: false },
-    {
-      id: 2,
-      message: "User 'Maria Santos' updated their profile.",
-      read: false,
-    },
-    { id: 3, message: "A request was approved.", read: true },
-  ]);
-
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -85,6 +75,7 @@ export const UserManagementPage = () => {
     department: "all",
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { notifications, unreadCount } = useNotifications();
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
@@ -152,7 +143,7 @@ export const UserManagementPage = () => {
     <>
       <SidePanel />
       <div className="user-management-container">
-        <header className="dashboard-header">
+        <header className="usermanagement-header">
           <div className="welcome-message">
             <h1 className="text-wrapper-77">User Management</h1>
           </div>
@@ -191,10 +182,8 @@ export const UserManagementPage = () => {
                 alt="Notification button"
                 src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
               />
-              {notifications.filter((n) => !n.read).length > 0 && (
-                <span className="notification-badge">
-                  {notifications.filter((n) => !n.read).length}
-                </span>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
               )}
             </div>
           </div>
@@ -254,11 +243,43 @@ export const UserManagementPage = () => {
                   setViewMode(viewMode === "grid" ? "list" : "grid")
                 }
               >
-                <img
-                  className="view-icon"
-                  alt="View icon"
-                  src="https://c.animaapp.com/0TqWl1mS/img/filter-icon.svg"
-                />
+                {viewMode === "grid" ? (
+                  <svg
+                    className="view-icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                ) : (
+                  <svg
+                    className="view-icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                )}
                 <span className="button-text">
                   {viewMode === "grid" ? "List View" : "Grid View"}
                 </span>
@@ -279,7 +300,12 @@ export const UserManagementPage = () => {
                 <div
                   key={user.id}
                   className="user-card"
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setTimeout(() => {
+                      setSelectedUser(null); // Deselect after modal is likely closed
+                    }, 3000); // Keep selected for a few seconds
+                  }}
                 >
                   <div className="rectangle" />
                   <div className="text-wrapper">{user.name}</div>
@@ -303,7 +329,12 @@ export const UserManagementPage = () => {
                 <div
                   key={user.id}
                   className="list-item"
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setTimeout(() => {
+                      setSelectedUser(null); // Deselect after modal is likely closed
+                    }, 3000); // Keep selected for a few seconds
+                  }}
                 >
                   <div className="list-photo" />
                   <div
@@ -523,7 +554,7 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
         <h2 className="modal-title">Filter Users</h2>
 
         <div className="filter-options">
-          <div className="filter-option">
+          <div className={`filter-option ${filters.showAll ? "selected" : ""}`}>
             <label className="filter-label">
               <input
                 type="checkbox"
@@ -535,7 +566,9 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
             </label>
           </div>
 
-          <div className="filter-option">
+          <div
+            className={`filter-option ${filters.showActive ? "selected" : ""}`}
+          >
             <label className="filter-label">
               <input
                 type="checkbox"
@@ -547,7 +580,9 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
             </label>
           </div>
 
-          <div className="filter-option">
+          <div
+            className={`filter-option ${filters.showFaculty ? "selected" : ""}`}
+          >
             <label className="filter-label">
               <input
                 type="checkbox"
@@ -559,7 +594,9 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
             </label>
           </div>
 
-          <div className="filter-option">
+          <div
+            className={`filter-option ${filters.showHeads ? "selected" : ""}`}
+          >
             <label className="filter-label">
               <input
                 type="checkbox"
