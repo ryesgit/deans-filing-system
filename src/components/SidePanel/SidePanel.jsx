@@ -69,21 +69,6 @@ export const SidePanel = () => {
         />
       </Link>
 
-      <Link
-        to="/reports"
-        className={`report-log ${
-          currentActiveItem === "report-log" ? "active" : ""
-        }`}
-        onClick={() => handleNavigation("report-log")}
-      >
-        <div className="text-wrapper-53">Reports &amp; Log</div>
-        <img
-          className="vector-3"
-          alt="Vector"
-          src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
-        />
-      </Link>
-
       {user?.role === "admin" && (
         <Link
           to="/user-management"
@@ -100,6 +85,21 @@ export const SidePanel = () => {
           />
         </Link>
       )}
+
+      <Link
+        to="/reports"
+        className={`report-log ${
+          currentActiveItem === "report-log" ? "active" : ""
+        } ${user?.role !== "admin" ? "faculty-spacing" : ""}`}
+        onClick={() => handleNavigation("report-log")}
+      >
+        <div className="text-wrapper-53">Reports &amp; Log</div>
+        <img
+          className="vector-3"
+          alt="Vector"
+          src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
+        />
+      </Link>
 
       <Link
         to="/request"

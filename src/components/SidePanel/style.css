@@ -90,6 +90,10 @@
   width: 130px;
 }
 
+.side-panel .report-log.faculty-spacing {
+  top: 410px;
+}
+
 .side-panel .text-wrapper-53 {
   color: #ffffff;
   font-family: "Poppins", Helvetica;
