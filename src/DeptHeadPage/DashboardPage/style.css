@@ -11,8 +11,8 @@
   grid-template-rows: auto auto auto auto minmax(0, 1fr);
   grid-template-areas:
     "header header header header"
-    "personal-info personal-info activity-log activity-log"
-    "quick-actions quick-actions notifications notifications"
+    "notifications notifications activity-log activity-log"
+    "quick-actions quick-actions personal-info personal-info"
     "files-stat borrowing-stat approvals-stat overdue-stat"
     "requests requests requests requests";
 }
