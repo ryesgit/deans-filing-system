@@ -1,0 +1,417 @@
+.page-content-wrapper {
+  padding-left: 271px; /* Space for the SidePanel */
+  width: 100%;
+}
+
+.reports-main-content {
+  padding: 2rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.welcome-message {
+  position: relative;
+}
+
+.page-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 52.9px;
+  font-weight: 600;
+  letter-spacing: -3.17px;
+  margin: 0;
+  position: relative;
+  top: 25px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 35px;
+}
+
+.notification-button-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.notification-button-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.notification-button {
+  height: 45px;
+  width: 45px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dd0303;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "Poppins", Helvetica;
+}
+
+.search-wrapper {
+  flex-grow: 1;
+  max-width: 500px;
+}
+
+.search-form {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  height: 45px;
+  border-radius: 27px;
+  border: 2px solid #f0f0f0;
+  padding: 0 20px 0 45px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  border-color: #800000;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  pointer-events: none;
+}
+
+.content-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  overflow: hidden;
+}
+
+.tabs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e0e0e0;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 32px;
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: #8c8c8c;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -1.2px;
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.tab:hover {
+  color: #800000;
+}
+
+.tab.active {
+  color: #800000;
+  font-weight: 600;
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #800000;
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #800000;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 24px;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  background-color: #660000;
+}
+
+.export-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.table-container {
+  padding: 32px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  display: block;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Poppins", Helvetica;
+}
+
+.data-table thead {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table th {
+  color: #800000;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.96px;
+  text-align: left;
+  padding: 16px 12px;
+  white-space: nowrap;
+}
+
+.data-table td {
+  color: #1e1e1e;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.96px;
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-approved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-declined {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-borrowed {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.card-list {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .page-title {
+    font-size: 42px;
+    letter-spacing: -2.5px;
+  }
+
+  .search-button img {
+    width: 350px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 992px) {
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 80px 24px 24px;
+  }
+
+  .main-content.sidebar-collapsed {
+    margin-left: 0;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .page-title {
+    font-size: 36px;
+    letter-spacing: -2px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .search-button img {
+    width: 280px;
+    height: 44px;
+  }
+
+  .tabs-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 24px;
+  }
+
+  .tabs-container {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .export-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .table-container {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 70px 16px 16px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    letter-spacing: -1.5px;
+  }
+
+  .search-button img {
+    width: 200px;
+    height: 40px;
+  }
+
+  .icon-button img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .content-card {
+    border-radius: 16px;
+  }
+
+  .tabs-header {
+    padding: 16px;
+  }
+
+  .tab {
+    font-size: 18px;
+  }
+
+  .table-container {
+    padding: 16px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 24px;
+    letter-spacing: -1.2px;
+  }
+
+  .search-button {
+    display: none;
+  }
+
+  .tabs-container {
+    gap: 20px;
+  }
+
+  .tab {
+    font-size: 16px;
+  }
+
+  .export-button {
+    font-size: 14px;
+    padding: 8px 20px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 900px;
+  }
+}
