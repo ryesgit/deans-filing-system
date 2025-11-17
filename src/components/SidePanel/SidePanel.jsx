@@ -127,7 +127,7 @@ export const SidePanel = () => {
         }`}
         onClick={() => handleNavigation("dashboard")}
       >
-        <img className="vector-7" alt="Vector" src="public/Vector.svg" />
+        <img className="vector-7" alt="Vector" src="public/dashboard icon.png" />
         <div className="text-wrapper-56">Dashboard</div>
       </Link>
 

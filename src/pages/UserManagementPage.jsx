@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import "../DeptHeadPage/UserManagementPage/UserManagement.css";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
 export const UserManagementPage = () => {
   const [users, setUsers] = useState([
@@ -61,17 +62,6 @@ export const UserManagementPage = () => {
     },
   ]);
 
-  // Mock notifications data for demonstration
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: "New user 'Alex' was added.", read: false },
-    {
-      id: 2,
-      message: "User 'Maria Santos' updated their profile.",
-      read: false,
-    },
-    { id: 3, message: "A request was approved.", read: true },
-  ]);
-
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -85,6 +75,7 @@ export const UserManagementPage = () => {
     department: "all",
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { notifications, unreadCount } = useNotifications();
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
@@ -152,7 +143,7 @@ export const UserManagementPage = () => {
     <>
       <SidePanel />
       <div className="user-management-container">
-        <header className="dashboard-header">
+        <header className="usermanagement-header">
           <div className="welcome-message">
             <h1 className="text-wrapper-77">User Management</h1>
           </div>
@@ -191,10 +182,8 @@ export const UserManagementPage = () => {
                 alt="Notification button"
                 src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
               />
-              {notifications.filter((n) => !n.read).length > 0 && (
-                <span className="notification-badge">
-                  {notifications.filter((n) => !n.read).length}
-                </span>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
               )}
             </div>
           </div>

@@ -366,8 +366,8 @@
 .side-panel .user-management.active .vector-4,
 .side-panel .report-log.active .vector-3,
 .side-panel .settings.active .vector-2 {
-  filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5478%)
-    hue-rotate(357deg) brightness(83%) contrast(119%);
+ filter: brightness(0) saturate(100%) invert(4%) sepia(94%) saturate(7498%)
+    hue-rotate(359deg) brightness(95%) contrast(108%);
 }
 
 .side-panel .vector-7 {

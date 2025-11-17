@@ -2,15 +2,12 @@ import React, { useState } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import "../DeptHeadPage/DashboardPage/style.css"; // Reusing dashboard styles for consistency
-
-const notifications = [
-  { id: 1, message: "Your password was changed successfully.", read: false },
-  { id: 2, message: "Email notifications have been enabled.", read: true },
-];
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
 export const SettingsPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { notifications, unreadCount } = useNotifications();
 
   return (
     <>
@@ -55,10 +52,8 @@ export const SettingsPage = () => {
                 alt="Notification button"
                 src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
               />
-              {notifications.filter((n) => !n.read).length > 0 && (
-                <span className="notification-badge">
-                  {notifications.filter((n) => !n.read).length}
-                </span>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
               )}
             </div>
           </div>

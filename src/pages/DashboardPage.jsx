@@ -7,8 +7,9 @@ import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/
 import { NotificationCard } from "../DeptHeadPage/DashboardPage/sections/NotificationCard";
 import { Modal } from "../components/Modal";
 import { NotificationDropdown } from "../components/NotificationDropdown";
-import { userData, statsData, notifications } from "../data/mockData";
+import { userData, statsData } from "../data/mockData";
 import "../DeptHeadPage/DashboardPage/style.css";
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
 export const DashboardPage = () => {
   const [isAddFileModalOpen, setIsAddFileModalOpen] = useState(false);
@@ -16,6 +17,7 @@ export const DashboardPage = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { notifications, unreadCount } = useNotifications();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -69,10 +71,8 @@ export const DashboardPage = () => {
                 alt="Notification button"
                 src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
               />
-              {notifications.filter((n) => !n.read).length > 0 && (
-                <span className="notification-badge">
-                  {notifications.filter((n) => !n.read).length}
-                </span>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
               )}
             </div>
           </div>

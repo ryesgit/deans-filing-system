@@ -3,6 +3,7 @@ import { SidePanel } from "../components/SidePanel";
 import { Modal } from "../components/Modal/Modal";
 import "../DeptHeadPage/FileManagementPage/style.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
 
 const mockFolders = [
@@ -27,21 +28,6 @@ const mockFolders = [
     fileCount: 0,
     category: "Academics",
     files: [],
-  },
-];
-
-const notifications = [
-  {
-    id: 1,
-    message: "John Doe requested access to 'Thesis_Chapter1.pdf'.",
-    time: "5 minutes ago",
-    read: false,
-  },
-  {
-    id: 2,
-    message: "A new file 'Project_Proposal.pdf' was uploaded.",
-    time: "1 hour ago",
-    read: true,
   },
 ];
 
@@ -90,6 +76,7 @@ export const FileManagementPage = () => {
   const [openDropdownFolderId, setOpenDropdownFolderId] = useState(null);
   const [fileError, setFileError] = useState("");
 
+  const { notifications, unreadCount } = useNotifications();
   const handleAddFolder = () => {
     if (addFolderForm.name && addFolderForm.category) {
       const newFolder = {
@@ -326,7 +313,7 @@ export const FileManagementPage = () => {
       <div className="file-management-page">
         <div className="group">
           {/* Header Section */}
-          <div className="dashboard-header">
+          <div className="filemanagement-header">
             <div className="welcome-message">
               <span className="text-wrapper-77">File Management</span>
             </div>
@@ -372,10 +359,8 @@ export const FileManagementPage = () => {
                   alt="Notification"
                   src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
                 />
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="notification-badge">
-                    {notifications.filter((n) => !n.read).length}
-                  </span>
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
                 )}
               </div>
             </div>

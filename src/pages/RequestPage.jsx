@@ -3,25 +3,42 @@ import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
-import { notifications } from "../data/mockData";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title, children, confirmText = "Confirm", cancelText = "Cancel" }) => {
+import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+const ConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  children,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+}) => {
   if (!isOpen) return null;
 
   return (
     <div className="confirm-modal-overlay" onClick={onClose}>
-      <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="confirm-modal-close" onClick={onClose}>×</button>
+      <div
+        className="confirm-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="confirm-modal-close" onClick={onClose}>
+          ×
+        </button>
         <h2 className="confirm-modal-title">{title}</h2>
-        <div className="confirm-modal-body">
-          {children}
-        </div>
+        <div className="confirm-modal-body">{children}</div>
         <div className="confirm-modal-actions">
-          <button className="confirm-modal-btn confirm-modal-cancel" onClick={onClose}>
+          <button
+            className="confirm-modal-btn confirm-modal-cancel"
+            onClick={onClose}
+          >
             {cancelText}
           </button>
-          <button className="confirm-modal-btn confirm-modal-confirm" onClick={onConfirm}>
+          <button
+            className="confirm-modal-btn confirm-modal-confirm"
+            onClick={onConfirm}
+          >
             {confirmText}
           </button>
         </div>
@@ -36,7 +53,9 @@ const QRModal = ({ isOpen, onClose, qrValue, userName }) => {
   return (
     <div className="qr-modal-overlay" onClick={onClose}>
       <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="qr-modal-close" onClick={onClose}>×</button>
+        <button className="qr-modal-close" onClick={onClose}>
+          ×
+        </button>
         <h2 className="qr-modal-title">Your QR Code</h2>
         <div className="qr-modal-code">
           <QRCodeSVG value={qrValue} size={300} level="H" />
@@ -55,7 +74,7 @@ const FormCard = ({ onSubmit }) => {
     purpose: "",
     copyType: "soft",
     returnDate: "",
-    priority: ""
+    priority: "",
   });
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -66,7 +85,7 @@ const FormCard = ({ onSubmit }) => {
     "Engineering",
     "Business Administration",
     "Arts and Sciences",
-    "Medical"
+    "Medical",
   ];
 
   const categories = [
@@ -75,35 +94,45 @@ const FormCard = ({ onSubmit }) => {
     "Reports",
     "Guidelines",
     "Handbooks",
-    "Grant Documents"
+    "Grant Documents",
   ];
 
   const priorities = ["Low", "Medium", "High"];
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleCopyTypeChange = (type) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       copyType: type,
       returnDate: type === "soft" ? "" : prev.returnDate,
-      priority: type === "soft" ? "" : prev.priority
+      priority: type === "soft" ? "" : prev.priority,
     }));
   };
 
   const handleSubmitClick = () => {
-    if (!formData.fileName || !formData.department || !formData.fileCategory || !formData.purpose) {
+    if (
+      !formData.fileName ||
+      !formData.department ||
+      !formData.fileCategory ||
+      !formData.purpose
+    ) {
       alert("Please fill in all required fields");
       return;
     }
 
-    if (formData.copyType === "original" && (!formData.returnDate || !formData.priority)) {
-      alert("Please select return date and priority for original copy requests");
+    if (
+      formData.copyType === "original" &&
+      (!formData.returnDate || !formData.priority)
+    ) {
+      alert(
+        "Please select return date and priority for original copy requests"
+      );
       return;
     }
 
@@ -115,13 +144,16 @@ const FormCard = ({ onSubmit }) => {
       id: `REQ-${String(Date.now()).slice(-4)}`,
       fileName: formData.fileName,
       dateRequested: format(new Date(), "MM/dd/yyyy"),
-      returnDue: formData.copyType === "original" ? format(new Date(formData.returnDate), "MM/dd/yyyy") : "-",
+      returnDue:
+        formData.copyType === "original"
+          ? format(new Date(formData.returnDate), "MM/dd/yyyy")
+          : "-",
       status: "Pending",
       copyType: formData.copyType,
       priority: formData.priority,
       department: formData.department,
       category: formData.fileCategory,
-      purpose: formData.purpose
+      purpose: formData.purpose,
     };
 
     onSubmit(request);
@@ -141,7 +173,7 @@ const FormCard = ({ onSubmit }) => {
       purpose: "",
       copyType: "soft",
       returnDate: "",
-      priority: ""
+      priority: "",
     });
     setShowClearModal(false);
   };
@@ -154,14 +186,14 @@ const FormCard = ({ onSubmit }) => {
       purpose: "",
       copyType: "soft",
       returnDate: "",
-      priority: ""
+      priority: "",
     });
   };
 
   return (
     <div className="form-card">
       <h2 className="form-title">Request Form</h2>
-      
+
       <div className="form-row-three">
         <div className="form-field">
           <input
@@ -172,29 +204,33 @@ const FormCard = ({ onSubmit }) => {
             onChange={(e) => handleChange("fileName", e.target.value)}
           />
         </div>
-        
+
         <div className="form-field">
-          <select 
+          <select
             className="form-select"
             value={formData.department}
             onChange={(e) => handleChange("department", e.target.value)}
           >
             <option value="">Department</option>
-            {departments.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
             ))}
           </select>
         </div>
-        
+
         <div className="form-field">
-          <select 
+          <select
             className="form-select"
             value={formData.fileCategory}
             onChange={(e) => handleChange("fileCategory", e.target.value)}
           >
             <option value="">File Category</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
         </div>
@@ -204,23 +240,31 @@ const FormCard = ({ onSubmit }) => {
         <div className="copy-type-section">
           <label className="copy-type-label">Copy Type</label>
           <div className="copy-type-buttons">
-            <label className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""}`}>
+            <label
+              className={`copy-type-label-btn ${
+                formData.copyType === "soft" ? "active" : ""
+              }`}
+            >
               <input
                 type="radio"
                 name="copyType"
                 className="copy-type-btn"
-                checked={formData.copyType === 'soft'}
-                onChange={() => handleCopyTypeChange('soft')}
+                checked={formData.copyType === "soft"}
+                onChange={() => handleCopyTypeChange("soft")}
               />
               Soft Copy Only
             </label>
-            <label className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""}`}>
+            <label
+              className={`copy-type-label-btn ${
+                formData.copyType === "original" ? "active" : ""
+              }`}
+            >
               <input
                 type="radio"
                 name="copyType"
                 className="copy-type-btn"
-                checked={formData.copyType === 'original'}
-                onChange={() => handleCopyTypeChange('original')}
+                checked={formData.copyType === "original"}
+                onChange={() => handleCopyTypeChange("original")}
               />
               Original Copy
             </label>
@@ -240,17 +284,19 @@ const FormCard = ({ onSubmit }) => {
               min={format(new Date(), "yyyy-MM-dd")}
             />
           </div>
-          
+
           <div className="form-field">
             <label className="copy-type-label">Priority</label>
-            <select 
+            <select
               className="form-select"
               value={formData.priority}
               onChange={(e) => handleChange("priority", e.target.value)}
             >
               <option value="">Select Priority</option>
-              {priorities.map(priority => (
-                <option key={priority} value={priority}>{priority}</option>
+              {priorities.map((priority) => (
+                <option key={priority} value={priority}>
+                  {priority}
+                </option>
               ))}
             </select>
           </div>
@@ -273,7 +319,11 @@ const FormCard = ({ onSubmit }) => {
         <button className="btn-clear" onClick={handleClearClick} type="button">
           Clear
         </button>
-        <button className="btn-submit" onClick={handleSubmitClick} type="button">
+        <button
+          className="btn-submit"
+          onClick={handleSubmitClick}
+          type="button"
+        >
           Submit
         </button>
       </div>
@@ -313,7 +363,9 @@ const FormCard = ({ onSubmit }) => {
             <div className="confirm-detail-row">
               <span className="confirm-detail-label">Return Date:</span>
               <span className="confirm-detail-value">
-                {formData.returnDate ? format(new Date(formData.returnDate), "MM/dd/yyyy") : "Not set"}
+                {formData.returnDate
+                  ? format(new Date(formData.returnDate), "MM/dd/yyyy")
+                  : "Not set"}
               </span>
             </div>
             <div className="confirm-detail-row">
@@ -340,7 +392,13 @@ const FormCard = ({ onSubmit }) => {
   );
 };
 
-const QRCard = ({ userName = "John Doe", userId = "USER-001", filesAssigned = 0, filesToReturn = 0, onQRCodeClick }) => {
+const QRCard = ({
+  userName = "John Doe",
+  userId = "USER-001",
+  filesAssigned = 0,
+  filesToReturn = 0,
+  onQRCodeClick,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const qrValue = `USER:${userId}|NAME:${userName}`;
 
@@ -350,47 +408,65 @@ const QRCard = ({ userName = "John Doe", userId = "USER-001", filesAssigned = 0,
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
       const pngFile = canvas.toDataURL("image/png");
-      
+
       const downloadLink = document.createElement("a");
       downloadLink.download = `QR_${userId}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
     };
-    
+
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
   return (
     <div className="qr-card">
       <h3 className="qr-card-title">Your QR Code</h3>
-      <div 
-        className="qr-code-wrapper" 
+      <div
+        className="qr-code-wrapper"
         onClick={onQRCodeClick}
         title="Click to enlarge"
       >
-        <QRCodeSVG 
+        <QRCodeSVG
           id="qr-code-svg"
-          value={qrValue} 
-          size={180} 
+          value={qrValue}
+          size={180}
           level="H"
           className="qr-code-svg"
         />
       </div>
       <button className="qr-btn qr-btn-download" onClick={handleDownload}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M4.66669 6.66669L8.00002 10L11.3334 6.66669" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M8 10V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path
+            d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M4.66669 6.66669L8.00002 10L11.3334 6.66669"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8 10V2"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         Download
       </button>
-      
+
       <div className="qr-file-stats">
         <div className="qr-file-stat-item">
           <span className="qr-file-stat-label">Files Assigned:</span>
@@ -408,19 +484,21 @@ const QRCard = ({ userName = "John Doe", userId = "USER-001", filesAssigned = 0,
 const RequestCard = ({ requests = [] }) => {
   const getStatusClass = (status) => {
     const statusMap = {
-      "Pending": "status-pending",
-      "Approved": "status-approved",
-      "Borrowed": "status-borrowed",
-      "Returned": "status-returned",
-      "Declined": "status-declined",
-      "View PDF": "status-view-pdf"
+      Pending: "status-pending",
+      Approved: "status-approved",
+      Borrowed: "status-borrowed",
+      Returned: "status-returned",
+      Declined: "status-declined",
+      "View PDF": "status-view-pdf",
     };
     return statusMap[status] || "status-pending";
   };
 
   const handleStatusClick = (request) => {
     if (request.status === "View PDF") {
-      alert(`Opening PDF: ${request.fileName}\n\nIn a real application, this would open the PDF viewer.`);
+      alert(
+        `Opening PDF: ${request.fileName}\n\nIn a real application, this would open the PDF viewer.`
+      );
     }
   };
 
@@ -455,10 +533,15 @@ const RequestCard = ({ requests = [] }) => {
                   <td>{request.dateRequested}</td>
                   <td>{request.returnDue}</td>
                   <td>
-                    <span 
-                      className={`status-badge ${getStatusClass(request.status)}`}
+                    <span
+                      className={`status-badge ${getStatusClass(
+                        request.status
+                      )}`}
                       onClick={() => handleStatusClick(request)}
-                      style={{ cursor: request.status === "View PDF" ? "pointer" : "default" }}
+                      style={{
+                        cursor:
+                          request.status === "View PDF" ? "pointer" : "default",
+                      }}
                     >
                       {request.status}
                     </span>
@@ -479,6 +562,7 @@ export const RequestPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
+  const { notifications, unreadCount } = useNotifications();
 
   useEffect(() => {
     const savedRequests = localStorage.getItem("fileRequests");
@@ -492,28 +576,32 @@ export const RequestPage = () => {
   }, [requests]);
 
   const handleSubmitRequest = (newRequest) => {
-    setRequests(prev => [newRequest, ...prev]);
-    
+    setRequests((prev) => [newRequest, ...prev]);
+
     setTimeout(() => {
-      setRequests(prev => prev.map(req => {
-        if (req.id === newRequest.id && req.status === "Pending") {
-          if (req.copyType === "soft") {
-            return { ...req, status: "View PDF" };
-          } else {
-            return { ...req, status: "Approved" };
+      setRequests((prev) =>
+        prev.map((req) => {
+          if (req.id === newRequest.id && req.status === "Pending") {
+            if (req.copyType === "soft") {
+              return { ...req, status: "View PDF" };
+            } else {
+              return { ...req, status: "Approved" };
+            }
           }
-        }
-        return req;
-      }));
+          return req;
+        })
+      );
     }, 3000);
   };
 
-  const filesAssigned = requests.filter(req => 
-    (req.status === "Approved" || req.status === "Borrowed") && req.copyType === "original"
+  const filesAssigned = requests.filter(
+    (req) =>
+      (req.status === "Approved" || req.status === "Borrowed") &&
+      req.copyType === "original"
   ).length;
 
-  const filesToReturn = requests.filter(req => 
-    req.status === "Borrowed"
+  const filesToReturn = requests.filter(
+    (req) => req.status === "Borrowed"
   ).length;
 
   return (
@@ -521,13 +609,16 @@ export const RequestPage = () => {
       <SidePanel />
       <div className="page-content-wrapper">
         <div className="request-page-main-content request-page">
-          <header className="dashboard-header">
+          <header className="request-header">
             <div className="welcome-message">
-              <h1 className="page-title">Request a File</h1>
+              <h1 className="text-wrapper-77">Request a File</h1>
             </div>
             <div className="header-actions">
               <div className="search-wrapper">
-                <form onSubmit={(e) => e.preventDefault()} className="search-form">
+                <form
+                  onSubmit={(e) => e.preventDefault()}
+                  className="search-form"
+                >
                   <svg
                     className="search-icon"
                     width="20"
@@ -560,21 +651,19 @@ export const RequestPage = () => {
                   alt="Notification button"
                   src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
                 />
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="notification-badge">
-                    {notifications.filter((n) => !n.read).length}
-                  </span>
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
                 )}
               </div>
             </div>
           </header>
           <div className="request-page-container">
             <FormCard onSubmit={handleSubmitRequest} />
-            <QRCard 
-              userName="John Doe" 
-              userId="USER-001" 
-              filesAssigned={filesAssigned} 
-              filesToReturn={filesToReturn} 
+            <QRCard
+              userName="John Doe"
+              userId="USER-001"
+              filesAssigned={filesAssigned}
+              filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
             />
             <RequestCard requests={requests} />
@@ -585,7 +674,10 @@ export const RequestPage = () => {
             qrValue={`USER:USER-001|NAME:John Doe`}
             userName="John Doe"
           />
-          <NotificationDropdown notifications={notifications} isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)}
+          <NotificationDropdown
+            notifications={notifications}
+            isOpen={isNotificationOpen}
+            onClose={() => setIsNotificationOpen(false)}
           />
         </div>
       </div>

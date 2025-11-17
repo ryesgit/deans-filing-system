@@ -25,6 +25,23 @@
   margin-top: 2rem; /* Add space below the header */
 }
 
+.request-header {
+  grid-area: header;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3%;
+}
+
+.welcome-message .text-wrapper-77 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: clamp(32px, 3.7vw, 52.9px);
+  font-weight: 600;
+  letter-spacing: -3.17px;
+  position: relative;
+  top: 25px;
+}
 
 /* Form Card Styles */
 .request-page .form-card {
