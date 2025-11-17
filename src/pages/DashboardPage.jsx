@@ -7,6 +7,7 @@ import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/
 import { NotificationCard } from "../DeptHeadPage/DashboardPage/sections/NotificationCard";
 import { Modal } from "../components/Modal";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import { useAuth } from "../components/Modal/AuthContext";
 import { userData, statsData } from "../data/mockData";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
@@ -18,6 +19,7 @@ export const DashboardPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { notifications, unreadCount } = useNotifications();
+  const { user } = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -84,6 +86,7 @@ export const DashboardPage = () => {
           onAddFile={() => setIsAddFileModalOpen(true)}
           onRequest={() => setIsRequestModalOpen(true)}
           onAddMember={() => setIsAddMemberModalOpen(true)}
+          role={user?.role}
         />
         <NotificationCard />
 

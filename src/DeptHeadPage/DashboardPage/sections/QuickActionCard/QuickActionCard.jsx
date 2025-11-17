@@ -1,7 +1,7 @@
 import React from "react";
 import "./style.css";
 
-export const QuickActionCard = ({ onAddFile, onRequest, onAddMember }) => {
+export const QuickActionCard = ({ onAddFile, onRequest, onAddMember, role }) => {
   return (
     <div className="quick-action-card">
       <div className="quick-action-header">
@@ -14,9 +14,11 @@ export const QuickActionCard = ({ onAddFile, onRequest, onAddMember }) => {
         <button className="action-btn" onClick={onAddFile}>
           Add File
         </button>
-        <button className="action-btn" onClick={onRequest}>
-          Request
-        </button>
+        {role === "admin" && (
+          <button className="action-btn" onClick={onRequest}>
+            Request
+          </button>
+        )}
         <button className="action-btn" onClick={onAddMember}>
           Add Member
         </button>

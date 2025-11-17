@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../Modal/AuthContext";
 import "./style.css";
 
 export const SidePanel = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeItem, setActiveItem] = useState("dashboard");
 
   const getActiveItem = () => {
@@ -19,6 +22,10 @@ export const SidePanel = () => {
 
   const handleNavigation = (item) => {
     setActiveItem(item);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   // The activeItem from the URL will take precedence
@@ -37,7 +44,7 @@ export const SidePanel = () => {
       <Link
         to="/login"
         className="logout"
-        onClick={() => handleNavigation("logout")}
+        onClick={handleLogout}
       >
         <div className="text-wrapper-51">Log out</div>
         <img
@@ -77,20 +84,22 @@ export const SidePanel = () => {
         />
       </Link>
 
-      <Link
-        to="/user-management"
-        className={`user-management ${
-          currentActiveItem === "user-management" ? "active" : ""
-        }`}
-        onClick={() => handleNavigation("user-management")}
-      >
-        <div className="text-wrapper-53">User Management</div>
-        <img
-          className="vector-4"
-          alt="Vector"
-          src="https://c.animaapp.com/27o9iVJi/img/vector-3.svg"
-        />
-      </Link>
+      {user?.role === "admin" && (
+        <Link
+          to="/user-management"
+          className={`user-management ${
+            currentActiveItem === "user-management" ? "active" : ""
+          }`}
+          onClick={() => handleNavigation("user-management")}
+        >
+          <div className="text-wrapper-53">User Management</div>
+          <img
+            className="vector-4"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-3.svg"
+          />
+        </Link>
+      )}
 
       <Link
         to="/request"
