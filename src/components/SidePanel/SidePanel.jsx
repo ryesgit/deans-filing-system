@@ -41,106 +41,108 @@ export const SidePanel = () => {
         src="public/PUP Logo.png"
       />
 
+      <div className="text-wrapper-57">MAIN MENU</div>
+
+      <nav className="side-panel-nav">
+        <Link
+          to="/dashboard"
+          className={`dashboard ${
+            currentActiveItem === "dashboard" ? "active" : ""
+          }`}
+          onClick={() => handleNavigation("dashboard")}
+        >
+          <img className="vector-7" alt="Vector" src="public/dashboard icon.png" />
+          <div className="text-wrapper-56">Dashboard</div>
+        </Link>
+
+        <Link
+          to="/file-management"
+          className={`file-management ${
+            currentActiveItem === "file-management" ? "active" : ""
+          }`}
+          onClick={() => handleNavigation("file-management")}
+        >
+          <img
+            className="vector-6"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-5.svg"
+          />
+          <div className="text-wrapper-55">File Management</div>
+        </Link>
+
+        <Link
+          to="/request"
+          className={`request ${currentActiveItem === "request" ? "active" : ""}`}
+          onClick={() => handleNavigation("request")}
+        >
+          <img
+            className="vector-5"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-4.svg"
+          />
+          <div className="text-wrapper-54">Request</div>
+        </Link>
+
+        {user?.role === "admin" && (
+          <Link
+            to="/user-management"
+            className={`user-management ${
+              currentActiveItem === "user-management" ? "active" : ""
+            }`}
+            onClick={() => handleNavigation("user-management")}
+          >
+            <img
+              className="vector-4"
+              alt="Vector"
+              src="https://c.animaapp.com/27o9iVJi/img/vector-3.svg"
+            />
+            <div className="text-wrapper-53">User Management</div>
+          </Link>
+        )}
+
+        <Link
+          to="/reports"
+          className={`report-log ${
+            currentActiveItem === "report-log" ? "active" : ""
+          }`}
+          onClick={() => handleNavigation("report-log")}
+        >
+          <img
+            className="vector-3"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
+          />
+          <div className="text-wrapper-53">Reports &amp; Log</div>
+        </Link>
+
+        <Link
+          to="/settings"
+          className={`settings ${
+            currentActiveItem === "settings" ? "active" : ""
+          }`}
+          onClick={() => handleNavigation("settings")}
+        >
+          <img
+            className="vector-2"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
+          />
+          <div className="text-wrapper-52">Settings</div>
+        </Link>
+      </nav>
+
       <Link
         to="/login"
         className="logout"
         onClick={handleLogout}
       >
-        <div className="text-wrapper-51">Log out</div>
         <img
           className="vector"
           alt="Vector"
           src="https://c.animaapp.com/27o9iVJi/img/vector.svg"
         />
+        <div className="text-wrapper-51">Log out</div>
       </Link>
-
-      <Link
-        to="/settings"
-        className={`settings ${
-          currentActiveItem === "settings" ? "active" : ""
-        }`}
-        onClick={() => handleNavigation("settings")}
-      >
-        <div className="text-wrapper-52">Settings</div>
-        <img
-          className="vector-2"
-          alt="Vector"
-          src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
-        />
-      </Link>
-
-      {user?.role === "admin" && (
-        <Link
-          to="/user-management"
-          className={`user-management ${
-            currentActiveItem === "user-management" ? "active" : ""
-          }`}
-          onClick={() => handleNavigation("user-management")}
-        >
-          <div className="text-wrapper-53">User Management</div>
-          <img
-            className="vector-4"
-            alt="Vector"
-            src="https://c.animaapp.com/27o9iVJi/img/vector-3.svg"
-          />
-        </Link>
-      )}
-
-      <Link
-        to="/reports"
-        className={`report-log ${
-          currentActiveItem === "report-log" ? "active" : ""
-        } ${user?.role !== "admin" ? "faculty-spacing" : ""}`}
-        onClick={() => handleNavigation("report-log")}
-      >
-        <div className="text-wrapper-53">Reports &amp; Log</div>
-        <img
-          className="vector-3"
-          alt="Vector"
-          src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
-        />
-      </Link>
-
-      <Link
-        to="/request"
-        className={`request ${currentActiveItem === "request" ? "active" : ""}`}
-        onClick={() => handleNavigation("request")}
-      >
-        <div className="text-wrapper-54">Request</div>
-        <img
-          className="vector-5"
-          alt="Vector"
-          src="https://c.animaapp.com/27o9iVJi/img/vector-4.svg"
-        />
-      </Link>
-
-      <Link
-        to="/file-management"
-        className={`file-management ${
-          currentActiveItem === "file-management" ? "active" : ""
-        }`}
-        onClick={() => handleNavigation("file-management")}
-      >
-        <div className="text-wrapper-55">File Management</div>
-        <img
-          className="vector-6"
-          alt="Vector"
-          src="https://c.animaapp.com/27o9iVJi/img/vector-5.svg"
-        />
-      </Link>
-
-      <Link
-        to="/dashboard"
-        className={`dashboard ${
-          currentActiveItem === "dashboard" ? "active" : ""
-        }`}
-        onClick={() => handleNavigation("dashboard")}
-      >
-        <img className="vector-7" alt="Vector" src="public/dashboard icon.png" />
-        <div className="text-wrapper-56">Dashboard</div>
-      </Link>
-
-      <div className="text-wrapper-57">MAIN MENU</div>
     </div>
   );
 };
