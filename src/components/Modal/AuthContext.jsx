@@ -12,11 +12,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // On initial load, check for a token in localStorage
     const token = localStorage.getItem('authToken');
-    if (token) {
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
       // In a real app, you should validate this token with your backend
       setIsAuthenticated(true);
-      // You might also fetch user details here
-      // setUser({ name: 'Demo User' });
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
@@ -28,11 +28,23 @@ export const AuthProvider = ({ children }) => {
     console.log('Attempting login with:', credentials);
     await new Promise(resolve => setTimeout(resolve, 500));
 
+    // Support both admin and faculty demo accounts
     if (credentials.username === 'admin' && credentials.password === 'password') {
-      const fakeToken = 'fake-jwt-token';
+      const fakeToken = 'fake-jwt-token-admin';
+      const userData = { name: 'Admin User', role: 'admin' };
       localStorage.setItem('authToken', fakeToken);
+      localStorage.setItem('user', JSON.stringify(userData));
       setIsAuthenticated(true);
-      setUser({ name: 'Admin User' });
+      setUser(userData);
+      navigate('/'); // Redirect to the dashboard on success
+      return { success: true };
+    } else if (credentials.username === 'faculty' && credentials.password === 'password') {
+      const fakeToken = 'fake-jwt-token-faculty';
+      const userData = { name: 'Faculty User', role: 'faculty' };
+      localStorage.setItem('authToken', fakeToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setIsAuthenticated(true);
+      setUser(userData);
       navigate('/'); // Redirect to the dashboard on success
       return { success: true };
     } else {
@@ -43,6 +55,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
     navigate('/login'); // Redirect to login page on logout
