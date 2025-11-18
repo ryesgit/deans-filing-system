@@ -572,7 +572,7 @@ export const RequestPage = () => {
     const fetchRequests = async () => {
       try {
         const response = await requestsAPI.getAll();
-        setRequests(response.data);
+        setRequests(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Failed to fetch requests:', error);
       } finally {

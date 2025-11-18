@@ -10,9 +10,11 @@ export const ActivityLogCard = () => {
     const fetchActivityLog = async () => {
       try {
         const response = await statsAPI.getActivityLog();
-        setActivities(response.data);
+        const data = response.data;
+        setActivities(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch activity log:', error);
+        setActivities([]);
       } finally {
         setLoading(false);
       }

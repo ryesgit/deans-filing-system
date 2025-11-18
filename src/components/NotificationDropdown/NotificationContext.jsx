@@ -19,10 +19,10 @@ export const NotificationProvider = ({ children }) => {
     const fetchNotifications = async () => {
       try {
         const response = await notificationsAPI.getAll();
-        setNotifications(response.data);
+        const data = response.data;
+        setNotifications(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
-        // Keep empty array on error
         setNotifications([]);
       } finally {
         setLoading(false);

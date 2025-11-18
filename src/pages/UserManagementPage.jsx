@@ -29,9 +29,11 @@ export const UserManagementPage = () => {
     const fetchUsers = async () => {
       try {
         const response = await usersAPI.getAll();
-        setUsers(response.data);
+        const data = response.data;
+        setUsers(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch users:', error);
+        setUsers([]);
       } finally {
         setLoading(false);
       }

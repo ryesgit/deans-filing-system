@@ -5,28 +5,36 @@ import { authAPI } from '../../services/api';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    try {
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error('Failed to parse user from localStorage', error);
+      return null;
+    }
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // On initial load, check for a token in localStorage and validate with backend
     const token = localStorage.getItem('authToken');
     if (token) {
-      // Validate token with backend
       authAPI.getMe()
         .then(response => {
           const userData = response.data;
-          setIsAuthenticated(true);
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
+          if (userData && userData.id) {
+            setIsAuthenticated(true);
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+          }
+          // Do nothing if userData is invalid, just rely on localStorage
           setLoading(false);
         })
-        .catch(() => {
-          // Token is invalid, clear it
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
+        .catch((error) => {
+          // Don't log out on network error, just log the error
+          console.error("Failed to verify token with backend", error);
           setLoading(false);
         });
     } else {

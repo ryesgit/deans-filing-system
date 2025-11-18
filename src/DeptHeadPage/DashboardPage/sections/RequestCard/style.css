@@ -170,3 +170,11 @@
 .status-col {
   justify-self: center;
 }
+
+.no-requests-message {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+}

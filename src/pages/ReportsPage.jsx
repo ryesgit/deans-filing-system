@@ -1,136 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidePanel } from "../components/SidePanel";
 import "../DeptHeadPage/ReportsPage/ReportsPage.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-
-const mockData = {
-  request: [
-    {
-      id: "REQ-0001",
-      faculty: "Prof. Ado Dela Peña",
-      department: "Electrical Engineering",
-      file: "DeptReport_Q3.pdf",
-      date: "Oct 21, 2025",
-      status: "Pending",
-    },
-    {
-      id: "REQ-0002",
-      faculty: "Prof. Ado Dela Peña",
-      department: "Electrical Engineering",
-      file: "ThesisGuidelines2025.pdf",
-      date: "Oct 21, 2025",
-      status: "Pending",
-    },
-    {
-      id: "REQ-0003",
-      faculty: "Prof. Maria Santos",
-      department: "Civil Engineering",
-      file: "FacultyHandbook.pdf",
-      date: "Oct 20, 2025",
-      status: "Borrowed",
-    },
-    {
-      id: "REQ-0004",
-      faculty: "Prof. Carlo Reyes",
-      department: "Mechanical Engineering",
-      file: "ResearchGrantList.pdf",
-      date: "Oct 19, 2025",
-      status: "Declined",
-    },
-    {
-      id: "REQ-0005",
-      faculty: "Prof. Ben Cruz",
-      department: "Computer Engineering",
-      file: "DeptReport_Q3.pdf",
-      date: "Oct 22, 2025",
-      status: "Approved",
-    },
-  ],
-  borrowed: [
-    {
-      id: "BOR-0001",
-      faculty: "Prof. Ben Cruz",
-      department: "Computer Engineering",
-      file: "DeptReport_Q3.pdf",
-      date: "Oct 12, 2025",
-    },
-    {
-      id: "BOR-0002",
-      faculty: "Prof. Ada Dela Peña",
-      department: "Electrical Engineering",
-      file: "ThesisGuidelines2025.pdf",
-      date: "Oct 11, 2025",
-    },
-    {
-      id: "BOR-0003",
-      faculty: "Prof. Maria Santos",
-      department: "Civil Engineering",
-      file: "FacultyHandbook.pdf",
-      date: "Oct 10, 2025",
-    },
-    {
-      id: "BOR-0004",
-      faculty: "Prof. Carlo Reyes",
-      department: "Mechanical Engineering",
-      file: "ResearchGrantList.pdf",
-      date: "Oct 08, 2025",
-    },
-    {
-      id: "BOR-0005",
-      faculty: "Prof. Elaine Torres",
-      department: "Computer Engineering",
-      file: "LabSafetyManual.pdf",
-      date: "Oct 07, 2025",
-    },
-  ],
-  returned: [
-    {
-      id: "RET-0001",
-      faculty: "Prof. Ben Cruz",
-      department: "Computer Engineering",
-      file: "DeptReport_Q3.pdf",
-      date: "Oct 15, 2025",
-    },
-    {
-      id: "RET-0002",
-      faculty: "Prof. Ada Dela Peña",
-      department: "Electrical Engineering",
-      file: "ThesisGuidelines2025.pdf",
-      date: "Oct 14, 2025",
-    },
-    {
-      id: "RET-0003",
-      faculty: "Prof. Maria Santos",
-      department: "Civil Engineering",
-      file: "FacultyHandbook.pdf",
-      date: "Oct 13, 2025",
-    },
-    {
-      id: "RET-0004",
-      faculty: "Prof. Carlo Reyes",
-      department: "Mechanical Engineering",
-      file: "ResearchGrantList.pdf",
-      date: "Oct 11, 2025",
-    },
-    {
-      id: "RET-0005",
-      faculty: "Prof. Elaine Torres",
-      department: "Computer Engineering",
-      file: "LabSafetyManual.pdf",
-      date: "Oct 10, 2025",
-    },
-  ],
-};
+import { requestsAPI } from "../services/api";
 
 export const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState("request");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [reportsData, setReportsData] = useState({
+    request: [],
+    borrowed: [],
+    returned: []
+  });
+  const [loading, setLoading] = useState(true);
   const { notifications, unreadCount } = useNotifications();
 
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await requestsAPI.getAll();
+        const data = Array.isArray(response.data) ? response.data : [];
+
+        setReportsData({
+          request: data.filter(r => r.status === 'pending' || r.status === 'approved' || r.status === 'declined'),
+          borrowed: data.filter(r => r.status === 'borrowed'),
+          returned: data.filter(r => r.status === 'returned')
+        });
+      } catch (error) {
+        console.error('Failed to fetch reports:', error);
+        setReportsData({
+          request: [],
+          borrowed: [],
+          returned: []
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
   const handleExport = () => {
-    const data = mockData[activeTab];
+    const data = Array.isArray(reportsData[activeTab]) ? reportsData[activeTab] : [];
     const headers =
       activeTab === "request"
         ? [
@@ -153,10 +67,10 @@ export const ReportsPage = () => {
     data.forEach((row) => {
       const values = [
         row.id,
-        row.faculty,
+        row.facultyName || row.userName || 'N/A',
         row.department,
-        row.file,
-        row.date,
+        row.fileName,
+        row.dateRequested || row.date,
         ...(activeTab === "request" ? [row.status] : []),
       ];
       csv += values.join(",") + "\n";
@@ -173,7 +87,15 @@ export const ReportsPage = () => {
   };
 
   const renderTable = () => {
-    const data = mockData[activeTab];
+    const data = Array.isArray(reportsData[activeTab]) ? reportsData[activeTab] : [];
+
+    if (loading) {
+      return <div className="table-container"><p>Loading...</p></div>;
+    }
+
+    if (data.length === 0) {
+      return <div className="table-container"><p>No {activeTab} records found.</p></div>;
+    }
 
     return (
       <div className="table-container">
@@ -200,9 +122,9 @@ export const ReportsPage = () => {
               {data.map((row, index) => (
                 <tr key={index}>
                   <td data-label="Transaction ID">{row.id}</td>
-                  <td data-label="Faculty Name">{row.faculty}</td>
+                  <td data-label="Faculty Name">{row.facultyName || row.userName || 'N/A'}</td>
                   <td data-label="Department">{row.department}</td>
-                  <td data-label="File Name">{row.file}</td>
+                  <td data-label="File Name">{row.fileName}</td>
                   <td
                     data-label={`Date ${
                       activeTab === "borrowed"
@@ -212,12 +134,12 @@ export const ReportsPage = () => {
                         : "Requested"
                     }`}
                   >
-                    {row.date}
+                    {row.dateRequested || row.date}
                   </td>
                   {activeTab === "request" && (
                     <td data-label="Status">
                       <span
-                        className={`status-badge status-${row.status.toLowerCase()}`}
+                        className={`status-badge status-${row.status?.toLowerCase() || 'pending'}`}
                       >
                         {row.status}
                       </span>

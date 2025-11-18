@@ -60,10 +60,11 @@ export const FileManagementPage = () => {
     const fetchFiles = async () => {
       try {
         const response = await filesAPI.getAll();
-        // Transform backend data to match UI structure if needed
-        setFolders(response.data || []);
+        const data = response.data;
+        setFolders(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch files:', error);
+        setFolders([]);
       } finally {
         setLoading(false);
       }

@@ -33,7 +33,12 @@ export const DashboardPage = () => {
     const fetchStats = async () => {
       try {
         const response = await statsAPI.getDashboard();
-        setStatsData(response.data);
+        setStatsData({
+          files: response.data?.files || { total: 0, newlyAdded: 0 },
+          borrowing: response.data?.borrowing || { activeBorrowed: 0, returnedToday: 0 },
+          approvals: response.data?.approvals || { pending: 0, approved: 0 },
+          overdueFiles: response.data?.overdueFiles || { overdue: 0, resolved: 0 },
+        });
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error);
       } finally {

@@ -14,7 +14,7 @@ export const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
-    const result = await login({ username, password });
+    const result = await login({ userId: username, password });
     if (!result.success) {
       setError(result.message || "An unexpected error occurred.");
     }
