@@ -1,25 +1,56 @@
-import React, { useState } from "react";
-import { recentRequests as initialRequests } from "../../../../data/mockData";
+import React, { useState, useEffect } from "react";
+import { requestsAPI } from "../../../../services/api";
 import "./style.css";
 
 export const RequestCard = () => {
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApprove = (requestId) => {
-    setRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === requestId ? { ...req, status: "approved" } : req
-      )
-    );
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await requestsAPI.getAll();
+        // Get only recent requests (first 5)
+        setRequests(response.data.slice(0, 5));
+      } catch (error) {
+        console.error('Failed to fetch requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
+  const handleApprove = async (requestId) => {
+    try {
+      await requestsAPI.update(requestId, { status: "approved" });
+      setRequests(prevRequests =>
+        prevRequests.map(req =>
+          req.id === requestId ? { ...req, status: "approved" } : req
+        )
+      );
+    } catch (error) {
+      console.error('Failed to approve request:', error);
+    }
   };
 
-  const handleDecline = (requestId) => {
-    setRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === requestId ? { ...req, status: "declined" } : req
-      )
-    );
+  const handleDecline = async (requestId) => {
+    try {
+      await requestsAPI.update(requestId, { status: "declined" });
+      setRequests(prevRequests =>
+        prevRequests.map(req =>
+          req.id === requestId ? { ...req, status: "declined" } : req
+        )
+      );
+    } catch (error) {
+      console.error('Failed to decline request:', error);
+    }
   };
+
+  if (loading) {
+    return <div className="request-card">Loading...</div>;
+  }
 
   return (
     <div className="request-card">
@@ -41,7 +72,7 @@ export const RequestCard = () => {
           {requests.map((request) => (
             <div key={request.id} className="request-row">
               <div className="table-cell request-id-col">{request.id}</div>
-              <div className="table-cell faculty-name-col">{request.facultyName}</div>
+              <div className="table-cell faculty-name-col">{request.facultyName || request.userName || 'N/A'}</div>
               <div className="table-cell department-col">{request.department}</div>
               <div className="table-cell file-name-col">{request.fileName}</div>
               <div className="table-cell date-col">{request.dateRequested}</div>

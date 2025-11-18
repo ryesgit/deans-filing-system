@@ -70,6 +70,7 @@ export const authAPI = {
 // Dashboard Stats API
 export const statsAPI = {
   getDashboard: () => api.get('/api/stats/dashboard'),
+  getActivityLog: () => api.get('/api/stats/activity-log'),
 };
 
 // Files API

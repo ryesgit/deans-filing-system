@@ -1,8 +1,10 @@
 import React from "react";
-import { notifications } from "../../../../data/mockData";
+import { useNotifications } from "../../../../components/NotificationDropdown/NotificationContext";
 import "./style.css";
 
 export const NotificationCard = () => {
+  const { notifications } = useNotifications();
+
   return (
     <div className="notification-card">
       <div className="rectangle-8" />

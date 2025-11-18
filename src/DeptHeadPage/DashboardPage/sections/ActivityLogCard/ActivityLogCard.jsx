@@ -1,9 +1,29 @@
-import React from "react";
-import { activityLog } from "../../../../data/mockData";
+import React, { useState, useEffect } from "react";
+import { statsAPI } from "../../../../services/api";
 import "./style.css";
 
 export const ActivityLogCard = () => {
-  const activities = activityLog;
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivityLog = async () => {
+      try {
+        const response = await statsAPI.getActivityLog();
+        setActivities(response.data);
+      } catch (error) {
+        console.error('Failed to fetch activity log:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivityLog();
+  }, []);
+
+  if (loading) {
+    return <div className="activity-log-card">Loading...</div>;
+  }
 
   return (
     <div className="activity-log-card">
@@ -23,7 +43,7 @@ export const ActivityLogCard = () => {
               <span className="text-wrapper-29"> {activity.dueDate}</span>
             </p>
 
-            <img className="profile" alt="Profile" src={activity.avatar} />
+            <img className="profile" alt="Profile" src={activity.avatar || "https://c.animaapp.com/27o9iVJi/img/profile-02.svg"} />
           </div>
         ))}
       </div>
