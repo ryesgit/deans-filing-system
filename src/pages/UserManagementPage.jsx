@@ -1,66 +1,13 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "../DeptHeadPage/UserManagementPage/UserManagement.css";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+import { usersAPI } from "../services/api";
 
 export const UserManagementPage = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Joshua Pagkaliwangan",
-      role: "Faculty Member",
-      department: "Computer Engineering",
-      dateJoined: "10/25/2025",
-      status: "active",
-      tags: ["active", "faculty"],
-    },
-    {
-      id: 2,
-      name: "Maria Santos",
-      role: "Department Head",
-      department: "Electrical Engineering",
-      dateJoined: "09/15/2024",
-      status: "active",
-      tags: ["active", "head"],
-    },
-    {
-      id: 3,
-      name: "John Dela Cruz",
-      role: "Faculty Member",
-      department: "Mechanical Engineering",
-      dateJoined: "11/10/2024",
-      status: "active",
-      tags: ["active", "faculty"],
-    },
-    {
-      id: 4,
-      name: "Anna Reyes",
-      role: "Faculty Member",
-      department: "Civil Engineering",
-      dateJoined: "08/20/2024",
-      status: "inactive",
-      tags: ["faculty"],
-    },
-    {
-      id: 5,
-      name: "Carlos Mendoza",
-      role: "Department Head",
-      department: "Computer Engineering",
-      dateJoined: "07/05/2024",
-      status: "active",
-      tags: ["active", "head"],
-    },
-    {
-      id: 6,
-      name: "Lisa Garcia",
-      role: "Faculty Member",
-      department: "Computer Engineering",
-      dateJoined: "12/01/2024",
-      status: "active",
-      tags: ["active", "faculty"],
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -76,6 +23,22 @@ export const UserManagementPage = () => {
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { notifications, unreadCount } = useNotifications();
+
+  // Fetch users from API on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await usersAPI.getAll();
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
@@ -112,24 +75,35 @@ export const UserManagementPage = () => {
     };
   }, [users]);
 
-  const handleAddUser = (newUser) => {
-    const tags = [];
-    if (newUser.status === "active") tags.push("active");
-    if (newUser.role === "Faculty Member") tags.push("faculty");
-    if (newUser.role === "Department Head") tags.push("head");
+  const handleAddUser = async (newUser) => {
+    try {
+      const tags = [];
+      if (newUser.status === "active") tags.push("active");
+      if (newUser.role === "Faculty Member") tags.push("faculty");
+      if (newUser.role === "Department Head") tags.push("head");
 
-    const userWithId = {
-      ...newUser,
-      id: users.length + 1,
-      tags,
-    };
+      const userData = {
+        ...newUser,
+        tags,
+      };
 
-    setUsers([...users, userWithId]);
-    setIsAddUserModalOpen(false);
+      const response = await usersAPI.create(userData);
+      setUsers([...users, response.data]);
+      setIsAddUserModalOpen(false);
+    } catch (error) {
+      console.error('Failed to add user:', error);
+      alert(error.message || 'Failed to add user');
+    }
   };
 
-  const handleDeleteUser = (userId) => {
-    setUsers(users.filter((user) => user.id !== userId));
+  const handleDeleteUser = async (userId) => {
+    try {
+      await usersAPI.delete(userId);
+      setUsers(users.filter((user) => user.id !== userId));
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      alert(error.message || 'Failed to delete user');
+    }
   };
 
   const handleFilterApply = (filters) => {

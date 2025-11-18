@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 
 const AuthContext = createContext(null);
 
@@ -10,47 +11,49 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // On initial load, check for a token in localStorage
+    // On initial load, check for a token in localStorage and validate with backend
     const token = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('user');
-    if (token && storedUser) {
-      // In a real app, you should validate this token with your backend
-      setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
+    if (token) {
+      // Validate token with backend
+      authAPI.getMe()
+        .then(response => {
+          const userData = response.data;
+          setIsAuthenticated(true);
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          setLoading(false);
+        })
+        .catch(() => {
+          // Token is invalid, clear it
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (credentials) => {
-    // --- Replace with your actual API call ---
-    // This is a mock API call for demonstration purposes.
-    // It simulates a network request and a successful login.
-    console.log('Attempting login with:', credentials);
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Support both admin and faculty demo accounts
-    if (credentials.username === 'admin' && credentials.password === 'password') {
-      const fakeToken = 'fake-jwt-token-admin';
-      const userData = { name: 'Admin User', role: 'admin' };
-      localStorage.setItem('authToken', fakeToken);
+    try {
+      // Call backend API for login
+      const response = await authAPI.login(credentials);
+      const { token, user: userData } = response.data;
+      
+      // Store token and user data
+      localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(userData));
       setIsAuthenticated(true);
       setUser(userData);
       navigate('/'); // Redirect to the dashboard on success
       return { success: true };
-    } else if (credentials.username === 'faculty' && credentials.password === 'password') {
-      const fakeToken = 'fake-jwt-token-faculty';
-      const userData = { name: 'Faculty User', role: 'faculty' };
-      localStorage.setItem('authToken', fakeToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setIsAuthenticated(true);
-      setUser(userData);
-      navigate('/'); // Redirect to the dashboard on success
-      return { success: true };
-    } else {
-      return { success: false, message: 'Invalid username or password' };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        message: error.message || 'Invalid username or password' 
+      };
     }
-    // --- End of mock API call ---
   };
 
   const logout = () => {

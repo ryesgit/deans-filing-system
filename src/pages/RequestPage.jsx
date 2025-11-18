@@ -6,6 +6,7 @@ import { NotificationDropdown } from "../components/NotificationDropdown";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+import { requestsAPI } from "../services/api";
 const ConfirmModal = ({
   isOpen,
   onClose,
@@ -139,26 +140,27 @@ const FormCard = ({ onSubmit }) => {
     setShowSubmitModal(true);
   };
 
-  const handleConfirmSubmit = () => {
-    const request = {
-      id: `REQ-${String(Date.now()).slice(-4)}`,
+  const handleConfirmSubmit = async () => {
+    const requestData = {
       fileName: formData.fileName,
-      dateRequested: format(new Date(), "MM/dd/yyyy"),
-      returnDue:
-        formData.copyType === "original"
-          ? format(new Date(formData.returnDate), "MM/dd/yyyy")
-          : "-",
-      status: "Pending",
-      copyType: formData.copyType,
-      priority: formData.priority,
       department: formData.department,
       category: formData.fileCategory,
       purpose: formData.purpose,
+      copyType: formData.copyType,
+      returnDate: formData.copyType === "original" ? formData.returnDate : null,
+      priority: formData.priority,
     };
 
-    onSubmit(request);
-    setShowSubmitModal(false);
-    handleClear();
+    try {
+      const response = await requestsAPI.create(requestData);
+      onSubmit(response.data);
+      setShowSubmitModal(false);
+      handleClear();
+    } catch (error) {
+      console.error('Failed to submit request:', error);
+      alert(error.message || 'Failed to submit request');
+      setShowSubmitModal(false);
+    }
   };
 
   const handleClearClick = () => {
@@ -558,40 +560,31 @@ const RequestCard = ({ requests = [] }) => {
 
 export const RequestPage = () => {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   const { notifications, unreadCount } = useNotifications();
 
+  // Fetch requests from API on mount
   useEffect(() => {
-    const savedRequests = localStorage.getItem("fileRequests");
-    if (savedRequests) {
-      setRequests(JSON.parse(savedRequests));
-    }
-  }, []);
+    const fetchRequests = async () => {
+      try {
+        const response = await requestsAPI.getAll();
+        setRequests(response.data);
+      } catch (error) {
+        console.error('Failed to fetch requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem("fileRequests", JSON.stringify(requests));
-  }, [requests]);
+    fetchRequests();
+  }, []);
 
   const handleSubmitRequest = (newRequest) => {
     setRequests((prev) => [newRequest, ...prev]);
-
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) => {
-          if (req.id === newRequest.id && req.status === "Pending") {
-            if (req.copyType === "soft") {
-              return { ...req, status: "View PDF" };
-            } else {
-              return { ...req, status: "Approved" };
-            }
-          }
-          return req;
-        })
-      );
-    }, 3000);
   };
 
   const filesAssigned = requests.filter(

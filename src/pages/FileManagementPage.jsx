@@ -1,35 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { Modal } from "../components/Modal/Modal";
 import "../DeptHeadPage/FileManagementPage/style.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
-
-const mockFolders = [
-  {
-    id: 1,
-    name: "Thesis Papers",
-    fileCount: 1,
-    category: "Research",
-    files: [
-      {
-        id: "0001",
-        name: "AI_in_Education.pdf",
-        dateAdded: "Oct 20, 2025",
-        department: "Computer Engineering",
-        category: "Research",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Course Syllabi",
-    fileCount: 0,
-    category: "Academics",
-    files: [],
-  },
-];
+import { filesAPI } from "../services/api";
 
 const categories = [
   "Research",
@@ -45,7 +21,8 @@ const departments = [
 ];
 
 export const FileManagementPage = () => {
-  const [folders, setFolders] = useState(mockFolders);
+  const [folders, setFolders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
@@ -77,6 +54,24 @@ export const FileManagementPage = () => {
   const [fileError, setFileError] = useState("");
 
   const { notifications, unreadCount } = useNotifications();
+
+  // Fetch files on mount
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const response = await filesAPI.getAll();
+        // Transform backend data to match UI structure if needed
+        setFolders(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch files:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, []);
+
   const handleAddFolder = () => {
     if (addFolderForm.name && addFolderForm.category) {
       const newFolder = {
@@ -129,7 +124,7 @@ export const FileManagementPage = () => {
     setOpenDropdownFolderId(null);
   };
 
-  const handleAddFile = () => {
+  const handleAddFile = async () => {
     setFileError("");
 
     if (!fileForm.name || !fileForm.department || !fileForm.category) {
@@ -147,37 +142,43 @@ export const FileManagementPage = () => {
       return;
     }
 
-    if (selectedFolder) {
-      const newFile = {
-        id: String(selectedFolder.files.length + 1).padStart(4, "0"),
-        name: fileForm.file.name,
-        dateAdded: new Date().toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }),
-        department: fileForm.department,
-        category: fileForm.category,
-      };
+    try {
+      const formData = new FormData();
+      formData.append('file', fileForm.file);
+      formData.append('name', fileForm.name);
+      formData.append('department', fileForm.department);
+      formData.append('category', fileForm.category);
+      if (selectedFolder) {
+        formData.append('folderId', selectedFolder.id);
+      }
 
-      const updatedFolders = folders.map((folder) =>
-        folder.id === selectedFolder.id
-          ? {
-              ...folder,
-              files: [...folder.files, newFile],
-              fileCount: folder.fileCount + 1,
-            }
-          : folder
-      );
+      const response = await filesAPI.upload(formData);
+      const newFile = response.data;
 
-      setFolders(updatedFolders);
-      setSelectedFolder({
-        ...selectedFolder,
-        files: [...selectedFolder.files, newFile],
-        fileCount: selectedFolder.fileCount + 1,
-      });
+      if (selectedFolder) {
+        const updatedFolders = folders.map((folder) =>
+          folder.id === selectedFolder.id
+            ? {
+                ...folder,
+                files: [...folder.files, newFile],
+                fileCount: folder.fileCount + 1,
+              }
+            : folder
+        );
+
+        setFolders(updatedFolders);
+        setSelectedFolder({
+          ...selectedFolder,
+          files: [...selectedFolder.files, newFile],
+          fileCount: selectedFolder.fileCount + 1,
+        });
+      }
+      
       setFileForm({ name: "", department: "", category: "", file: null });
       setShowFileModal(false);
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      setFileError(error.message || 'Failed to upload file');
     }
   };
 
@@ -212,42 +213,55 @@ export const FileManagementPage = () => {
     setShowEditModal(true);
   };
 
-  const handleUpdateFile = () => {
+  const handleUpdateFile = async () => {
     if (selectedFolder && selectedFile) {
-      const updatedFolders = folders.map((folder) =>
-        folder.id === selectedFolder.id
-          ? {
-              ...folder,
-              files: folder.files.map((f) =>
-                f.id === selectedFile.id
-                  ? {
-                      ...f,
-                      name: fileForm.name,
-                      department: fileForm.department,
-                      category: fileForm.category,
-                    }
-                  : f
-              ),
-            }
-          : folder
-      );
+      try {
+        const updateData = {
+          name: fileForm.name,
+          department: fileForm.department,
+          category: fileForm.category,
+        };
 
-      setFolders(updatedFolders);
-      setSelectedFolder({
-        ...selectedFolder,
-        files: selectedFolder.files.map((f) =>
-          f.id === selectedFile.id
+        await filesAPI.update(selectedFile.id, updateData);
+
+        const updatedFolders = folders.map((folder) =>
+          folder.id === selectedFolder.id
             ? {
-                ...f,
-                name: fileForm.name,
-                department: fileForm.department,
-                category: fileForm.category,
+                ...folder,
+                files: folder.files.map((f) =>
+                  f.id === selectedFile.id
+                    ? {
+                        ...f,
+                        name: fileForm.name,
+                        department: fileForm.department,
+                        category: fileForm.category,
+                      }
+                    : f
+                ),
               }
-            : f
-        ),
-      });
-      setShowEditModal(false);
-      setFileForm({ name: "", department: "", category: "", file: null });
+            : folder
+        );
+
+        setFolders(updatedFolders);
+        setSelectedFolder({
+          ...selectedFolder,
+          files: selectedFolder.files.map((f) =>
+            f.id === selectedFile.id
+              ? {
+                  ...f,
+                  name: fileForm.name,
+                  department: fileForm.department,
+                  category: fileForm.category,
+                }
+              : f
+          ),
+        });
+        setShowEditModal(false);
+        setFileForm({ name: "", department: "", category: "", file: null });
+      } catch (error) {
+        console.error('Failed to update file:', error);
+        setFileError(error.message || 'Failed to update file');
+      }
     }
   };
 
@@ -256,26 +270,33 @@ export const FileManagementPage = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteFile = () => {
+  const confirmDeleteFile = async () => {
     if (selectedFolder && fileToDelete) {
-      const updatedFolders = folders.map((folder) =>
-        folder.id === selectedFolder.id
-          ? {
-              ...folder,
-              files: folder.files.filter((f) => f.id !== fileToDelete.id),
-              fileCount: folder.fileCount - 1,
-            }
-          : folder
-      );
+      try {
+        await filesAPI.delete(fileToDelete.id);
 
-      setFolders(updatedFolders);
-      setSelectedFolder({
-        ...selectedFolder,
-        files: selectedFolder.files.filter((f) => f.id !== fileToDelete.id),
-        fileCount: selectedFolder.fileCount - 1,
-      });
-      setShowDeleteModal(false);
-      setFileToDelete(null);
+        const updatedFolders = folders.map((folder) =>
+          folder.id === selectedFolder.id
+            ? {
+                ...folder,
+                files: folder.files.filter((f) => f.id !== fileToDelete.id),
+                fileCount: folder.fileCount - 1,
+              }
+            : folder
+        );
+
+        setFolders(updatedFolders);
+        setSelectedFolder({
+          ...selectedFolder,
+          files: selectedFolder.files.filter((f) => f.id !== fileToDelete.id),
+          fileCount: selectedFolder.fileCount - 1,
+        });
+        setShowDeleteModal(false);
+        setFileToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete file:', error);
+        alert(error.message || 'Failed to delete file');
+      }
     }
   };
 
