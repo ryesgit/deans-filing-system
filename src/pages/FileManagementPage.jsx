@@ -73,18 +73,21 @@ export const FileManagementPage = () => {
     fetchFiles();
   }, []);
 
-  const handleAddFolder = () => {
+  const handleAddFolder = async () => {
     if (addFolderForm.name && addFolderForm.category) {
-      const newFolder = {
-        id: Date.now(),
-        name: addFolderForm.name,
-        fileCount: 0,
-        category: addFolderForm.category,
-        files: [],
-      };
-      setFolders([...folders, newFolder]);
-      setAddFolderForm({ name: "", category: "" });
-      setShowFolderModal(false);
+      try {
+        const response = await filesAPI.createFolder({
+          name: addFolderForm.name,
+          category: addFolderForm.category,
+        });
+        const newFolder = response.data;
+        setFolders([...folders, newFolder]);
+        setAddFolderForm({ name: "", category: "" });
+        setShowFolderModal(false);
+      } catch (error) {
+        console.error('Failed to add folder:', error);
+        // Optionally, show an error message to the user
+      }
     }
   };
 

@@ -10,9 +10,13 @@ export const RequestCard = () => {
     const fetchRequests = async () => {
       try {
         const response = await requestsAPI.getAll();
+        console.log("Raw response from requestsAPI.getAll():", response.data);
         const data = response.data;
         const requestsArray = Array.isArray(data) ? data : [];
-        setRequests(requestsArray.slice(0, 5));
+        // Sort by date descending and take the first 5
+        const sortedRequests = requestsArray.sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested));
+        console.log("Sorted and sliced requests:", sortedRequests.slice(0, 5));
+        setRequests(sortedRequests.slice(0, 5));
       } catch (error) {
         console.error('Failed to fetch requests:', error);
         setRequests([]);

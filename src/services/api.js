@@ -76,6 +76,7 @@ export const statsAPI = {
 // Files API
 export const filesAPI = {
   getAll: () => api.get('/api/files/all'),
+  createFolder: (folderData) => api.post('/api/files/folders', folderData),
   upload: (formData) => api.post('/api/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
