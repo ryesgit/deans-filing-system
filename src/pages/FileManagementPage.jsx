@@ -195,8 +195,8 @@ export const FileManagementPage = () => {
           folder.id === selectedFolder.id
             ? {
                 ...folder,
-                files: [...folder.files, newFile],
-                fileCount: folder.fileCount + 1,
+                files: [...(folder.files || []), newFile],
+                fileCount: (folder.fileCount || 0) + 1,
               }
             : folder
         );
@@ -204,8 +204,8 @@ export const FileManagementPage = () => {
         setFolders(updatedFolders);
         setSelectedFolder({
           ...selectedFolder,
-          files: [...selectedFolder.files, newFile],
-          fileCount: selectedFolder.fileCount + 1,
+          files: [...(selectedFolder.files || []), newFile],
+          fileCount: (selectedFolder.fileCount || 0) + 1,
         });
       }
       
@@ -263,7 +263,7 @@ export const FileManagementPage = () => {
           folder.id === selectedFolder.id
             ? {
                 ...folder,
-                files: folder.files.map((f) =>
+                files: (folder.files || []).map((f) =>
                   f.id === selectedFile.id
                     ? {
                         ...f,
@@ -280,7 +280,7 @@ export const FileManagementPage = () => {
         setFolders(updatedFolders);
         setSelectedFolder({
           ...selectedFolder,
-          files: selectedFolder.files.map((f) =>
+          files: (selectedFolder.files || []).map((f) =>
             f.id === selectedFile.id
               ? {
                   ...f,
@@ -314,8 +314,8 @@ export const FileManagementPage = () => {
           folder.id === selectedFolder.id
             ? {
                 ...folder,
-                files: folder.files.filter((f) => f.id !== fileToDelete.id),
-                fileCount: folder.fileCount - 1,
+                files: (folder.files || []).filter((f) => f.id !== fileToDelete.id),
+                fileCount: (folder.fileCount || 0) - 1,
               }
             : folder
         );
@@ -323,8 +323,8 @@ export const FileManagementPage = () => {
         setFolders(updatedFolders);
         setSelectedFolder({
           ...selectedFolder,
-          files: selectedFolder.files.filter((f) => f.id !== fileToDelete.id),
-          fileCount: selectedFolder.fileCount - 1,
+          files: (selectedFolder.files || []).filter((f) => f.id !== fileToDelete.id),
+          fileCount: (selectedFolder.fileCount || 0) - 1,
         });
         setShowDeleteModal(false);
         setFileToDelete(null);
@@ -504,7 +504,7 @@ export const FileManagementPage = () => {
                   <h2 className="text-wrapper-32">{selectedFolder.name}</h2>
                   <div className="file-count-2">
                     <span className="text-wrapper-30">
-                      {selectedFolder.files.length}
+                      {(selectedFolder.files || []).length}
                     </span>
                   </div>
                 </div>
@@ -527,7 +527,7 @@ export const FileManagementPage = () => {
                   <div>Actions</div>
                 </div>
 
-                {selectedFolder.files.map((file) => (
+                {(selectedFolder.files || []).map((file) => (
                   <div key={file.id} className="file-row">
                     <div data-label="File ID">{file.id}</div>
                     <div data-label="File Name">
