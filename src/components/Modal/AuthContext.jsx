@@ -44,22 +44,33 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      // Call backend API for login
       const response = await authAPI.login(credentials);
-      const { token, user: userData } = response.data;
-      
-      // Store token and user data
+      const { token } = response.data;
+
       localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setIsAuthenticated(true);
-      setUser(userData);
-      navigate('/'); // Redirect to the dashboard on success
+
+      try {
+        const meResponse = await authAPI.getMe();
+        const fullUserData = meResponse.data.user || meResponse.data;
+
+        localStorage.setItem('user', JSON.stringify(fullUserData));
+        setIsAuthenticated(true);
+        setUser(fullUserData);
+      } catch (meError) {
+        console.error('Failed to fetch full user data:', meError);
+        const { user: userData } = response.data;
+        localStorage.setItem('user', JSON.stringify(userData));
+        setIsAuthenticated(true);
+        setUser(userData);
+      }
+
+      navigate('/');
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      return { 
-        success: false, 
-        message: error.message || 'Invalid username or password' 
+      return {
+        success: false,
+        message: error.message || 'Invalid username or password'
       };
     }
   };

@@ -29,12 +29,16 @@ export const PersonalInformation = () => {
         <div className="text-wrapper-36">{user.gender || 'N/A'}</div>
         <div className="text-wrapper-37">{user.department || 'N/A'}</div>
         <div className="text-wrapper-38">{user.contactNumber || 'N/A'}</div>
-        <div className="text-wrapper-39">{user.dateOfBirth || 'N/A'}</div>
-        <div className="text-wrapper-40">{user.accountStatus || 'Active'}</div>
-        <div className="text-wrapper-41">{user.lastLogin || 'N/A'}</div>
+        <div className="text-wrapper-39">
+          {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'N/A'}
+        </div>
+        <div className="text-wrapper-40">{user.status || 'ACTIVE'}</div>
+        <div className="text-wrapper-41">
+          {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A'}
+        </div>
 
         <div className="group">
-          <div className="text-wrapper-42">{user.idNumber || user.id || 'N/A'}</div>
+          <div className="text-wrapper-42">{user.userId || user.id || 'N/A'}</div>
           <div className="text-wrapper-43">ID Number</div>
         </div>
 
