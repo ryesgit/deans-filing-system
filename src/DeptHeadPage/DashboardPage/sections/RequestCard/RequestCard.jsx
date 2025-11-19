@@ -10,13 +10,8 @@ export const RequestCard = () => {
     const fetchRequests = async () => {
       try {
         const response = await requestsAPI.getAll();
-        console.log("Raw response from requestsAPI.getAll():", response.data);
-        const data = response.data;
-        const requestsArray = Array.isArray(data) ? data : [];
-        // Sort by date descending and take the first 5
-        const sortedRequests = requestsArray.sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested));
-        console.log("Sorted and sliced requests:", sortedRequests.slice(0, 5));
-        setRequests(sortedRequests.slice(0, 5));
+        const requestsArray = Array.isArray(response.data.requests) ? response.data.requests : [];
+        setRequests(requestsArray.slice(0, 5));
       } catch (error) {
         console.error('Failed to fetch requests:', error);
         setRequests([]);
@@ -30,10 +25,10 @@ export const RequestCard = () => {
 
   const handleApprove = async (requestId) => {
     try {
-      await requestsAPI.update(requestId, { status: "approved" });
+      await requestsAPI.approve(requestId);
       setRequests(prevRequests =>
         prevRequests.map(req =>
-          req.id === requestId ? { ...req, status: "approved" } : req
+          req.id === requestId ? { ...req, status: "APPROVED" } : req
         )
       );
     } catch (error) {
@@ -43,10 +38,10 @@ export const RequestCard = () => {
 
   const handleDecline = async (requestId) => {
     try {
-      await requestsAPI.update(requestId, { status: "declined" });
+      await requestsAPI.decline(requestId);
       setRequests(prevRequests =>
         prevRequests.map(req =>
-          req.id === requestId ? { ...req, status: "declined" } : req
+          req.id === requestId ? { ...req, status: "DECLINED" } : req
         )
       );
     } catch (error) {
@@ -81,12 +76,12 @@ export const RequestCard = () => {
             requests.map((request) => (
               <div key={request.id} className="request-row">
                 <div className="table-cell request-id-col">{request.id}</div>
-                <div className="table-cell faculty-name-col">{request.facultyName || request.userName || 'N/A'}</div>
-                <div className="table-cell department-col">{request.department}</div>
-                <div className="table-cell file-name-col">{request.fileName}</div>
-                <div className="table-cell date-col">{request.dateRequested}</div>
+                <div className="table-cell faculty-name-col">{request.user?.name || 'N/A'}</div>
+                <div className="table-cell department-col">{request.user?.department || 'N/A'}</div>
+                <div className="table-cell file-name-col">{request.title}</div>
+                <div className="table-cell date-col">{new Date(request.createdAt).toLocaleDateString()}</div>
                 <div className="table-cell status-col">
-                  {request.status === "pending" ? (
+                  {request.status === "PENDING" ? (
                     <div className="action-buttons">
                       <button
                         className="approve-btn"
@@ -102,8 +97,8 @@ export const RequestCard = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className={`status-badge ${request.status}`}>
-                      {request.status === "approved" ? "Approved" : "Declined"}
+                    <div className={`status-badge ${request.status.toLowerCase()}`}>
+                      {request.status === "APPROVED" ? "Approved" : "Declined"}
                     </div>
                   )}
                 </div>

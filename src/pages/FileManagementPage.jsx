@@ -5,7 +5,7 @@ import "../DeptHeadPage/FileManagementPage/style.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
-import { filesAPI } from "../services/api";
+import { filesAPI, categoriesAPI } from "../services/api";
 
 const categories = [
   "Research",
@@ -55,77 +55,108 @@ export const FileManagementPage = () => {
 
   const { notifications, unreadCount } = useNotifications();
 
-  // Fetch files on mount
+  // Fetch categories on mount
   useEffect(() => {
-    const fetchFiles = async () => {
+    const fetchCategories = async () => {
       try {
-        const response = await filesAPI.getAll();
-        const data = response.data;
-        setFolders(Array.isArray(data) ? data : []);
+        const response = await categoriesAPI.getAll();
+        const categoriesData = Array.isArray(response.data.categories) ? response.data.categories : [];
+        setFolders(categoriesData);
       } catch (error) {
-        console.error('Failed to fetch files:', error);
+        console.error('Failed to fetch categories:', error);
         setFolders([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFiles();
+    fetchCategories();
   }, []);
 
   const handleAddFolder = async () => {
-    if (addFolderForm.name && addFolderForm.category) {
+    if (addFolderForm.name) {
       try {
-        const response = await filesAPI.createFolder({
+        const response = await categoriesAPI.create({
           name: addFolderForm.name,
-          category: addFolderForm.category,
+          description: addFolderForm.category,
         });
-        const newFolder = response.data;
+        const newFolder = {
+          ...response.data.category,
+          fileCount: 0,
+          files: []
+        };
         setFolders([...folders, newFolder]);
         setAddFolderForm({ name: "", category: "" });
         setShowFolderModal(false);
       } catch (error) {
-        console.error('Failed to add folder:', error);
-        // Optionally, show an error message to the user
+        console.error('Failed to add category:', error);
       }
     }
   };
 
-  const handleUpdateFolder = () => {
-    if (folderToEdit && editFolderForm.name && editFolderForm.category) {
-      const updatedFolders = folders.map((folder) =>
-        folder.id === folderToEdit.id
-          ? {
-              ...folder,
-              name: editFolderForm.name,
-              category: editFolderForm.category,
-            }
-          : folder
-      );
-      setFolders(updatedFolders);
-      setShowEditFolderModal(false);
-      setFolderToEdit(null);
+  const handleUpdateFolder = async () => {
+    if (folderToEdit && editFolderForm.name) {
+      try {
+        await categoriesAPI.update(folderToEdit.id, {
+          name: editFolderForm.name,
+          description: editFolderForm.category,
+        });
+        const updatedFolders = folders.map((folder) =>
+          folder.id === folderToEdit.id
+            ? {
+                ...folder,
+                name: editFolderForm.name,
+                description: editFolderForm.category,
+              }
+            : folder
+        );
+        setFolders(updatedFolders);
+        setShowEditFolderModal(false);
+        setFolderToEdit(null);
+      } catch (error) {
+        console.error('Failed to update category:', error);
+      }
     }
   };
 
-  const confirmDeleteFolder = () => {
+  const confirmDeleteFolder = async () => {
     if (folderToDelete) {
-      setFolders(folders.filter((folder) => folder.id !== folderToDelete.id));
-      if (selectedFolder && selectedFolder.id === folderToDelete.id) {
-        setSelectedFolder(null);
+      try {
+        await categoriesAPI.delete(folderToDelete.id);
+        setFolders(folders.filter((folder) => folder.id !== folderToDelete.id));
+        if (selectedFolder && selectedFolder.id === folderToDelete.id) {
+          setSelectedFolder(null);
+        }
+        setShowDeleteFolderModal(false);
+        setFolderToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete category:', error);
+        alert(error.message || 'Failed to delete category. It may contain files.');
       }
-      setShowDeleteFolderModal(false);
-      setFolderToDelete(null);
     }
   };
 
-  const handleFolderClick = (folder) => {
+  const handleFolderClick = async (folder) => {
     if (openDropdownFolderId === folder.id) {
       setOpenDropdownFolderId(null);
       return;
     }
-    setSelectedFolder(folder);
-    setOpenDropdownFolderId(null);
+    try {
+      const response = await categoriesAPI.getById(folder.id);
+      const categoryWithFiles = response.data.category;
+      setSelectedFolder({
+        ...categoryWithFiles,
+        files: categoryWithFiles.files || []
+      });
+      setOpenDropdownFolderId(null);
+    } catch (error) {
+      console.error('Failed to fetch category files:', error);
+      setSelectedFolder({
+        ...folder,
+        files: []
+      });
+      setOpenDropdownFolderId(null);
+    }
   };
 
   const handleAddFile = async () => {

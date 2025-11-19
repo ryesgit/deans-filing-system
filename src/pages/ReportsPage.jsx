@@ -21,12 +21,12 @@ export const ReportsPage = () => {
     const fetchReports = async () => {
       try {
         const response = await requestsAPI.getAll();
-        const data = Array.isArray(response.data) ? response.data : [];
+        const data = Array.isArray(response.data.requests) ? response.data.requests : [];
 
         setReportsData({
-          request: data.filter(r => r.status === 'pending' || r.status === 'approved' || r.status === 'declined'),
-          borrowed: data.filter(r => r.status === 'borrowed'),
-          returned: data.filter(r => r.status === 'returned')
+          request: data.filter(r => r.status === 'PENDING' || r.status === 'APPROVED' || r.status === 'DECLINED'),
+          borrowed: [],
+          returned: []
         });
       } catch (error) {
         console.error('Failed to fetch reports:', error);
@@ -67,10 +67,10 @@ export const ReportsPage = () => {
     data.forEach((row) => {
       const values = [
         row.id,
-        row.facultyName || row.userName || 'N/A',
-        row.department,
-        row.fileName,
-        row.dateRequested || row.date,
+        row.user?.name || 'N/A',
+        row.user?.department || 'N/A',
+        row.title,
+        new Date(row.createdAt).toLocaleDateString(),
         ...(activeTab === "request" ? [row.status] : []),
       ];
       csv += values.join(",") + "\n";
@@ -122,9 +122,9 @@ export const ReportsPage = () => {
               {data.map((row, index) => (
                 <tr key={index}>
                   <td data-label="Transaction ID">{row.id}</td>
-                  <td data-label="Faculty Name">{row.facultyName || row.userName || 'N/A'}</td>
-                  <td data-label="Department">{row.department}</td>
-                  <td data-label="File Name">{row.fileName}</td>
+                  <td data-label="Faculty Name">{row.user?.name || 'N/A'}</td>
+                  <td data-label="Department">{row.user?.department || 'N/A'}</td>
+                  <td data-label="File Name">{row.title}</td>
                   <td
                     data-label={`Date ${
                       activeTab === "borrowed"
@@ -134,7 +134,7 @@ export const ReportsPage = () => {
                         : "Requested"
                     }`}
                   >
-                    {row.dateRequested || row.date}
+                    {new Date(row.createdAt).toLocaleDateString()}
                   </td>
                   {activeTab === "request" && (
                     <td data-label="Status">

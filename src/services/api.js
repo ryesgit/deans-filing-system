@@ -76,7 +76,6 @@ export const statsAPI = {
 // Files API
 export const filesAPI = {
   getAll: () => api.get('/api/files/all'),
-  createFolder: (folderData) => api.post('/api/files/folders', folderData),
   upload: (formData) => api.post('/api/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -86,25 +85,37 @@ export const filesAPI = {
   delete: (id) => api.delete(`/api/files/${id}`),
 };
 
+// Categories API (used as "folders" in UI)
+export const categoriesAPI = {
+  getAll: () => api.get('/api/categories'),
+  getById: (id) => api.get(`/api/categories/${id}`),
+  create: (data) => api.post('/api/categories', data),
+  update: (id, data) => api.put(`/api/categories/${id}`, data),
+  delete: (id) => api.delete(`/api/categories/${id}`),
+};
+
 // Requests API
 export const requestsAPI = {
   getAll: () => api.get('/api/requests'),
   create: (data) => api.post('/api/requests', data),
-  update: (id, data) => api.patch(`/api/requests/${id}`, data),
+  update: (id, data) => api.put(`/api/requests/${id}`, data),
+  approve: (id, notes) => api.put(`/api/requests/${id}/approve`, { notes }),
+  decline: (id, reason) => api.put(`/api/requests/${id}/decline`, { reason }),
+  delete: (id) => api.delete(`/api/requests/${id}`),
 };
 
 // Users API
 export const usersAPI = {
   getAll: () => api.get('/api/users'),
   create: (data) => api.post('/api/users', data),
-  update: (id, data) => api.patch(`/api/users/${id}`, data),
+  update: (id, data) => api.put(`/api/users/${id}`, data),
   delete: (id) => api.delete(`/api/users/${id}`),
 };
 
 // Notifications API
 export const notificationsAPI = {
   getAll: () => api.get('/api/notifications'),
-  markAsRead: (id) => api.patch(`/api/notifications/${id}/read`),
+  markAsRead: (id) => api.put(`/api/notifications/${id}/read`),
 };
 
 export default api;
