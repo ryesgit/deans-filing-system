@@ -54,6 +54,7 @@ export const FileManagementPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
+  const [showFolderDetailsModal, setShowFolderDetailsModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [folderToEdit, setFolderToEdit] = useState(null);
@@ -61,10 +62,14 @@ export const FileManagementPage = () => {
   const [addFolderForm, setAddFolderForm] = useState({
     name: "",
     category: "",
+    row: "",
+    column: "",
   });
   const [editFolderForm, setEditFolderForm] = useState({
     name: "",
     category: "",
+    row: "",
+    column: "",
   });
   const [fileForm, setFileForm] = useState({
     name: "",
@@ -78,28 +83,43 @@ export const FileManagementPage = () => {
 
   const { notifications, unreadCount } = useNotifications();
   const handleAddFolder = () => {
-    if (addFolderForm.name && addFolderForm.category) {
+    if (
+      addFolderForm.name &&
+      addFolderForm.category &&
+      addFolderForm.row &&
+      addFolderForm.column
+    ) {
       const newFolder = {
         id: Date.now(),
         name: addFolderForm.name,
         fileCount: 0,
         category: addFolderForm.category,
+        row: addFolderForm.row,
+        column: addFolderForm.column,
         files: [],
       };
       setFolders([...folders, newFolder]);
-      setAddFolderForm({ name: "", category: "" });
+      setAddFolderForm({ name: "", category: "", row: "", column: "" });
       setShowFolderModal(false);
     }
   };
 
   const handleUpdateFolder = () => {
-    if (folderToEdit && editFolderForm.name && editFolderForm.category) {
+    if (
+      folderToEdit &&
+      editFolderForm.name &&
+      editFolderForm.category &&
+      editFolderForm.row &&
+      editFolderForm.column
+    ) {
       const updatedFolders = folders.map((folder) =>
         folder.id === folderToEdit.id
           ? {
               ...folder,
               name: editFolderForm.name,
               category: editFolderForm.category,
+              row: editFolderForm.row,
+              column: editFolderForm.column,
             }
           : folder
       );
@@ -158,6 +178,7 @@ export const FileManagementPage = () => {
         }),
         department: fileForm.department,
         category: fileForm.category,
+        url: URL.createObjectURL(fileForm.file), // Create a URL for the preview
       };
 
       const updatedFolders = folders.map((folder) =>
@@ -181,6 +202,16 @@ export const FileManagementPage = () => {
     }
   };
 
+  const handleDownloadFile = () => {
+    if (selectedFile && selectedFile.url) {
+      const link = document.createElement("a");
+      link.href = selectedFile.url;
+      link.download = selectedFile.name; // The name for the downloaded file
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setFileError("");
@@ -289,7 +320,12 @@ export const FileManagementPage = () => {
   const handleEditFolder = (e, folder) => {
     e.stopPropagation();
     setFolderToEdit(folder);
-    setEditFolderForm({ name: folder.name, category: folder.category });
+    setEditFolderForm({
+      name: folder.name,
+      category: folder.category,
+      row: folder.row || "",
+      column: folder.column || "",
+    });
     setShowEditFolderModal(true);
     setOpenDropdownFolderId(null);
   };
@@ -304,6 +340,7 @@ export const FileManagementPage = () => {
   const handleShowDetails = (e, folder) => {
     e.stopPropagation();
     setSelectedFolder(folder);
+    setShowFolderDetailsModal(true);
     setOpenDropdownFolderId(null);
   };
 
@@ -547,7 +584,46 @@ export const FileManagementPage = () => {
               ))}
             </select>
           </div>
-          <div className="modal-actions">
+          <div className="form-group-row-col">
+            <div className="form-row-split">
+              <div className="form-group">
+                <label>Row</label>
+                <select
+                  value={addFolderForm.row}
+                  onChange={(e) =>
+                    setAddFolderForm({ ...addFolderForm, row: e.target.value })
+                  }
+                >
+                  <option value="" disabled>
+                    Select Row
+                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Column</label>
+                <select
+                  value={addFolderForm.column}
+                  onChange={(e) =>
+                    setAddFolderForm({
+                      ...addFolderForm,
+                      column: e.target.value,
+                    })
+                  }
+                >
+                  <option value="" disabled>
+                    Select Column
+                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="folder-modal-actions">
             <button
               className="btn btn-secondary"
               onClick={() => setShowFolderModal(false)}
@@ -557,7 +633,12 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleAddFolder}
-              disabled={!addFolderForm.name || !addFolderForm.category}
+              disabled={
+                !addFolderForm.name ||
+                !addFolderForm.category ||
+                !addFolderForm.row ||
+                !addFolderForm.column
+              }
             >
               Save
             </button>
@@ -605,7 +686,49 @@ export const FileManagementPage = () => {
               ))}
             </select>
           </div>
-          <div className="modal-actions">
+          <div className="form-group-row-col">
+            <div className="form-row-split">
+              <div className="form-group">
+                <label>Row</label>
+                <select
+                  value={editFolderForm.row}
+                  onChange={(e) =>
+                    setEditFolderForm({
+                      ...editFolderForm,
+                      row: e.target.value,
+                    })
+                  }
+                >
+                  <option value="" disabled>
+                    Select Row
+                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Column</label>
+                <select
+                  value={editFolderForm.column}
+                  onChange={(e) =>
+                    setEditFolderForm({
+                      ...editFolderForm,
+                      column: e.target.value,
+                    })
+                  }
+                >
+                  <option value="" disabled>
+                    Select Column
+                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="folder-modal-actions">
             <button
               className="btn btn-secondary"
               onClick={() => setShowEditFolderModal(false)}
@@ -615,7 +738,12 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleUpdateFolder}
-              disabled={!editFolderForm.name || !editFolderForm.category}
+              disabled={
+                !editFolderForm.name ||
+                !editFolderForm.category ||
+                !editFolderForm.row ||
+                !editFolderForm.column
+              }
             >
               Update
             </button>
@@ -633,7 +761,7 @@ export const FileManagementPage = () => {
           Are you sure you want to delete this folder and all its contents? This
           action cannot be undone.
         </p>
-        <div className="modal-actions">
+        <div className="folder-modal-actions">
           <button
             className="btn btn-secondary"
             onClick={() => setShowDeleteFolderModal(false)}
@@ -648,6 +776,44 @@ export const FileManagementPage = () => {
             Delete
           </button>
         </div>
+      </Modal>
+
+      {/* Folder Details Modal */}
+      <Modal
+        isOpen={showFolderDetailsModal}
+        onClose={() => setShowFolderDetailsModal(false)}
+        title="Folder Details"
+      >
+        {selectedFolder && (
+          <>
+            <div className="file-info">
+              <div className="file-info-row">
+                <span className="file-info-label">Folder Name:</span>
+                <span className="file-info-value">{selectedFolder.name}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Category:</span>
+                <span className="file-info-value">
+                  {selectedFolder.category}
+                </span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">File Count:</span>
+                <span className="file-info-value">
+                  {selectedFolder.fileCount}
+                </span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Row:</span>
+                <span className="file-info-value">{selectedFolder.row}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Column:</span>
+                <span className="file-info-value">{selectedFolder.column}</span>
+              </div>
+            </div>
+          </>
+        )}
       </Modal>
 
       <Modal
@@ -708,7 +874,7 @@ export const FileManagementPage = () => {
             <input type="file" accept=".pdf" onChange={handleFileChange} />
             {fileError && <div className="error-message">{fileError}</div>}
           </div>
-          <div className="modal-actions">
+          <div className="file-modal-actions">
             <button
               className="btn btn-secondary"
               onClick={() => {
@@ -734,38 +900,31 @@ export const FileManagementPage = () => {
       <Modal
         isOpen={showViewModal}
         onClose={() => setShowViewModal(false)}
-        title="File Details"
+        title={selectedFile ? selectedFile.name : "File Preview"}
       >
         {selectedFile && (
-          <>
-            <div className="file-info">
-              <div className="file-info-row">
-                <span className="file-info-label">File Name:</span>
-                <span className="file-info-value">{selectedFile.name}</span>
+          <div className="file-preview-container">
+            {selectedFile.url ? (
+              <iframe
+                src={`${selectedFile.url}#toolbar=0`}
+                title={selectedFile.name}
+                className="pdf-preview-iframe"
+              />
+            ) : (
+              <div className="no-preview-message">
+                <p>No preview available for this file.</p>
               </div>
-              <div className="file-info-row">
-                <span className="file-info-label">Department:</span>
-                <span className="file-info-value">
-                  {selectedFile.department}
-                </span>
-              </div>
-              <div className="file-info-row">
-                <span className="file-info-label">Category:</span>
-                <span className="file-info-value">{selectedFile.category}</span>
-              </div>
-              <div className="file-info-row">
-                <span className="file-info-label">Date Added:</span>
-                <span className="file-info-value">
-                  {selectedFile.dateAdded}
-                </span>
-              </div>
-            </div>
-            <div className="modal-actions">
-              <button className="btn btn-primary" style={{ width: "100%" }}>
+            )}
+            <div className="download-modal-actions">
+              <button
+                className="btn btn-primary"
+                onClick={handleDownloadFile}
+                disabled={!selectedFile.url}
+              >
                 Download PDF
               </button>
             </div>
-          </>
+          </div>
         )}
       </Modal>
 

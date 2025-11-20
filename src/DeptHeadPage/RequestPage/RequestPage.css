@@ -110,6 +110,15 @@
   background-color: #ffffff;
 }
 
+.request-page .form-input {
+  height: 55px;
+  box-sizing: border-box;
+}
+
+.request-page .form-select {
+  height: 55px;
+}
+
 .request-page .form-input:focus,
 .request-page .form-select:focus,
 .request-page .form-textarea:focus {
@@ -731,7 +740,7 @@
   .request-page .form-row-three {
     grid-template-columns: 1fr;
   }
-  
+
   .request-page .form-row-two {
     grid-template-columns: 1fr;
   }
@@ -741,13 +750,13 @@
   .request-page .table-container {
     max-height: 300px;
   }
-  
+
   .request-page .request-table th,
   .request-page .request-table td {
     padding: 0.75rem 0.5rem;
     font-size: 12px;
   }
-  
+
   .request-page .file-name-cell {
     max-width: 150px;
   }
