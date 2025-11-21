@@ -1,33 +1,61 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { notificationsAPI } from "../../services/api";
 
-// 1. Define initial state with all notifications combined
-const initialNotifications = [
-  { id: 1, message: "New user 'Alex' was added.", read: false },
-  { id: 2, message: "User 'Maria Santos' updated their profile.", read: false },
-  { id: 3, message: "A request was approved.", read: true },
-  { id: 4, message: "Monthly report for October is ready.", read: false },
-  { id: 5, message: "Your password was changed successfully.", read: true },
-  { id: 6, message: "Request #123 has been approved.", read: false },
-  { id: 7, message: "Annual user activity report generated.", read: true },
-];
-
-// 2. Create the context
+// Create the context
 const NotificationContext = createContext();
 
-// 3. Create a custom hook for easy access to the context
+// Create a custom hook for easy access to the context
 export const useNotifications = () => {
   return useContext(NotificationContext);
 };
 
-// 4. Create the Provider component
+// Create the Provider component
 export const NotificationProvider = ({ children }) => {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch notifications from backend
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await notificationsAPI.getAll();
+        const data = response.data;
+        setNotifications(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Only fetch if user is authenticated
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetchNotifications();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await notificationsAPI.markAsRead(id);
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const value = {
     notifications,
     unreadCount,
+    loading,
+    markAsRead,
   };
 
   return (

@@ -5,21 +5,10 @@ import { User } from "lucide-react";
 import "../DeptHeadPage/DashboardPage/style.css";
 import "../DeptHeadPage/SettingsPage/Settings.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-
-const currentUser = {
-  name: "Jhay Mark Ortiz Luiz",
-  email: "jhaymarkluis@gmail.com",
-  idNumber: "ADM-001",
-  role: "Admin",
-  gender: "Male",
-  department: "Computer Engineering",
-  contactNumber: "0977 867 1234",
-  dateOfBirth: "12/14/2003",
-  accountStatus: "Active",
-  lastLogin: "10/22/2025 – 2:45 PM",
-};
+import { useAuth } from "../components/Modal/AuthContext";
 
 export const SettingsPage = () => {
+  const { user: currentUser } = useAuth();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -103,55 +92,55 @@ export const SettingsPage = () => {
               <div className="profile-avatar-container">
                 <User className="profile-avatar-icon" size={80} />
               </div>
-              <h2 className="profile-name">{currentUser.name}</h2>
-              <p className="profile-email">{currentUser.email}</p>
+              <h2 className="profile-name">{currentUser?.name || "N/A"}</h2>
+              <p className="profile-email">{currentUser?.email || "N/A"}</p>
             </div>
             <div className="profile-divider"></div>
             <div className="profile-right">
               <div className="profile-detail-group">
                 <span className="profile-detail-label">ID Number</span>
                 <span className="profile-detail-value">
-                  {currentUser.idNumber}
+                  {currentUser?.idNumber || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Role</span>
-                <span className="profile-detail-value">{currentUser.role}</span>
+                <span className="profile-detail-value">{currentUser?.role || "N/A"}</span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Gender</span>
                 <span className="profile-detail-value">
-                  {currentUser.gender}
+                  {currentUser?.gender || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Department</span>
                 <span className="profile-detail-value">
-                  {currentUser.department}
+                  {currentUser?.department || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Contact Number</span>
                 <span className="profile-detail-value">
-                  {currentUser.contactNumber}
+                  {currentUser?.contactNumber || "N/A"}
                 </span>
               </div>
-              <div className="profile-detail-group">
+              <div className="profile-.detail-group">
                 <span className="profile-detail-label">Date of Birth</span>
                 <span className="profile-detail-value">
-                  {currentUser.dateOfBirth}
+                  {currentUser?.dateOfBirth || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Account Status</span>
                 <span className="profile-detail-value">
-                  {currentUser.accountStatus}
+                  {currentUser?.accountStatus || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Last Login</span>
                 <span className="profile-detail-value">
-                  {currentUser.lastLogin}
+                  {currentUser?.lastLogin || "N/A"}
                 </span>
               </div>
             </div>
