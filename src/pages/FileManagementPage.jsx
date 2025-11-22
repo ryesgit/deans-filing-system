@@ -240,9 +240,9 @@ export const FileManagementPage = () => {
   const handleEditFile = (file) => {
     setSelectedFile(file);
     setFileForm({
-      name: file.name,
-      department: file.department,
-      category: file.category,
+      name: file.filename || file.name,
+      department: file.user?.department || file.department || '',
+      category: file.category?.name || file.category || '',
       file: null,
     });
     setShowEditModal(true);
@@ -253,25 +253,18 @@ export const FileManagementPage = () => {
       try {
         const updateData = {
           name: fileForm.name,
-          department: fileForm.department,
           category: fileForm.category,
         };
 
-        await filesAPI.update(selectedFile.id, updateData);
+        const response = await filesAPI.update(selectedFile.id, updateData);
+        const updatedFile = response.data.file;
 
         const updatedFolders = folders.map((folder) =>
           folder.id === selectedFolder.id
             ? {
                 ...folder,
                 files: (folder.files || []).map((f) =>
-                  f.id === selectedFile.id
-                    ? {
-                        ...f,
-                        name: fileForm.name,
-                        department: fileForm.department,
-                        category: fileForm.category,
-                      }
-                    : f
+                  f.id === selectedFile.id ? updatedFile : f
                 ),
               }
             : folder
@@ -281,14 +274,7 @@ export const FileManagementPage = () => {
         setSelectedFolder({
           ...selectedFolder,
           files: (selectedFolder.files || []).map((f) =>
-            f.id === selectedFile.id
-              ? {
-                  ...f,
-                  name: fileForm.name,
-                  department: fileForm.department,
-                  category: fileForm.category,
-                }
-              : f
+            f.id === selectedFile.id ? updatedFile : f
           ),
         });
         setShowEditModal(false);
@@ -536,11 +522,13 @@ export const FileManagementPage = () => {
                         alt="File icon"
                         src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/file-icon-05.svg"
                       />
-                      {file.name}
+                      {file.filename || file.name || 'N/A'}
                     </div>
-                    <div data-label="Date Added">{file.dateAdded}</div>
-                    <div data-label="Department">{file.department}</div>
-                    <div data-label="Category">{file.category}</div>
+                    <div data-label="Date Added">
+                      {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : (file.dateAdded || 'N/A')}
+                    </div>
+                    <div data-label="Department">{file.user?.department || file.department || 'N/A'}</div>
+                    <div data-label="Category">{file.category?.name || file.category || 'N/A'}</div>
                     <div data-label="Actions" className="file-actions">
                       <button
                         className="file-action-btn view"
@@ -797,22 +785,22 @@ export const FileManagementPage = () => {
             <div className="file-info">
               <div className="file-info-row">
                 <span className="file-info-label">File Name:</span>
-                <span className="file-info-value">{selectedFile.name}</span>
+                <span className="file-info-value">{selectedFile.filename || selectedFile.name || 'N/A'}</span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Department:</span>
                 <span className="file-info-value">
-                  {selectedFile.department}
+                  {selectedFile.user?.department || selectedFile.department || 'N/A'}
                 </span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Category:</span>
-                <span className="file-info-value">{selectedFile.category}</span>
+                <span className="file-info-value">{selectedFile.category?.name || selectedFile.category || 'N/A'}</span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Date Added:</span>
                 <span className="file-info-value">
-                  {selectedFile.dateAdded}
+                  {selectedFile.createdAt ? new Date(selectedFile.createdAt).toLocaleDateString() : (selectedFile.dateAdded || 'N/A')}
                 </span>
               </div>
             </div>
