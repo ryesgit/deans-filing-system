@@ -19,14 +19,14 @@ export const QuickActionCard = ({
         <button className="action-btn" onClick={onAddFile}>
           Add File
         </button>
+        <button className="action-btn" onClick={onRequest}>
+          Request
+        </button>
         {role === "ADMIN" && (
-          <button className="action-btn" onClick={onRequest}>
-            Request
+          <button className="action-btn" onClick={onAddMember}>
+            Add Member
           </button>
         )}
-        <button className="action-btn" onClick={onAddMember}>
-          Add Member
-        </button>
       </div>
     </div>
   );
