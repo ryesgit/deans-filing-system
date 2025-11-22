@@ -29,8 +29,26 @@ export const UserManagementPage = () => {
     const fetchUsers = async () => {
       try {
         const response = await usersAPI.getAll();
-        const data = response.data;
-        setUsers(Array.isArray(data) ? data : []);
+        const usersData = response.data.users || response.data;
+        const mappedUsers = Array.isArray(usersData)
+          ? usersData.map(user => ({
+              id: user.id,
+              userId: user.userId,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              department: user.department || 'N/A',
+              status: user.status,
+              dateJoined: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A',
+              tags: [
+                user.status === 'ACTIVE' ? 'active' : 'inactive',
+                user.role === 'FACULTY' ? 'faculty' : null,
+                user.role === 'ADMIN' ? 'head' : null,
+                user.role === 'STAFF' ? 'head' : null
+              ].filter(Boolean)
+            }))
+          : [];
+        setUsers(mappedUsers);
       } catch (error) {
         console.error('Failed to fetch users:', error);
         setUsers([]);
@@ -44,18 +62,18 @@ export const UserManagementPage = () => {
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (!filterOptions.showAll) {
       if (filterOptions.showActive) {
-        filtered = filtered.filter((user) => user.status === "active");
+        filtered = filtered.filter((user) => user.status === "ACTIVE");
       }
       if (filterOptions.showFaculty) {
-        filtered = filtered.filter((user) => user.role === "Faculty Member");
+        filtered = filtered.filter((user) => user.role === "FACULTY");
       }
       if (filterOptions.showHeads) {
-        filtered = filtered.filter((user) => user.role === "Department Head");
+        filtered = filtered.filter((user) => user.role === "ADMIN" || user.role === "STAFF");
       }
     }
 
@@ -66,7 +84,7 @@ export const UserManagementPage = () => {
     }
 
     return filtered;
-  }, [users, filterOptions]);
+  }, [users, filterOptions, searchTerm]);
 
   const statistics = useMemo(() => {
     return {
@@ -79,18 +97,37 @@ export const UserManagementPage = () => {
 
   const handleAddUser = async (newUser) => {
     try {
-      const tags = [];
-      if (newUser.status === "active") tags.push("active");
-      if (newUser.role === "Faculty Member") tags.push("faculty");
-      if (newUser.role === "Department Head") tags.push("head");
-
       const userData = {
-        ...newUser,
-        tags,
+        userId: `USER${Date.now()}`,
+        name: newUser.name,
+        email: newUser.email || null,
+        password: newUser.password || null,
+        role: newUser.role,
+        department: newUser.department,
+        status: newUser.status === "active" ? "ACTIVE" : "INACTIVE"
       };
 
       const response = await usersAPI.create(userData);
-      setUsers([...users, response.data]);
+      const createdUser = response.data.user || response.data;
+
+      const mappedUser = {
+        id: createdUser.id,
+        userId: createdUser.userId,
+        name: createdUser.name,
+        email: createdUser.email,
+        role: createdUser.role,
+        department: createdUser.department || 'N/A',
+        status: createdUser.status,
+        dateJoined: createdUser.createdAt ? new Date(createdUser.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+        tags: [
+          createdUser.status === 'ACTIVE' ? 'active' : 'inactive',
+          createdUser.role === 'FACULTY' ? 'faculty' : null,
+          createdUser.role === 'ADMIN' ? 'head' : null,
+          createdUser.role === 'STAFF' ? 'head' : null
+        ].filter(Boolean)
+      };
+
+      setUsers([...users, mappedUser]);
       setIsAddUserModalOpen(false);
     } catch (error) {
       console.error('Failed to add user:', error);
@@ -98,10 +135,10 @@ export const UserManagementPage = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async (userIdToDelete) => {
     try {
-      await usersAPI.delete(userId);
-      setUsers(users.filter((user) => user.id !== userId));
+      await usersAPI.delete(userIdToDelete);
+      setUsers(users.filter((user) => user.userId !== userIdToDelete));
     } catch (error) {
       console.error('Failed to delete user:', error);
       alert(error.message || 'Failed to delete user');
@@ -293,7 +330,7 @@ export const UserManagementPage = () => {
                   <div className="user-photo" />
                   <div
                     className={`status ${
-                      user.status === "active" ? "active" : "inactive"
+                      user.status === "ACTIVE" ? "active" : "inactive"
                     }`}
                   />
                 </div>
@@ -315,7 +352,7 @@ export const UserManagementPage = () => {
                   <div className="list-photo" />
                   <div
                     className={`list-status ${
-                      user.status === "active" ? "active" : "inactive"
+                      user.status === "ACTIVE" ? "active" : "inactive"
                     }`}
                   />
                   <div className="list-content">
@@ -325,8 +362,8 @@ export const UserManagementPage = () => {
                       <span className="list-separator">•</span>
                       <span className="list-department">{user.department}</span>
                       <span className="list-separator">•</span>
-                      <span className={`list-status-text ${user.status}`}>
-                        {user.status === "active" ? "Active" : "Inactive"}
+                      <span className={`list-status-text ${user.status === "ACTIVE" ? "active" : "inactive"}`}>
+                        {user.status === "ACTIVE" ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
@@ -378,7 +415,9 @@ export const UserManagementPage = () => {
 const AddUserModal = ({ onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: "",
-    role: "Faculty Member",
+    email: "",
+    password: "",
+    role: "FACULTY",
     department: "",
     status: "active",
     dateJoined: new Date().toLocaleDateString("en-US", {
@@ -427,6 +466,30 @@ const AddUserModal = ({ onClose, onSave }) => {
           </div>
 
           <div className="form-group">
+            <label className="form-label">Email (Optional)</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="Enter email address"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password (Optional)</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="Enter password (min 6 characters)"
+            />
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Role</label>
             <select
               name="role"
@@ -434,9 +497,10 @@ const AddUserModal = ({ onClose, onSave }) => {
               onChange={handleChange}
               className="form-select"
             >
-              <option value="Faculty Member">Faculty Member</option>
-              <option value="Department Head">Department Head</option>
-              <option value="Staff">Staff</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="STAFF">Staff</option>
+              <option value="ADMIN">Admin</option>
+              <option value="STUDENT">Student</option>
             </select>
           </div>
 
@@ -615,7 +679,7 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
 const UserDetailsModal = ({ user, onClose, onDelete }) => {
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-      onDelete(user.id);
+      onDelete(user.userId);
       onClose();
     }
   };
@@ -646,8 +710,8 @@ const UserDetailsModal = ({ user, onClose, onDelete }) => {
 
           <div className="info-row">
             <span className="info-label">Status</span>
-            <span className={`info-value status-badge ${user.status}`}>
-              {user.status === "active" ? "Active" : "Inactive"}
+            <span className={`info-value status-badge ${user.status === "ACTIVE" ? "active" : "inactive"}`}>
+              {user.status === "ACTIVE" ? "Active" : user.status === "INACTIVE" ? "Inactive" : user.status}
             </span>
           </div>
 
