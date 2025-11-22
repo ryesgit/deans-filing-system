@@ -1,0 +1,117 @@
+.recent-requests-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  grid-column: span 1;
+}
+
+.recent-requests-header {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.recent-requests-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.recent-requests-loading,
+.no-recent-requests {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.recent-requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recent-request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  transition: background 0.2s;
+}
+
+.recent-request-item:hover {
+  background: #e9ecef;
+}
+
+.recent-request-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-request-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-request-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.recent-request-user {
+  font-weight: 500;
+}
+
+.recent-request-separator {
+  color: #999;
+}
+
+.recent-request-department {
+  color: #666;
+}
+
+.recent-request-status {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-declined {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-cancelled {
+  background: #e2e3e5;
+  color: #383d41;
+}

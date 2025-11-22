@@ -23,17 +23,15 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       authAPI.getMe()
         .then(response => {
-          const userData = response.data;
+          const userData = response.data.user || response.data;
           if (userData && userData.id) {
             setIsAuthenticated(true);
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
           }
-          // Do nothing if userData is invalid, just rely on localStorage
           setLoading(false);
         })
         .catch((error) => {
-          // Don't log out on network error, just log the error
           console.error("Failed to verify token with backend", error);
           setLoading(false);
         });
