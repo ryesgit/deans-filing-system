@@ -101,7 +101,7 @@ export const UserManagementPage = () => {
         userId: `USER${Date.now()}`,
         name: newUser.name,
         email: newUser.email || null,
-        password: newUser.password || null,
+        password: "password123",
         role: newUser.role,
         department: newUser.department,
         status: newUser.status === "active" ? "ACTIVE" : "INACTIVE"
@@ -416,7 +416,6 @@ const AddUserModal = ({ onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: "",
     role: "FACULTY",
     department: "",
     status: "active",
@@ -478,15 +477,10 @@ const AddUserModal = ({ onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password (Optional)</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="form-input"
-              placeholder="Enter password (min 6 characters)"
-            />
+            <label className="form-label">Password</label>
+            <div style={{ padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px', fontSize: '14px' }}>
+              Default password: <strong>password123</strong>
+            </div>
           </div>
 
           <div className="form-group">
