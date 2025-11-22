@@ -34,7 +34,7 @@ api.interceptors.response.use(
       const { status, data } = error.response;
       
       // Handle unauthorized errors
-      if (status === 401) {
+      if (status === 401 && window.location.pathname !== '/login') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         window.location.href = '/login';

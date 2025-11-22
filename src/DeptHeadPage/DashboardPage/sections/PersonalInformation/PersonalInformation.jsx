@@ -34,7 +34,7 @@ export const PersonalInformation = () => {
         </div>
         <div className="text-wrapper-40">{user.status || 'ACTIVE'}</div>
         <div className="text-wrapper-41">
-          {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A'}
+          {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'}
         </div>
 
         <div className="group">

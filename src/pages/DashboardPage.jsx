@@ -5,7 +5,7 @@ import { PersonalInformation } from "../DeptHeadPage/DashboardPage/sections/Pers
 import { QuickActionCard } from "../DeptHeadPage/DashboardPage/sections/QuickActionCard";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
 import { NotificationCard } from "../DeptHeadPage/DashboardPage/sections/NotificationCard";
-import { RecentRequestsCard } from "../DeptHeadPage/DashboardPage/sections/RecentRequestsCard";
+
 import { Modal } from "../components/Modal";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useAuth } from "../components/Modal/AuthContext";
@@ -110,7 +110,7 @@ export const DashboardPage = () => {
         </header>
 
         <PersonalInformation />
-        <RecentRequestsCard />
+
         <ActivityLogCard />
         <QuickActionCard
           onAddFile={() => setIsAddFileModalOpen(true)}

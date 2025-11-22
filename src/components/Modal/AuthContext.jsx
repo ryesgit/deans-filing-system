@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   });
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,8 +32,13 @@ export const AuthProvider = ({ children }) => {
           }
           setLoading(false);
         })
-        .catch((error) => {
-          console.error("Failed to verify token with backend", error);
+        .catch((err) => {
+          console.error("Failed to verify token with backend", err);
+          // Clear invalid token
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          setIsAuthenticated(false);
+          setUser(null);
           setLoading(false);
         });
     } else {
@@ -42,33 +48,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
+      setError(null); // Clear previous errors
       const response = await authAPI.login(credentials);
-      const { token } = response.data;
+      const { token, user: userData } = response.data;
 
       localStorage.setItem('authToken', token);
-
-      try {
-        const meResponse = await authAPI.getMe();
-        const fullUserData = meResponse.data.user || meResponse.data;
-
-        localStorage.setItem('user', JSON.stringify(fullUserData));
-        setIsAuthenticated(true);
-        setUser(fullUserData);
-      } catch (meError) {
-        console.error('Failed to fetch full user data:', meError);
-        const { user: userData } = response.data;
-        localStorage.setItem('user', JSON.stringify(userData));
-        setIsAuthenticated(true);
-        setUser(userData);
-      }
-
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      setIsAuthenticated(true);
+      setUser(userData);
+      
       navigate('/');
       return { success: true };
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err) {
+      const errorMessage = err.message || 'Invalid username or password';
+      setError(errorMessage);
       return {
         success: false,
-        message: error.message || 'Invalid username or password'
+        message: errorMessage
       };
     }
   };
@@ -78,15 +75,22 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
+    setError(null);
     navigate('/login'); // Redirect to login page on logout
   };
+  
+  const clearError = () => {
+    setError(null);
+  }
 
   const value = {
     isAuthenticated,
     user,
     loading,
+    error,
     login,
     logout,
+    clearError,
   };
 
   // Show a loading indicator while checking for the token
