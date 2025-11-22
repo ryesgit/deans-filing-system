@@ -154,24 +154,32 @@ const FormCard = ({ onSubmit }) => {
   };
 
   const handleConfirmSubmit = async () => {
+    const descriptionParts = [
+      `Purpose: ${formData.purpose}`,
+      `Department: ${formData.department}`,
+      `Category: ${formData.fileCategory}`,
+      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"}`
+    ];
+
+    if (formData.copyType === "original" && formData.returnDate) {
+      descriptionParts.push(`Return Date: ${formData.returnDate}`);
+    }
+
     const requestData = {
-      fileName: formData.fileName,
-      department: formData.department,
-      category: formData.fileCategory,
-      purpose: formData.purpose,
-      copyType: formData.copyType,
-      returnDate: formData.copyType === "original" ? formData.returnDate : null,
-      priority: formData.priority,
+      title: formData.fileName,
+      description: descriptionParts.join('\n'),
+      type: 'FILE_ACCESS',
+      priority: formData.priority || 'normal'
     };
 
     try {
       const response = await requestsAPI.create(requestData);
-      onSubmit(response.data);
+      onSubmit(response.data.request || response.data);
       setShowSubmitModal(false);
       handleClear();
     } catch (error) {
       console.error('Failed to submit request:', error);
-      alert(error.message || 'Failed to submit request');
+      alert(error.response?.data?.message || error.message || 'Failed to submit request');
       setShowSubmitModal(false);
     }
   };
