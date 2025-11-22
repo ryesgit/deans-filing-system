@@ -505,6 +505,10 @@ const QRCard = ({
 const RequestCard = ({ requests = [] }) => {
   const getStatusClass = (status) => {
     const statusMap = {
+      PENDING: "status-pending",
+      APPROVED: "status-approved",
+      DECLINED: "status-declined",
+      CANCELLED: "status-cancelled",
       Pending: "status-pending",
       Approved: "status-approved",
       Borrowed: "status-borrowed",
@@ -513,6 +517,16 @@ const RequestCard = ({ requests = [] }) => {
       "View PDF": "status-view-pdf",
     };
     return statusMap[status] || "status-pending";
+  };
+
+  const getStatusLabel = (status) => {
+    const labelMap = {
+      PENDING: "Pending",
+      APPROVED: "Approved",
+      DECLINED: "Declined",
+      CANCELLED: "Cancelled",
+    };
+    return labelMap[status] || status;
   };
 
   const handleStatusClick = (request) => {
@@ -564,7 +578,7 @@ const RequestCard = ({ requests = [] }) => {
                           request.status === "View PDF" ? "pointer" : "default",
                       }}
                     >
-                      {request.status}
+                      {getStatusLabel(request.status)}
                     </span>
                   </td>
                 </tr>
@@ -591,7 +605,18 @@ export const RequestPage = () => {
     const fetchRequests = async () => {
       try {
         const response = await requestsAPI.getAll();
-        setRequests(Array.isArray(response.data) ? response.data : []);
+        const requestsData = response.data.requests || response.data;
+        const mappedRequests = Array.isArray(requestsData)
+          ? requestsData.map(req => ({
+              id: req.id,
+              fileName: req.title,
+              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
+              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
+              status: req.status,
+              copyType: req.type
+            }))
+          : [];
+        setRequests(mappedRequests);
       } catch (error) {
         console.error('Failed to fetch requests:', error);
       } finally {
@@ -603,7 +628,15 @@ export const RequestPage = () => {
   }, []);
 
   const handleSubmitRequest = (newRequest) => {
-    setRequests((prev) => [newRequest, ...prev]);
+    const mappedRequest = {
+      id: newRequest.id,
+      fileName: newRequest.title,
+      dateRequested: newRequest.createdAt ? new Date(newRequest.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+      returnDue: newRequest.approvedAt ? new Date(newRequest.approvedAt).toLocaleDateString() : 'N/A',
+      status: newRequest.status,
+      copyType: newRequest.type
+    };
+    setRequests((prev) => [mappedRequest, ...prev]);
   };
 
   const filesAssigned = requests.filter(
