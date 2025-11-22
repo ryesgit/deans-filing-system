@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
@@ -91,6 +92,9 @@ const FormCard = ({ onSubmit }) => {
 
   const categories = [
     "Thesis",
+    "Capstone",
+    "Research",
+    "Administrative",
     "Research Papers",
     "Reports",
     "Guidelines",
@@ -104,6 +108,15 @@ const FormCard = ({ onSubmit }) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleFileSelect = (fileInfo) => {
+    setFormData((prev) => ({
+      ...prev,
+      fileName: fileInfo.fileName,
+      department: fileInfo.department || "",
+      fileCategory: fileInfo.fileCategory || "",
     }));
   };
 
@@ -198,12 +211,10 @@ const FormCard = ({ onSubmit }) => {
 
       <div className="form-row-three">
         <div className="form-field">
-          <input
-            type="text"
-            className="form-input"
-            placeholder="File Name"
+          <FileSearchInput
             value={formData.fileName}
-            onChange={(e) => handleChange("fileName", e.target.value)}
+            onChange={(value) => handleChange("fileName", value)}
+            onFileSelect={handleFileSelect}
           />
         </div>
 
