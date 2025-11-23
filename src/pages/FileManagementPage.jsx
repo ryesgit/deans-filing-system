@@ -349,6 +349,23 @@ export const FileManagementPage = () => {
     setOpenDropdownFolderId(null);
   };
 
+  const handleDownloadPdf = async () => {
+    if (selectedFile) {
+      try {
+        const response = await filesAPI.download(selectedFile.id);
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', selectedFile.filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } catch (error) {
+        console.error('Failed to download file:', error);
+      }
+    }
+  };
+
   return (
     <>
       <SidePanel />
@@ -805,7 +822,7 @@ export const FileManagementPage = () => {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="btn btn-primary" style={{ width: "100%" }}>
+              <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleDownloadPdf}>
                 Download PDF
               </button>
             </div>

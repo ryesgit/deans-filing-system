@@ -336,7 +336,8 @@
 
 .group .folder-files-card.folder-files-visible {
   opacity: 1;
-  max-height: 600px;
+  max-height: 800px;
+  overflow-y: auto;
   animation: fadeInUp 0.4s ease-out;
 }
 

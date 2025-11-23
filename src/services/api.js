@@ -77,6 +77,7 @@ export const statsAPI = {
 export const filesAPI = {
   getAll: () => api.get('/api/files/all'),
   search: (query) => api.get('/api/files/search', { params: { q: query } }),
+  download: (id) => api.get(`/api/files/download/${id}`, { responseType: 'blob' }),
   upload: (formData) => api.post('/api/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
