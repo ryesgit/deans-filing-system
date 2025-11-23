@@ -3,9 +3,11 @@ import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+import { requestsAPI } from "../services/api";
 const ConfirmModal = ({
   isOpen,
   onClose,
@@ -90,6 +92,9 @@ const FormCard = ({ onSubmit }) => {
 
   const categories = [
     "Thesis",
+    "Capstone",
+    "Research",
+    "Administrative",
     "Research Papers",
     "Reports",
     "Guidelines",
@@ -103,6 +108,15 @@ const FormCard = ({ onSubmit }) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleFileSelect = (fileInfo) => {
+    setFormData((prev) => ({
+      ...prev,
+      fileName: fileInfo.fileName,
+      department: fileInfo.department || "",
+      fileCategory: fileInfo.fileCategory || "",
     }));
   };
 
@@ -139,26 +153,35 @@ const FormCard = ({ onSubmit }) => {
     setShowSubmitModal(true);
   };
 
-  const handleConfirmSubmit = () => {
-    const request = {
-      id: `REQ-${String(Date.now()).slice(-4)}`,
-      fileName: formData.fileName,
-      dateRequested: format(new Date(), "MM/dd/yyyy"),
-      returnDue:
-        formData.copyType === "original"
-          ? format(new Date(formData.returnDate), "MM/dd/yyyy")
-          : "-",
-      status: "Pending",
-      copyType: formData.copyType,
-      priority: formData.priority,
-      department: formData.department,
-      category: formData.fileCategory,
-      purpose: formData.purpose,
+  const handleConfirmSubmit = async () => {
+    const descriptionParts = [
+      `Purpose: ${formData.purpose}`,
+      `Department: ${formData.department}`,
+      `Category: ${formData.fileCategory}`,
+      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"}`
+    ];
+
+    if (formData.copyType === "original" && formData.returnDate) {
+      descriptionParts.push(`Return Date: ${formData.returnDate}`);
+    }
+
+    const requestData = {
+      title: formData.fileName,
+      description: descriptionParts.join('\n'),
+      type: 'FILE_ACCESS',
+      priority: formData.priority || 'normal'
     };
 
-    onSubmit(request);
-    setShowSubmitModal(false);
-    handleClear();
+    try {
+      const response = await requestsAPI.create(requestData);
+      onSubmit(response.data.request || response.data);
+      setShowSubmitModal(false);
+      handleClear();
+    } catch (error) {
+      console.error('Failed to submit request:', error);
+      alert(error.response?.data?.message || error.message || 'Failed to submit request');
+      setShowSubmitModal(false);
+    }
   };
 
   const handleClearClick = () => {
@@ -196,12 +219,10 @@ const FormCard = ({ onSubmit }) => {
 
       <div className="form-row-three">
         <div className="form-field">
-          <input
-            type="text"
-            className="form-input"
-            placeholder="File Name"
+          <FileSearchInput
             value={formData.fileName}
-            onChange={(e) => handleChange("fileName", e.target.value)}
+            onChange={(value) => handleChange("fileName", value)}
+            onFileSelect={handleFileSelect}
           />
         </div>
 
@@ -484,6 +505,10 @@ const QRCard = ({
 const RequestCard = ({ requests = [] }) => {
   const getStatusClass = (status) => {
     const statusMap = {
+      PENDING: "status-pending",
+      APPROVED: "status-approved",
+      DECLINED: "status-declined",
+      CANCELLED: "status-cancelled",
       Pending: "status-pending",
       Approved: "status-approved",
       Borrowed: "status-borrowed",
@@ -492,6 +517,16 @@ const RequestCard = ({ requests = [] }) => {
       "View PDF": "status-view-pdf",
     };
     return statusMap[status] || "status-pending";
+  };
+
+  const getStatusLabel = (status) => {
+    const labelMap = {
+      PENDING: "Pending",
+      APPROVED: "Approved",
+      DECLINED: "Declined",
+      CANCELLED: "Cancelled",
+    };
+    return labelMap[status] || status;
   };
 
   const handleStatusClick = (request) => {
@@ -543,7 +578,7 @@ const RequestCard = ({ requests = [] }) => {
                           request.status === "View PDF" ? "pointer" : "default",
                       }}
                     >
-                      {request.status}
+                      {getStatusLabel(request.status)}
                     </span>
                   </td>
                 </tr>
@@ -558,40 +593,50 @@ const RequestCard = ({ requests = [] }) => {
 
 export const RequestPage = () => {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   const { notifications, unreadCount } = useNotifications();
 
+  // Fetch requests from API on mount
   useEffect(() => {
-    const savedRequests = localStorage.getItem("fileRequests");
-    if (savedRequests) {
-      setRequests(JSON.parse(savedRequests));
-    }
+    const fetchRequests = async () => {
+      try {
+        const response = await requestsAPI.getAll();
+        const requestsData = response.data.requests || response.data;
+        const mappedRequests = Array.isArray(requestsData)
+          ? requestsData.map(req => ({
+              id: req.id,
+              fileName: req.title,
+              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
+              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
+              status: req.status,
+              copyType: req.type
+            }))
+          : [];
+        setRequests(mappedRequests);
+      } catch (error) {
+        console.error('Failed to fetch requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("fileRequests", JSON.stringify(requests));
-  }, [requests]);
-
   const handleSubmitRequest = (newRequest) => {
-    setRequests((prev) => [newRequest, ...prev]);
-
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) => {
-          if (req.id === newRequest.id && req.status === "Pending") {
-            if (req.copyType === "soft") {
-              return { ...req, status: "View PDF" };
-            } else {
-              return { ...req, status: "Approved" };
-            }
-          }
-          return req;
-        })
-      );
-    }, 3000);
+    const mappedRequest = {
+      id: newRequest.id,
+      fileName: newRequest.title,
+      dateRequested: newRequest.createdAt ? new Date(newRequest.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+      returnDue: newRequest.approvedAt ? new Date(newRequest.approvedAt).toLocaleDateString() : 'N/A',
+      status: newRequest.status,
+      copyType: newRequest.type
+    };
+    setRequests((prev) => [mappedRequest, ...prev]);
   };
 
   const filesAssigned = requests.filter(

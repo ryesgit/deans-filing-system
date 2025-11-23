@@ -1,66 +1,13 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "../DeptHeadPage/UserManagementPage/UserManagement.css";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+import { usersAPI } from "../services/api";
 
 export const UserManagementPage = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Joshua Pagkaliwangan",
-      role: "Faculty Member",
-      department: "Computer Engineering",
-      dateJoined: "10/25/2025",
-      status: "active",
-      tags: ["active", "faculty"],
-    },
-    {
-      id: 2,
-      name: "Maria Santos",
-      role: "Department Head",
-      department: "Electrical Engineering",
-      dateJoined: "09/15/2024",
-      status: "active",
-      tags: ["active", "head"],
-    },
-    {
-      id: 3,
-      name: "John Dela Cruz",
-      role: "Faculty Member",
-      department: "Mechanical Engineering",
-      dateJoined: "11/10/2024",
-      status: "active",
-      tags: ["active", "faculty"],
-    },
-    {
-      id: 4,
-      name: "Anna Reyes",
-      role: "Faculty Member",
-      department: "Civil Engineering",
-      dateJoined: "08/20/2024",
-      status: "inactive",
-      tags: ["faculty"],
-    },
-    {
-      id: 5,
-      name: "Carlos Mendoza",
-      role: "Department Head",
-      department: "Computer Engineering",
-      dateJoined: "07/05/2024",
-      status: "active",
-      tags: ["active", "head"],
-    },
-    {
-      id: 6,
-      name: "Lisa Garcia",
-      role: "Faculty Member",
-      department: "Computer Engineering",
-      dateJoined: "12/01/2024",
-      status: "active",
-      tags: ["active", "faculty"],
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -77,20 +24,56 @@ export const UserManagementPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { notifications, unreadCount } = useNotifications();
 
+  // Fetch users from API on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await usersAPI.getAll();
+        const usersData = response.data.users || response.data;
+        const mappedUsers = Array.isArray(usersData)
+          ? usersData.map(user => ({
+              id: user.id,
+              userId: user.userId,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              department: user.department || 'N/A',
+              status: user.status,
+              dateJoined: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A',
+              tags: [
+                user.status === 'ACTIVE' ? 'active' : 'inactive',
+                user.role === 'FACULTY' ? 'faculty' : null,
+                user.role === 'ADMIN' ? 'head' : null,
+                user.role === 'STAFF' ? 'head' : null
+              ].filter(Boolean)
+            }))
+          : [];
+        setUsers(mappedUsers);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (!filterOptions.showAll) {
       if (filterOptions.showActive) {
-        filtered = filtered.filter((user) => user.status === "active");
+        filtered = filtered.filter((user) => user.status === "ACTIVE");
       }
       if (filterOptions.showFaculty) {
-        filtered = filtered.filter((user) => user.role === "Faculty Member");
+        filtered = filtered.filter((user) => user.role === "FACULTY");
       }
       if (filterOptions.showHeads) {
-        filtered = filtered.filter((user) => user.role === "Department Head");
+        filtered = filtered.filter((user) => user.role === "ADMIN" || user.role === "STAFF");
       }
     }
 
@@ -101,7 +84,7 @@ export const UserManagementPage = () => {
     }
 
     return filtered;
-  }, [users, filterOptions]);
+  }, [users, filterOptions, searchTerm]);
 
   const statistics = useMemo(() => {
     return {
@@ -112,24 +95,54 @@ export const UserManagementPage = () => {
     };
   }, [users]);
 
-  const handleAddUser = (newUser) => {
-    const tags = [];
-    if (newUser.status === "active") tags.push("active");
-    if (newUser.role === "Faculty Member") tags.push("faculty");
-    if (newUser.role === "Department Head") tags.push("head");
+  const handleAddUser = async (newUser) => {
+    try {
+      const userData = {
+        userId: `USER${Date.now()}`,
+        name: newUser.name,
+        email: newUser.email || null,
+        password: "password123",
+        role: newUser.role,
+        department: newUser.department,
+        status: newUser.status === "active" ? "ACTIVE" : "INACTIVE"
+      };
 
-    const userWithId = {
-      ...newUser,
-      id: users.length + 1,
-      tags,
-    };
+      const response = await usersAPI.create(userData);
+      const createdUser = response.data.user || response.data;
 
-    setUsers([...users, userWithId]);
-    setIsAddUserModalOpen(false);
+      const mappedUser = {
+        id: createdUser.id,
+        userId: createdUser.userId,
+        name: createdUser.name,
+        email: createdUser.email,
+        role: createdUser.role,
+        department: createdUser.department || 'N/A',
+        status: createdUser.status,
+        dateJoined: createdUser.createdAt ? new Date(createdUser.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+        tags: [
+          createdUser.status === 'ACTIVE' ? 'active' : 'inactive',
+          createdUser.role === 'FACULTY' ? 'faculty' : null,
+          createdUser.role === 'ADMIN' ? 'head' : null,
+          createdUser.role === 'STAFF' ? 'head' : null
+        ].filter(Boolean)
+      };
+
+      setUsers([...users, mappedUser]);
+      setIsAddUserModalOpen(false);
+    } catch (error) {
+      console.error('Failed to add user:', error);
+      alert(error.message || 'Failed to add user');
+    }
   };
 
-  const handleDeleteUser = (userId) => {
-    setUsers(users.filter((user) => user.id !== userId));
+  const handleDeleteUser = async (userIdToDelete) => {
+    try {
+      await usersAPI.delete(userIdToDelete);
+      setUsers(users.filter((user) => user.userId !== userIdToDelete));
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      alert(error.message || 'Failed to delete user');
+    }
   };
 
   const handleFilterApply = (filters) => {
@@ -317,7 +330,7 @@ export const UserManagementPage = () => {
                   <div className="user-photo" />
                   <div
                     className={`status ${
-                      user.status === "active" ? "active" : "inactive"
+                      user.status === "ACTIVE" ? "active" : "inactive"
                     }`}
                   />
                 </div>
@@ -339,7 +352,7 @@ export const UserManagementPage = () => {
                   <div className="list-photo" />
                   <div
                     className={`list-status ${
-                      user.status === "active" ? "active" : "inactive"
+                      user.status === "ACTIVE" ? "active" : "inactive"
                     }`}
                   />
                   <div className="list-content">
@@ -349,8 +362,8 @@ export const UserManagementPage = () => {
                       <span className="list-separator">•</span>
                       <span className="list-department">{user.department}</span>
                       <span className="list-separator">•</span>
-                      <span className={`list-status-text ${user.status}`}>
-                        {user.status === "active" ? "Active" : "Inactive"}
+                      <span className={`list-status-text ${user.status === "ACTIVE" ? "active" : "inactive"}`}>
+                        {user.status === "ACTIVE" ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
@@ -402,7 +415,8 @@ export const UserManagementPage = () => {
 const AddUserModal = ({ onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: "",
-    role: "Faculty Member",
+    email: "",
+    role: "FACULTY",
     department: "",
     status: "active",
     dateJoined: new Date().toLocaleDateString("en-US", {
@@ -451,6 +465,25 @@ const AddUserModal = ({ onClose, onSave }) => {
           </div>
 
           <div className="form-group">
+            <label className="form-label">Email (Optional)</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="Enter email address"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <div style={{ padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px', fontSize: '14px' }}>
+              Default password: <strong>password123</strong>
+            </div>
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Role</label>
             <select
               name="role"
@@ -458,9 +491,10 @@ const AddUserModal = ({ onClose, onSave }) => {
               onChange={handleChange}
               className="form-select"
             >
-              <option value="Faculty Member">Faculty Member</option>
-              <option value="Department Head">Department Head</option>
-              <option value="Staff">Staff</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="STAFF">Staff</option>
+              <option value="ADMIN">Admin</option>
+              <option value="STUDENT">Student</option>
             </select>
           </div>
 
@@ -639,7 +673,7 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
 const UserDetailsModal = ({ user, onClose, onDelete }) => {
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-      onDelete(user.id);
+      onDelete(user.userId);
       onClose();
     }
   };
@@ -670,8 +704,8 @@ const UserDetailsModal = ({ user, onClose, onDelete }) => {
 
           <div className="info-row">
             <span className="info-label">Status</span>
-            <span className={`info-value status-badge ${user.status}`}>
-              {user.status === "active" ? "Active" : "Inactive"}
+            <span className={`info-value status-badge ${user.status === "ACTIVE" ? "active" : "inactive"}`}>
+              {user.status === "ACTIVE" ? "Active" : user.status === "INACTIVE" ? "Inactive" : user.status}
             </span>
           </div>
 

@@ -35,11 +35,7 @@ export const SidePanel = () => {
     <div className="side-panel">
       <div className="rectangle-6" />
 
-      <img
-        className="side-panel-logo"
-        alt="Logo"
-        src="public/PUP Logo.png"
-      />
+      <img className="side-panel-logo" alt="Logo" src="public/PUP Logo.png" />
 
       <div className="text-wrapper-57">MAIN MENU</div>
 
@@ -51,7 +47,11 @@ export const SidePanel = () => {
           }`}
           onClick={() => handleNavigation("dashboard")}
         >
-          <img className="vector-7" alt="Vector" src="public/dashboard icon.png" />
+          <img
+            className="vector-7"
+            alt="Vector"
+            src="public/dashboard icon.png"
+          />
           <div className="text-wrapper-56">Dashboard</div>
         </Link>
 
@@ -72,7 +72,9 @@ export const SidePanel = () => {
 
         <Link
           to="/request"
-          className={`request ${currentActiveItem === "request" ? "active" : ""}`}
+          className={`request ${
+            currentActiveItem === "request" ? "active" : ""
+          }`}
           onClick={() => handleNavigation("request")}
         >
           <img
@@ -83,7 +85,7 @@ export const SidePanel = () => {
           <div className="text-wrapper-54">Request</div>
         </Link>
 
-        {user?.role === "admin" && (
+        {user?.role === "ADMIN" && (
           <Link
             to="/user-management"
             className={`user-management ${
@@ -131,11 +133,7 @@ export const SidePanel = () => {
         </Link>
       </nav>
 
-      <Link
-        to="/login"
-        className="logout"
-        onClick={handleLogout}
-      >
+      <Link to="/login" className="logout" onClick={handleLogout}>
         <img
           className="vector"
           alt="Vector"

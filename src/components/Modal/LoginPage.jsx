@@ -1,23 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import "./LoginPage.css";
 
 export const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, error, clearError } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const [error, setError] = useState("");
+
+  const handleUsernameChange = (e) => {
+    if (error) clearError();
+    setUsername(e.target.value);
+  };
+
+  const handlePasswordChange = (e) => {
+    if (error) clearError();
+    setPassword(e.target.value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-    const result = await login({ username, password });
-    if (!result.success) {
-      setError(result.message || "An unexpected error occurred.");
-    }
+    await login({ userId: username, password });
   };
 
   const handleResetPassword = () => {
@@ -80,7 +85,7 @@ export const LoginPage = () => {
                 id="username"
                 name="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={handleUsernameChange}
                 onFocus={() => setUsernameFocused(true)}
                 onBlur={() => setUsernameFocused(false)}
                 placeholder=""
@@ -121,7 +126,7 @@ export const LoginPage = () => {
                 id="password"
                 name="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
                 placeholder=""
