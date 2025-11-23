@@ -52,6 +52,8 @@ export const FileManagementPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [openDropdownFolderId, setOpenDropdownFolderId] = useState(null);
   const [fileError, setFileError] = useState("");
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const { notifications, unreadCount } = useNotifications();
 
@@ -232,10 +234,31 @@ export const FileManagementPage = () => {
     }
   };
 
-  const handleViewFile = (file) => {
+  const handleViewFile = async (file) => {
     setSelectedFile(file);
     setShowViewModal(true);
+    setPdfLoading(true);
+    setPdfUrl(null);
+
+    try {
+      const response = await filesAPI.download(file.id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error('Failed to load PDF:', error);
+    } finally {
+      setPdfLoading(false);
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   const handleEditFile = (file) => {
     setSelectedFile(file);
@@ -360,6 +383,7 @@ export const FileManagementPage = () => {
         document.body.appendChild(link);
         link.click();
         link.remove();
+        window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Failed to download file:', error);
       }
@@ -794,8 +818,15 @@ export const FileManagementPage = () => {
 
       <Modal
         isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
-        title="File Details"
+        onClose={() => {
+          setShowViewModal(false);
+          if (pdfUrl) {
+            window.URL.revokeObjectURL(pdfUrl);
+          }
+          setPdfUrl(null);
+          setPdfLoading(false);
+        }}
+        title="File Preview"
       >
         {selectedFile && (
           <>
@@ -821,8 +852,37 @@ export const FileManagementPage = () => {
                 </span>
               </div>
             </div>
+            {pdfLoading && (
+              <div className="pdf-preview" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '600px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '8px',
+                marginTop: '20px',
+                backgroundColor: '#f5f5f5'
+              }}>
+                <p style={{
+                  fontFamily: 'Poppins, Helvetica',
+                  fontSize: '16px',
+                  color: '#666'
+                }}>Loading PDF...</p>
+              </div>
+            )}
+            {!pdfLoading && pdfUrl && (
+              <div className="pdf-preview">
+                <iframe
+                  src={pdfUrl}
+                  title="PDF Preview"
+                  width="100%"
+                  height="600px"
+                  style={{ border: '1px solid #e0e0e0', borderRadius: '8px', marginTop: '20px' }}
+                />
+              </div>
+            )}
             <div className="modal-actions">
-              <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleDownloadPdf}>
+              <button className="btn btn-primary" onClick={handleDownloadPdf}>
                 Download PDF
               </button>
             </div>
