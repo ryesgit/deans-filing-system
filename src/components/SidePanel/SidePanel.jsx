@@ -35,7 +35,7 @@ export const SidePanel = () => {
     <div className="side-panel">
       <div className="rectangle-6" />
 
-      <img className="side-panel-logo" alt="Logo" src="public/PUP Logo.png" />
+      <img className="side-panel-logo" alt="Logo" src="/PUP Logo.png" />
 
       <div className="text-wrapper-57">MAIN MENU</div>
 
@@ -50,7 +50,7 @@ export const SidePanel = () => {
           <img
             className="vector-7"
             alt="Vector"
-            src="public/dashboard icon.png"
+            src="/dashboard icon.png"
           />
           <div className="text-wrapper-56">Dashboard</div>
         </Link>

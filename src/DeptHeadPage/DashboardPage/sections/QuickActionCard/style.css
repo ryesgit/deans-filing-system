@@ -13,7 +13,7 @@
   overflow: hidden; /* Ensures pseudo-element stays within border-radius */
 
   /* Add your background image here */
-  background-image: url("public/Rectangle 24.png");
+  background-image: url("/Rectangle 24.png");
   background-size: 120%;
   background-position: center;
   color: #ffffff; /* Change default text color to white for better contrast */

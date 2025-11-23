@@ -31,7 +31,7 @@ export const LoginPage = () => {
 
   return (
     <div className="login-page">
-      <img className="login-page-image" alt="Frame" src="public/Frame 2.png" />
+      <img className="login-page-image" alt="Frame" src="/Frame 2.png" />
 
       <div className="login-page-right">
         {error && (
@@ -142,9 +142,9 @@ export const LoginPage = () => {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <img src="public/View Icon.svg" alt="Hide password" />
+                  <img src="/View Icon.svg" alt="Hide password" />
                 ) : (
-                  <img src="public/Show Icon.svg" alt="Show password" />
+                  <img src="/Show Icon.svg" alt="Show password" />
                 )}
               </button>
             </div>
