@@ -1,35 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { Modal } from "../components/Modal/Modal";
 import "../DeptHeadPage/FileManagementPage/style.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
-
-const mockFolders = [
-  {
-    id: 1,
-    name: "Thesis Papers",
-    fileCount: 1,
-    category: "Research",
-    files: [
-      {
-        id: "0001",
-        name: "AI_in_Education.pdf",
-        dateAdded: "Oct 20, 2025",
-        department: "Computer Engineering",
-        category: "Research",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Course Syllabi",
-    fileCount: 0,
-    category: "Academics",
-    files: [],
-  },
-];
+import { filesAPI, categoriesAPI } from "../services/api";
 
 const categories = [
   "Research",
@@ -45,7 +21,8 @@ const departments = [
 ];
 
 export const FileManagementPage = () => {
-  const [folders, setFolders] = useState(mockFolders);
+  const [folders, setFolders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
@@ -54,7 +31,6 @@ export const FileManagementPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
-  const [showFolderDetailsModal, setShowFolderDetailsModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [folderToEdit, setFolderToEdit] = useState(null);
@@ -62,14 +38,10 @@ export const FileManagementPage = () => {
   const [addFolderForm, setAddFolderForm] = useState({
     name: "",
     category: "",
-    row: "",
-    column: "",
   });
   const [editFolderForm, setEditFolderForm] = useState({
     name: "",
     category: "",
-    row: "",
-    column: "",
   });
   const [fileForm, setFileForm] = useState({
     name: "",
@@ -80,76 +52,116 @@ export const FileManagementPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [openDropdownFolderId, setOpenDropdownFolderId] = useState(null);
   const [fileError, setFileError] = useState("");
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const { notifications, unreadCount } = useNotifications();
-  const handleAddFolder = () => {
-    if (
-      addFolderForm.name &&
-      addFolderForm.category &&
-      addFolderForm.row &&
-      addFolderForm.column
-    ) {
-      const newFolder = {
-        id: Date.now(),
-        name: addFolderForm.name,
-        fileCount: 0,
-        category: addFolderForm.category,
-        row: addFolderForm.row,
-        column: addFolderForm.column,
-        files: [],
-      };
-      setFolders([...folders, newFolder]);
-      setAddFolderForm({ name: "", category: "", row: "", column: "" });
-      setShowFolderModal(false);
-    }
-  };
 
-  const handleUpdateFolder = () => {
-    if (
-      folderToEdit &&
-      editFolderForm.name &&
-      editFolderForm.category &&
-      editFolderForm.row &&
-      editFolderForm.column
-    ) {
-      const updatedFolders = folders.map((folder) =>
-        folder.id === folderToEdit.id
-          ? {
-              ...folder,
-              name: editFolderForm.name,
-              category: editFolderForm.category,
-              row: editFolderForm.row,
-              column: editFolderForm.column,
-            }
-          : folder
-      );
-      setFolders(updatedFolders);
-      setShowEditFolderModal(false);
-      setFolderToEdit(null);
-    }
-  };
-
-  const confirmDeleteFolder = () => {
-    if (folderToDelete) {
-      setFolders(folders.filter((folder) => folder.id !== folderToDelete.id));
-      if (selectedFolder && selectedFolder.id === folderToDelete.id) {
-        setSelectedFolder(null);
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesAPI.getAll();
+        const categoriesData = Array.isArray(response.data.categories) ? response.data.categories : [];
+        setFolders(categoriesData);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        setFolders([]);
+      } finally {
+        setLoading(false);
       }
-      setShowDeleteFolderModal(false);
-      setFolderToDelete(null);
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleAddFolder = async () => {
+    if (addFolderForm.name) {
+      try {
+        const response = await categoriesAPI.create({
+          name: addFolderForm.name,
+          description: addFolderForm.category,
+        });
+        const newFolder = {
+          ...response.data.category,
+          fileCount: 0,
+          files: []
+        };
+        setFolders([...folders, newFolder]);
+        setAddFolderForm({ name: "", category: "" });
+        setShowFolderModal(false);
+      } catch (error) {
+        console.error('Failed to add category:', error);
+      }
     }
   };
 
-  const handleFolderClick = (folder) => {
+  const handleUpdateFolder = async () => {
+    if (folderToEdit && editFolderForm.name) {
+      try {
+        await categoriesAPI.update(folderToEdit.id, {
+          name: editFolderForm.name,
+          description: editFolderForm.category,
+        });
+        const updatedFolders = folders.map((folder) =>
+          folder.id === folderToEdit.id
+            ? {
+                ...folder,
+                name: editFolderForm.name,
+                description: editFolderForm.category,
+              }
+            : folder
+        );
+        setFolders(updatedFolders);
+        setShowEditFolderModal(false);
+        setFolderToEdit(null);
+      } catch (error) {
+        console.error('Failed to update category:', error);
+      }
+    }
+  };
+
+  const confirmDeleteFolder = async () => {
+    if (folderToDelete) {
+      try {
+        await categoriesAPI.delete(folderToDelete.id);
+        setFolders(folders.filter((folder) => folder.id !== folderToDelete.id));
+        if (selectedFolder && selectedFolder.id === folderToDelete.id) {
+          setSelectedFolder(null);
+        }
+        setShowDeleteFolderModal(false);
+        setFolderToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete category:', error);
+        alert(error.message || 'Failed to delete category. It may contain files.');
+      }
+    }
+  };
+
+  const handleFolderClick = async (folder) => {
     if (openDropdownFolderId === folder.id) {
       setOpenDropdownFolderId(null);
       return;
     }
-    setSelectedFolder(folder);
-    setOpenDropdownFolderId(null);
+    try {
+      const response = await categoriesAPI.getById(folder.id);
+      const categoryWithFiles = response.data.category;
+      setSelectedFolder({
+        ...categoryWithFiles,
+        files: categoryWithFiles.files || []
+      });
+      setOpenDropdownFolderId(null);
+    } catch (error) {
+      console.error('Failed to fetch category files:', error);
+      setSelectedFolder({
+        ...folder,
+        files: []
+      });
+      setOpenDropdownFolderId(null);
+    }
   };
 
-  const handleAddFile = () => {
+  const handleAddFile = async () => {
     setFileError("");
 
     if (!fileForm.name || !fileForm.department || !fileForm.category) {
@@ -167,51 +179,46 @@ export const FileManagementPage = () => {
       return;
     }
 
-    if (selectedFolder) {
-      const newFile = {
-        id: String(selectedFolder.files.length + 1).padStart(4, "0"),
-        name: fileForm.file.name,
-        dateAdded: new Date().toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }),
-        department: fileForm.department,
-        category: fileForm.category,
-        url: URL.createObjectURL(fileForm.file), // Create a URL for the preview
-      };
+    try {
+      const formData = new FormData();
+      formData.append('file', fileForm.file);
+      formData.append('name', fileForm.name);
+      formData.append('department', fileForm.department);
+      formData.append('category', fileForm.category);
+      if (selectedFolder) {
+        formData.append('folderId', selectedFolder.id);
+      }
 
-      const updatedFolders = folders.map((folder) =>
-        folder.id === selectedFolder.id
-          ? {
-              ...folder,
-              files: [...folder.files, newFile],
-              fileCount: folder.fileCount + 1,
-            }
-          : folder
-      );
+      const response = await filesAPI.upload(formData);
+      const newFile = response.data;
 
-      setFolders(updatedFolders);
-      setSelectedFolder({
-        ...selectedFolder,
-        files: [...selectedFolder.files, newFile],
-        fileCount: selectedFolder.fileCount + 1,
-      });
+      if (selectedFolder) {
+        const updatedFolders = folders.map((folder) =>
+          folder.id === selectedFolder.id
+            ? {
+                ...folder,
+                files: [...(folder.files || []), newFile],
+                fileCount: (folder.fileCount || 0) + 1,
+              }
+            : folder
+        );
+
+        setFolders(updatedFolders);
+        setSelectedFolder({
+          ...selectedFolder,
+          files: [...(selectedFolder.files || []), newFile],
+          fileCount: (selectedFolder.fileCount || 0) + 1,
+        });
+      }
+      
       setFileForm({ name: "", department: "", category: "", file: null });
       setShowFileModal(false);
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      setFileError(error.message || 'Failed to upload file');
     }
   };
 
-  const handleDownloadFile = () => {
-    if (selectedFile && selectedFile.url) {
-      const link = document.createElement("a");
-      link.href = selectedFile.url;
-      link.download = selectedFile.name; // The name for the downloaded file
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setFileError("");
@@ -227,58 +234,78 @@ export const FileManagementPage = () => {
     }
   };
 
-  const handleViewFile = (file) => {
+  const handleViewFile = async (file) => {
     setSelectedFile(file);
     setShowViewModal(true);
+    setPdfLoading(true);
+    setPdfUrl(null);
+
+    try {
+      const response = await filesAPI.download(file.id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error('Failed to load PDF:', error);
+    } finally {
+      setPdfLoading(false);
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   const handleEditFile = (file) => {
     setSelectedFile(file);
     setFileForm({
-      name: file.name,
-      department: file.department,
-      category: file.category,
+      name: file.filename || file.name,
+      department: file.user?.department || file.department || '',
+      category: file.category?.name || file.category || '',
       file: null,
     });
     setShowEditModal(true);
   };
 
-  const handleUpdateFile = () => {
+  const handleUpdateFile = async () => {
     if (selectedFolder && selectedFile) {
-      const updatedFolders = folders.map((folder) =>
-        folder.id === selectedFolder.id
-          ? {
-              ...folder,
-              files: folder.files.map((f) =>
-                f.id === selectedFile.id
-                  ? {
-                      ...f,
-                      name: fileForm.name,
-                      department: fileForm.department,
-                      category: fileForm.category,
-                    }
-                  : f
-              ),
-            }
-          : folder
-      );
+      try {
+        const updateData = {
+          name: fileForm.name,
+          category: fileForm.category,
+        };
 
-      setFolders(updatedFolders);
-      setSelectedFolder({
-        ...selectedFolder,
-        files: selectedFolder.files.map((f) =>
-          f.id === selectedFile.id
+        const response = await filesAPI.update(selectedFile.id, updateData);
+        const updatedFile = response.data.file;
+
+        const updatedFolders = folders.map((folder) =>
+          folder.id === selectedFolder.id
             ? {
-                ...f,
-                name: fileForm.name,
-                department: fileForm.department,
-                category: fileForm.category,
+                ...folder,
+                files: (folder.files || []).map((f) =>
+                  f.id === selectedFile.id ? updatedFile : f
+                ),
               }
-            : f
-        ),
-      });
-      setShowEditModal(false);
-      setFileForm({ name: "", department: "", category: "", file: null });
+            : folder
+        );
+
+        setFolders(updatedFolders);
+        setSelectedFolder({
+          ...selectedFolder,
+          files: (selectedFolder.files || []).map((f) =>
+            f.id === selectedFile.id ? updatedFile : f
+          ),
+        });
+        setShowEditModal(false);
+        setFileForm({ name: "", department: "", category: "", file: null });
+      } catch (error) {
+        console.error('Failed to update file:', error);
+        setFileError(error.message || 'Failed to update file');
+      }
     }
   };
 
@@ -287,26 +314,33 @@ export const FileManagementPage = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteFile = () => {
+  const confirmDeleteFile = async () => {
     if (selectedFolder && fileToDelete) {
-      const updatedFolders = folders.map((folder) =>
-        folder.id === selectedFolder.id
-          ? {
-              ...folder,
-              files: folder.files.filter((f) => f.id !== fileToDelete.id),
-              fileCount: folder.fileCount - 1,
-            }
-          : folder
-      );
+      try {
+        await filesAPI.delete(fileToDelete.id);
 
-      setFolders(updatedFolders);
-      setSelectedFolder({
-        ...selectedFolder,
-        files: selectedFolder.files.filter((f) => f.id !== fileToDelete.id),
-        fileCount: selectedFolder.fileCount - 1,
-      });
-      setShowDeleteModal(false);
-      setFileToDelete(null);
+        const updatedFolders = folders.map((folder) =>
+          folder.id === selectedFolder.id
+            ? {
+                ...folder,
+                files: (folder.files || []).filter((f) => f.id !== fileToDelete.id),
+                fileCount: (folder.fileCount || 0) - 1,
+              }
+            : folder
+        );
+
+        setFolders(updatedFolders);
+        setSelectedFolder({
+          ...selectedFolder,
+          files: (selectedFolder.files || []).filter((f) => f.id !== fileToDelete.id),
+          fileCount: (selectedFolder.fileCount || 0) - 1,
+        });
+        setShowDeleteModal(false);
+        setFileToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete file:', error);
+        alert(error.message || 'Failed to delete file');
+      }
     }
   };
 
@@ -320,12 +354,7 @@ export const FileManagementPage = () => {
   const handleEditFolder = (e, folder) => {
     e.stopPropagation();
     setFolderToEdit(folder);
-    setEditFolderForm({
-      name: folder.name,
-      category: folder.category,
-      row: folder.row || "",
-      column: folder.column || "",
-    });
+    setEditFolderForm({ name: folder.name, category: folder.category });
     setShowEditFolderModal(true);
     setOpenDropdownFolderId(null);
   };
@@ -340,8 +369,25 @@ export const FileManagementPage = () => {
   const handleShowDetails = (e, folder) => {
     e.stopPropagation();
     setSelectedFolder(folder);
-    setShowFolderDetailsModal(true);
     setOpenDropdownFolderId(null);
+  };
+
+  const handleDownloadPdf = async () => {
+    if (selectedFile) {
+      try {
+        const response = await filesAPI.download(selectedFile.id);
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', selectedFile.filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Failed to download file:', error);
+      }
+    }
   };
 
   return (
@@ -485,7 +531,7 @@ export const FileManagementPage = () => {
                   <h2 className="text-wrapper-32">{selectedFolder.name}</h2>
                   <div className="file-count-2">
                     <span className="text-wrapper-30">
-                      {selectedFolder.files.length}
+                      {(selectedFolder.files || []).length}
                     </span>
                   </div>
                 </div>
@@ -508,7 +554,7 @@ export const FileManagementPage = () => {
                   <div>Actions</div>
                 </div>
 
-                {selectedFolder.files.map((file) => (
+                {(selectedFolder.files || []).map((file) => (
                   <div key={file.id} className="file-row">
                     <div data-label="File ID">{file.id}</div>
                     <div data-label="File Name">
@@ -517,11 +563,13 @@ export const FileManagementPage = () => {
                         alt="File icon"
                         src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/file-icon-05.svg"
                       />
-                      {file.name}
+                      {file.filename || file.name || 'N/A'}
                     </div>
-                    <div data-label="Date Added">{file.dateAdded}</div>
-                    <div data-label="Department">{file.department}</div>
-                    <div data-label="Category">{file.category}</div>
+                    <div data-label="Date Added">
+                      {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : (file.dateAdded || 'N/A')}
+                    </div>
+                    <div data-label="Department">{file.user?.department || file.department || 'N/A'}</div>
+                    <div data-label="Category">{file.category?.name || file.category || 'N/A'}</div>
                     <div data-label="Actions" className="file-actions">
                       <button
                         className="file-action-btn view"
@@ -584,46 +632,7 @@ export const FileManagementPage = () => {
               ))}
             </select>
           </div>
-          <div className="form-group-row-col">
-            <div className="form-row-split">
-              <div className="form-group">
-                <label>Row</label>
-                <select
-                  value={addFolderForm.row}
-                  onChange={(e) =>
-                    setAddFolderForm({ ...addFolderForm, row: e.target.value })
-                  }
-                >
-                  <option value="" disabled>
-                    Select Row
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Column</label>
-                <select
-                  value={addFolderForm.column}
-                  onChange={(e) =>
-                    setAddFolderForm({
-                      ...addFolderForm,
-                      column: e.target.value,
-                    })
-                  }
-                >
-                  <option value="" disabled>
-                    Select Column
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="folder-modal-actions">
+          <div className="modal-actions">
             <button
               className="btn btn-secondary"
               onClick={() => setShowFolderModal(false)}
@@ -633,12 +642,7 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleAddFolder}
-              disabled={
-                !addFolderForm.name ||
-                !addFolderForm.category ||
-                !addFolderForm.row ||
-                !addFolderForm.column
-              }
+              disabled={!addFolderForm.name || !addFolderForm.category}
             >
               Save
             </button>
@@ -686,49 +690,7 @@ export const FileManagementPage = () => {
               ))}
             </select>
           </div>
-          <div className="form-group-row-col">
-            <div className="form-row-split">
-              <div className="form-group">
-                <label>Row</label>
-                <select
-                  value={editFolderForm.row}
-                  onChange={(e) =>
-                    setEditFolderForm({
-                      ...editFolderForm,
-                      row: e.target.value,
-                    })
-                  }
-                >
-                  <option value="" disabled>
-                    Select Row
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Column</label>
-                <select
-                  value={editFolderForm.column}
-                  onChange={(e) =>
-                    setEditFolderForm({
-                      ...editFolderForm,
-                      column: e.target.value,
-                    })
-                  }
-                >
-                  <option value="" disabled>
-                    Select Column
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="folder-modal-actions">
+          <div className="modal-actions">
             <button
               className="btn btn-secondary"
               onClick={() => setShowEditFolderModal(false)}
@@ -738,12 +700,7 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleUpdateFolder}
-              disabled={
-                !editFolderForm.name ||
-                !editFolderForm.category ||
-                !editFolderForm.row ||
-                !editFolderForm.column
-              }
+              disabled={!editFolderForm.name || !editFolderForm.category}
             >
               Update
             </button>
@@ -761,7 +718,7 @@ export const FileManagementPage = () => {
           Are you sure you want to delete this folder and all its contents? This
           action cannot be undone.
         </p>
-        <div className="folder-modal-actions">
+        <div className="modal-actions">
           <button
             className="btn btn-secondary"
             onClick={() => setShowDeleteFolderModal(false)}
@@ -776,44 +733,6 @@ export const FileManagementPage = () => {
             Delete
           </button>
         </div>
-      </Modal>
-
-      {/* Folder Details Modal */}
-      <Modal
-        isOpen={showFolderDetailsModal}
-        onClose={() => setShowFolderDetailsModal(false)}
-        title="Folder Details"
-      >
-        {selectedFolder && (
-          <>
-            <div className="file-info">
-              <div className="file-info-row">
-                <span className="file-info-label">Folder Name:</span>
-                <span className="file-info-value">{selectedFolder.name}</span>
-              </div>
-              <div className="file-info-row">
-                <span className="file-info-label">Category:</span>
-                <span className="file-info-value">
-                  {selectedFolder.category}
-                </span>
-              </div>
-              <div className="file-info-row">
-                <span className="file-info-label">File Count:</span>
-                <span className="file-info-value">
-                  {selectedFolder.fileCount}
-                </span>
-              </div>
-              <div className="file-info-row">
-                <span className="file-info-label">Row:</span>
-                <span className="file-info-value">{selectedFolder.row}</span>
-              </div>
-              <div className="file-info-row">
-                <span className="file-info-label">Column:</span>
-                <span className="file-info-value">{selectedFolder.column}</span>
-              </div>
-            </div>
-          </>
-        )}
       </Modal>
 
       <Modal
@@ -874,7 +793,7 @@ export const FileManagementPage = () => {
             <input type="file" accept=".pdf" onChange={handleFileChange} />
             {fileError && <div className="error-message">{fileError}</div>}
           </div>
-          <div className="file-modal-actions">
+          <div className="modal-actions">
             <button
               className="btn btn-secondary"
               onClick={() => {
@@ -899,32 +818,75 @@ export const FileManagementPage = () => {
 
       <Modal
         isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
-        title={selectedFile ? selectedFile.name : "File Preview"}
+        onClose={() => {
+          setShowViewModal(false);
+          if (pdfUrl) {
+            window.URL.revokeObjectURL(pdfUrl);
+          }
+          setPdfUrl(null);
+          setPdfLoading(false);
+        }}
+        title="File Preview"
       >
         {selectedFile && (
-          <div className="file-preview-container">
-            {selectedFile.url ? (
-              <iframe
-                src={`${selectedFile.url}#toolbar=0`}
-                title={selectedFile.name}
-                className="pdf-preview-iframe"
-              />
-            ) : (
-              <div className="no-preview-message">
-                <p>No preview available for this file.</p>
+          <>
+            <div className="file-info">
+              <div className="file-info-row">
+                <span className="file-info-label">File Name:</span>
+                <span className="file-info-value">{selectedFile.filename || selectedFile.name || 'N/A'}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Department:</span>
+                <span className="file-info-value">
+                  {selectedFile.user?.department || selectedFile.department || 'N/A'}
+                </span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Category:</span>
+                <span className="file-info-value">{selectedFile.category?.name || selectedFile.category || 'N/A'}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Date Added:</span>
+                <span className="file-info-value">
+                  {selectedFile.createdAt ? new Date(selectedFile.createdAt).toLocaleDateString() : (selectedFile.dateAdded || 'N/A')}
+                </span>
+              </div>
+            </div>
+            {pdfLoading && (
+              <div className="pdf-preview" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '600px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '8px',
+                marginTop: '20px',
+                backgroundColor: '#f5f5f5'
+              }}>
+                <p style={{
+                  fontFamily: 'Poppins, Helvetica',
+                  fontSize: '16px',
+                  color: '#666'
+                }}>Loading PDF...</p>
               </div>
             )}
-            <div className="download-modal-actions">
-              <button
-                className="btn btn-primary"
-                onClick={handleDownloadFile}
-                disabled={!selectedFile.url}
-              >
+            {!pdfLoading && pdfUrl && (
+              <div className="pdf-preview">
+                <iframe
+                  src={pdfUrl}
+                  title="PDF Preview"
+                  width="100%"
+                  height="600px"
+                  style={{ border: '1px solid #e0e0e0', borderRadius: '8px', marginTop: '20px' }}
+                />
+              </div>
+            )}
+            <div className="modal-actions">
+              <button className="btn btn-primary" onClick={handleDownloadPdf}>
                 Download PDF
               </button>
             </div>
-          </div>
+          </>
         )}
       </Modal>
 
