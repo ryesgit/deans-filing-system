@@ -7,7 +7,7 @@ import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-import { requestsAPI } from "../services/api";
+import { requestsAPI, authAPI } from "../services/api";
 const ConfirmModal = ({
   isOpen,
   onClose,
@@ -49,7 +49,7 @@ const ConfirmModal = ({
   );
 };
 
-const QRModal = ({ isOpen, onClose, qrValue, userName }) => {
+const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
   if (!isOpen) return null;
 
   return (
@@ -60,7 +60,19 @@ const QRModal = ({ isOpen, onClose, qrValue, userName }) => {
         </button>
         <h2 className="qr-modal-title">Your QR Code</h2>
         <div className="qr-modal-code">
-          <QRCodeSVG value={qrValue} size={300} level="H" />
+          {qrCodeUrl ? (
+            <img
+              src={qrCodeUrl}
+              alt="QR Code"
+              style={{
+                width: '300px',
+                height: '300px',
+                objectFit: 'contain'
+              }}
+            />
+          ) : (
+            <QRCodeSVG value={qrValue} size={300} level="H" />
+          )}
         </div>
         <p className="qr-modal-user">{userName}</p>
       </div>
@@ -419,30 +431,41 @@ const QRCard = ({
   filesAssigned = 0,
   filesToReturn = 0,
   onQRCodeClick,
+  qrCodeUrl = null,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const qrValue = `USER:${userId}|NAME:${userName}`;
 
   const handleDownload = () => {
-    const svg = document.getElementById("qr-code-svg");
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
+    if (qrCodeUrl) {
+      const link = document.createElement("a");
+      link.download = `QR_${userId}.png`;
+      link.href = qrCodeUrl;
+      link.click();
+    } else {
+      const svg = document.getElementById("qr-code-svg");
+      if (!svg) return;
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      const pngFile = canvas.toDataURL("image/png");
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
 
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `QR_${userId}.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
-    };
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const pngFile = canvas.toDataURL("image/png");
 
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `QR_${userId}.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+      };
+
+      img.src = "data:image/svg+xml;base64," + btoa(svgData);
+    }
   };
 
   return (
@@ -452,14 +475,47 @@ const QRCard = ({
         className="qr-code-wrapper"
         onClick={onQRCodeClick}
         title="Click to enlarge"
+        style={{
+          background: 'white',
+          padding: '1rem',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          border: '2px solid #f0f0f0',
+          minHeight: '220px',
+          minWidth: '220px'
+        }}
       >
-        <QRCodeSVG
-          id="qr-code-svg"
-          value={qrValue}
-          size={180}
-          level="H"
-          className="qr-code-svg"
-        />
+        {qrCodeUrl && !imageLoadError ? (
+          <img
+            src={qrCodeUrl}
+            alt="QR Code"
+            className="qr-code-image"
+            style={{
+              width: '180px',
+              height: '180px',
+              objectFit: 'contain',
+              display: 'block'
+            }}
+            onError={(e) => {
+              setImageLoadError(true);
+            }}
+          />
+        ) : (
+          <div style={{ width: '180px', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <QRCodeSVG
+              id="qr-code-svg"
+              value={qrValue}
+              size={180}
+              level="H"
+              className="qr-code-svg"
+              style={{ display: 'block' }}
+            />
+          </div>
+        )}
       </div>
       <button className="qr-btn qr-btn-download" onClick={handleDownload}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -597,8 +653,36 @@ export const RequestPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const { notifications, unreadCount } = useNotifications();
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await authAPI.getMe();
+        const userData = response.data.user || response.data;
+
+        if (userData && userData.avatar) {
+          if (userData.avatar.startsWith('data:')) {
+            setCurrentUser(userData);
+          } else if (userData.avatar.startsWith('http')) {
+            setCurrentUser(userData);
+          } else {
+            userData.avatar = null;
+            setCurrentUser(userData);
+          }
+        } else {
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   // Fetch requests from API on mount
   useEffect(() => {
@@ -705,19 +789,21 @@ export const RequestPage = () => {
           <div className="request-page-container">
             <FormCard onSubmit={handleSubmitRequest} />
             <QRCard
-              userName="John Doe"
-              userId="USER-001"
+              userName={currentUser?.name || "User"}
+              userId={currentUser?.id || "N/A"}
               filesAssigned={filesAssigned}
               filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
+              qrCodeUrl={currentUser?.avatar || null}
             />
             <RequestCard requests={requests} />
           </div>
           <QRModal
             isOpen={isQRModalOpen}
             onClose={() => setIsQRModalOpen(false)}
-            qrValue={`USER:USER-001|NAME:John Doe`}
-            userName="John Doe"
+            qrCodeUrl={currentUser?.avatar || null}
+            userName={currentUser?.name || "User"}
+            qrValue={`USER:${currentUser?.id || 'N/A'}|NAME:${currentUser?.name || 'User'}`}
           />
           <NotificationDropdown
             notifications={notifications}
