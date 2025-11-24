@@ -1,102 +1,13 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "../DeptHeadPage/UserManagementPage/UserManagement.css";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+import { usersAPI } from "../services/api";
 
 export const UserManagementPage = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Joshua Pagkaliwangan",
-      email: "joshua.p@example.com",
-      profilePicture: null,
-      idNumber: "FAC-001",
-      role: "Faculty Member",
-      department: "Computer Engineering",
-      dateJoined: "10/25/2025",
-      status: "active",
-      gender: "Male",
-      contactNumber: "0912 345 6789",
-      dateOfBirth: "01/15/1990",
-      tags: ["active", "faculty"],
-    },
-    {
-      id: 2,
-      name: "Maria Santos",
-      email: "maria.s@example.com",
-      profilePicture: null,
-      idNumber: "DPH-002",
-      role: "Department Head",
-      department: "Electrical Engineering",
-      dateJoined: "09/15/2024",
-      status: "active",
-      gender: "Female",
-      contactNumber: "0923 456 7890",
-      dateOfBirth: "05/20/1985",
-      tags: ["active", "head"],
-    },
-    {
-      id: 3,
-      name: "John Dela Cruz",
-      email: "john.dc@example.com",
-      profilePicture: null,
-      idNumber: "FAC-003",
-      role: "Faculty Member",
-      department: "Mechanical Engineering",
-      dateJoined: "11/10/2024",
-      status: "active",
-      gender: "Male",
-      contactNumber: "0934 567 8901",
-      dateOfBirth: "08/10/1992",
-      tags: ["active", "faculty"],
-    },
-    {
-      id: 4,
-      name: "Anna Reyes",
-      email: "anna.r@example.com",
-      profilePicture: null,
-      idNumber: "FAC-004",
-      role: "Faculty Member",
-      department: "Civil Engineering",
-      dateJoined: "08/20/2024",
-      status: "inactive",
-      gender: "Female",
-      contactNumber: "0945 678 9012",
-      dateOfBirth: "11/25/1988",
-      tags: ["faculty"],
-    },
-    {
-      id: 5,
-      name: "Carlos Mendoza",
-      email: "carlos.m@example.com",
-      profilePicture: null,
-      idNumber: "DPH-005",
-      role: "Department Head",
-      department: "Computer Engineering",
-      dateJoined: "07/05/2024",
-      status: "active",
-      gender: "Male",
-      contactNumber: "0956 789 0123",
-      dateOfBirth: "03/30/1980",
-      tags: ["active", "head"],
-    },
-    {
-      id: 6,
-      name: "Lisa Garcia",
-      email: "lisa.g@example.com",
-      profilePicture: null,
-      idNumber: "FAC-006",
-      role: "Faculty Member",
-      department: "Computer Engineering",
-      dateJoined: "12/01/2024",
-      status: "active",
-      gender: "Female",
-      contactNumber: "0967 890 1234",
-      dateOfBirth: "07/12/1995",
-      tags: ["active", "faculty"],
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
@@ -115,31 +26,66 @@ export const UserManagementPage = () => {
 
   const { notifications, unreadCount } = useNotifications();
 
-  // Helper function to generate tags
-  const generateUserTags = (user) => {
-    const tags = [];
-    if (user.status === "active") tags.push("active");
-    if (user.role === "Faculty Member") tags.push("faculty");
-    if (user.role === "Department Head") tags.push("head");
-    return tags;
-  };
+  // Fetch users from API on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await usersAPI.getAll();
+        const usersData = response.data.users || response.data;
+        const mappedUsers = Array.isArray(usersData)
+          ? usersData.map((user) => ({
+              id: user.id,
+              userId: user.userId,
+              name: user.name,
+              email: user.email,
+              idNumber: user.idNumber,
+              contactNumber: user.contactNumber,
+              dateOfBirth: user.dateOfBirth,
+              gender: user.gender,
+              profilePicture: user.profilePicture,
+              role: user.role,
+              department: user.department || "N/A",
+              status: user.status,
+              dateJoined: user.createdAt
+                ? new Date(user.createdAt).toLocaleDateString()
+                : "N/A",
+              tags: [
+                user.status === "ACTIVE" ? "active" : "inactive",
+                user.role === "FACULTY" ? "faculty" : null,
+                user.role === "ADMIN" ? "head" : null,
+                user.role === "STAFF" ? "head" : null,
+              ].filter(Boolean),
+            }))
+          : [];
+        setUsers(mappedUsers);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // FIXED: Filter logic with proper AND logic
+    fetchUsers();
+  }, []);
+
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (!filterOptions.showAll) {
       // Apply filters with AND logic - all selected filters must match
       if (filterOptions.showActive) {
-        filtered = filtered.filter((user) => user.status === "active");
+        filtered = filtered.filter((user) => user.status === "ACTIVE");
       }
       if (filterOptions.showFaculty) {
-        filtered = filtered.filter((user) => user.role === "Faculty Member");
+        filtered = filtered.filter((user) => user.role === "FACULTY");
       }
       if (filterOptions.showHeads) {
-        filtered = filtered.filter((user) => user.role === "Department Head");
+        filtered = filtered.filter(
+          (user) => user.role === "ADMIN" || user.role === "STAFF"
+        );
       }
     }
 
@@ -150,7 +96,7 @@ export const UserManagementPage = () => {
     }
 
     return filtered;
-  }, [users, searchTerm, filterOptions]);
+  }, [users, filterOptions, searchTerm]);
 
   const statistics = useMemo(() => {
     return {
@@ -161,31 +107,117 @@ export const UserManagementPage = () => {
     };
   }, [users]);
 
-  const handleAddUser = (newUser) => {
-    const userWithId = {
-      ...newUser,
-      id: users.length + 1,
-      tags: generateUserTags(newUser),
-    };
+  const handleAddUser = async (newUser) => {
+    try {
+      const userData = {
+        userId: `USER${Date.now()}`,
+        name: newUser.name,
+        email: newUser.email || null,
+        idNumber: newUser.idNumber || null,
+        contactNumber: newUser.contactNumber || null,
+        dateOfBirth: newUser.dateOfBirth || null,
+        gender: newUser.gender || null,
+        profilePicture: newUser.profilePicture || null,
+        password: "password123",
+        role: newUser.role,
+        department: newUser.department,
+        status: newUser.status === "active" ? "ACTIVE" : "INACTIVE",
+      };
 
-    setUsers([...users, userWithId]);
-    setIsAddUserModalOpen(false);
+      const response = await usersAPI.create(userData);
+      const createdUser = response.data.user || response.data;
+
+      const mappedUser = {
+        id: createdUser.id,
+        userId: createdUser.userId,
+        name: createdUser.name,
+        email: createdUser.email,
+        idNumber: createdUser.idNumber,
+        contactNumber: createdUser.contactNumber,
+        dateOfBirth: createdUser.dateOfBirth,
+        gender: createdUser.gender,
+        profilePicture: createdUser.profilePicture,
+        role: createdUser.role,
+        department: createdUser.department || "N/A",
+        status: createdUser.status,
+        dateJoined: createdUser.createdAt
+          ? new Date(createdUser.createdAt).toLocaleDateString()
+          : new Date().toLocaleDateString(),
+        tags: [
+          createdUser.status === "ACTIVE" ? "active" : "inactive",
+          createdUser.role === "FACULTY" ? "faculty" : null,
+          createdUser.role === "ADMIN" ? "head" : null,
+          createdUser.role === "STAFF" ? "head" : null,
+        ].filter(Boolean),
+      };
+
+      setUsers([...users, mappedUser]);
+      setIsAddUserModalOpen(false);
+    } catch (error) {
+      console.error("Failed to add user:", error);
+      alert(error.message || "Failed to add user");
+    }
   };
 
-  const handleEditUser = (updatedUser) => {
-    setUsers(
-      users.map((user) =>
-        user.id === updatedUser.id
-          ? { ...updatedUser, tags: generateUserTags(updatedUser) }
-          : user
-      )
-    );
-    setIsEditUserModalOpen(false);
-    setSelectedUser(null);
+  const handleEditUser = async (updatedUser) => {
+    try {
+      const userData = {
+        name: updatedUser.name,
+        email: updatedUser.email || null,
+        idNumber: updatedUser.idNumber || null,
+        contactNumber: updatedUser.contactNumber || null,
+        dateOfBirth: updatedUser.dateOfBirth || null,
+        gender: updatedUser.gender || null,
+        profilePicture: updatedUser.profilePicture || null,
+        role: updatedUser.role,
+        department: updatedUser.department,
+        status: updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
+      };
+
+      const response = await usersAPI.update(selectedUser.id, userData);
+      const editedUser = response.data.user || response.data;
+
+      const mappedUser = {
+        id: editedUser.id,
+        userId: editedUser.userId,
+        name: editedUser.name,
+        email: editedUser.email,
+        idNumber: editedUser.idNumber,
+        contactNumber: editedUser.contactNumber,
+        dateOfBirth: editedUser.dateOfBirth,
+        gender: editedUser.gender,
+        profilePicture: editedUser.profilePicture,
+        role: editedUser.role,
+        department: editedUser.department || "N/A",
+        status: editedUser.status,
+        dateJoined: editedUser.createdAt
+          ? new Date(editedUser.createdAt).toLocaleDateString()
+          : updatedUser.dateJoined,
+        tags: [
+          editedUser.status === "ACTIVE" ? "active" : "inactive",
+          editedUser.role === "FACULTY" ? "faculty" : null,
+          editedUser.role === "ADMIN" ? "head" : null,
+          editedUser.role === "STAFF" ? "head" : null,
+        ].filter(Boolean),
+      };
+
+      setUsers(users.map((user) => (user.id === editedUser.id ? mappedUser : user)));
+      setIsEditUserModalOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error("Failed to edit user:", error);
+      alert(error.message || "Failed to edit user");
+    }
   };
 
-  const handleDeleteUser = (userId) => {
-    setUsers(users.filter((user) => user.id !== userId));
+  const handleDeleteUser = async (userIdToDelete) => {
+    try {
+      await usersAPI.delete(userIdToDelete);
+      setUsers(users.filter((user) => user.userId !== userIdToDelete));
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      alert(error.message || "Failed to delete user");
+    }
   };
 
   const handleFilterApply = (filters) => {
@@ -378,7 +410,7 @@ export const UserManagementPage = () => {
                   </div>
                   <div
                     className={`status ${
-                      user.status === "active" ? "active" : "inactive"
+                      user.status === "ACTIVE" ? "active" : "inactive"
                     }`}
                   />
                 </div>
@@ -399,7 +431,7 @@ export const UserManagementPage = () => {
                   </div>
                   <div
                     className={`list-status ${
-                      user.status === "active" ? "active" : "inactive"
+                      user.status === "ACTIVE" ? "active" : "inactive"
                     }`}
                   />
                   <div className="list-content">
@@ -409,8 +441,12 @@ export const UserManagementPage = () => {
                       <span className="list-separator">•</span>
                       <span className="list-department">{user.department}</span>
                       <span className="list-separator">•</span>
-                      <span className={`list-status-text ${user.status}`}>
-                        {user.status === "active" ? "Active" : "Inactive"}
+                      <span
+                        className={`list-status-text ${
+                          user.status === "ACTIVE" ? "active" : "inactive"
+                        }`}
+                      >
+                        {user.status === "ACTIVE" ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
@@ -473,76 +509,75 @@ export const UserManagementPage = () => {
   );
 };
 
-// Combined Add/Edit User Modal Component
+// Helper functions
+const toBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const formatPhoneNumber = (value) => {
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length <= 4) return cleaned;
+  if (cleaned.length <= 7) return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+  return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 11)}`;
+};
+
+const formatDateForInput = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toISOString().split('T')[0];
+};
+
+// User Form Modal Component (for both add and edit)
 const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
   const [formData, setFormData] = useState(
-    user || {
-      name: "",
-      email: "",
-      idNumber: "",
-      profilePicture: null,
-      gender: "",
-      contactNumber: "",
-      dateOfBirth: "",
-      role: "",
-      department: "",
-      status: "",
-      dateJoined: new Date().toLocaleDateString("en-US", {
-        month: "2-digit",
-        day: "2-digit",
-        year: "numeric",
-      }),
-    }
+    mode === "edit" && user
+      ? {
+          name: user.name || "",
+          email: user.email || "",
+          idNumber: user.idNumber || "",
+          contactNumber: user.contactNumber || "",
+          dateOfBirth: formatDateForInput(user.dateOfBirth),
+          gender: user.gender || "",
+          role: user.role || "FACULTY",
+          department: user.department || "",
+          status: user.status === "ACTIVE" ? "active" : "inactive",
+          dateJoined: user.dateJoined || new Date().toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          }),
+          profilePicture: user.profilePicture || "",
+        }
+      : {
+          name: "",
+          email: "",
+          idNumber: "",
+          contactNumber: "",
+          dateOfBirth: "",
+          gender: "",
+          role: "FACULTY",
+          department: "",
+          status: "active",
+          dateJoined: new Date().toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          }),
+          profilePicture: "",
+        }
   );
 
   const [errors, setErrors] = useState({});
 
-  // Base64 conversion helper
-  const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-
-  // Format phone number for Philippine format (0XXX XXX XXXX)
-  const formatPhoneNumber = (value) => {
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length <= 4) return cleaned;
-    if (cleaned.length <= 7)
-      return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
-    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(
-      7,
-      11
-    )}`;
-  };
-
-  // Validate date format and logic
-  const isValidDate = (dateString) => {
-    if (!dateString || dateString.length !== 10) return false;
-
-    const [month, day, year] = dateString.split("/").map(Number);
-
-    if (!month || !day || !year) return false;
-    if (month < 1 || month > 12) return false;
-    if (year < 1900 || year > new Date().getFullYear()) return false;
-
-    // Check day range based on month
-    const daysInMonth = new Date(year, month, 0).getDate();
-    if (day < 1 || day > daysInMonth) return false;
-
-    // Check if date is not in the future
-    const inputDate = new Date(year, month - 1, day);
-    if (inputDate > new Date()) return false;
-
-    return true;
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Clear error for this field
     setErrors((prev) => ({ ...prev, [name]: "" }));
 
     if (name === "profilePicture" && e.target.files[0]) {
@@ -550,21 +585,6 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
       toBase64(file).then((base64) => {
         setFormData((prev) => ({ ...prev, profilePicture: base64 }));
       });
-    } else if (name === "dateOfBirth") {
-      const cleaned = value.replace(/\D/g, "");
-      const month = cleaned.slice(0, 2);
-      const day = cleaned.slice(2, 4);
-      const year = cleaned.slice(4, 8);
-
-      let formattedDate = month;
-      if (cleaned.length > 2) {
-        formattedDate += "/" + day;
-      }
-      if (cleaned.length > 4) {
-        formattedDate += "/" + year;
-      }
-
-      setFormData((prev) => ({ ...prev, [name]: formattedDate }));
     } else if (name === "contactNumber") {
       const formatted = formatPhoneNumber(value);
       setFormData((prev) => ({ ...prev, [name]: formatted }));
@@ -577,17 +597,15 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
     const newErrors = {};
 
     if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    if (!formData.idNumber.trim()) newErrors.idNumber = "ID Number is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department.trim())
       newErrors.department = "Department is required";
-    if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.status) newErrors.status = "Status is required";
-
-    if (formData.dateOfBirth && !isValidDate(formData.dateOfBirth)) {
-      newErrors.dateOfBirth = "Invalid date. Use MM/DD/YYYY format.";
-    }
 
     if (
       formData.contactNumber &&
@@ -679,7 +697,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">ID Number</label>
+            <label className="form-label">ID Number (Optional)</label>
             <input
               type="text"
               name="idNumber"
@@ -694,7 +712,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Contact Number</label>
+            <label className="form-label">Contact Number (Optional)</label>
             <input
               type="text"
               name="contactNumber"
@@ -710,20 +728,51 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Date of Birth</label>
+            <label className="form-label">Date of Birth (Optional)</label>
             <input
-              type="text"
+              type="date"
               name="dateOfBirth"
               value={formData.dateOfBirth}
               onChange={handleChange}
               className={`form-input ${errors.dateOfBirth ? "error" : ""}`}
-              placeholder="MM/DD/YYYY"
-              maxLength="10"
             />
             {errors.dateOfBirth && (
               <span className="error-text">{errors.dateOfBirth}</span>
             )}
           </div>
+
+          <div className="form-group">
+            <label className="form-label">Gender (Optional)</label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className={`form-select ${errors.gender ? "error" : ""}`}
+            >
+              <option value="">Select a gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+            {errors.gender && (
+              <span className="error-text">{errors.gender}</span>
+            )}
+          </div>
+
+          {mode === "add" && (
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <div
+                style={{
+                  padding: "10px",
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+              >
+                Default password: <strong>password123</strong>
+              </div>
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label">Role</label>
@@ -736,9 +785,9 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
               <option value="" disabled>
                 Select a role
               </option>
-              <option value="Faculty Member">Faculty Member</option>
-              <option value="Department Head">Department Head</option>
-              <option value="Staff">Staff</option>
+              <option value="FACULTY">Faculty Member</option>
+              <option value="ADMIN">Department Head</option>
+              <option value="STAFF">Staff</option>
             </select>
             {errors.role && <span className="error-text">{errors.role}</span>}
           </div>
@@ -759,25 +808,6 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Gender</label>
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className={`form-select ${errors.gender ? "error" : ""}`}
-            >
-              <option value="" disabled>
-                Select a gender
-              </option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-            {errors.gender && (
-              <span className="error-text">{errors.gender}</span>
-            )}
-          </div>
-
-          <div className="form-group">
             <label className="form-label">Status</label>
             <select
               name="status"
@@ -794,18 +824,6 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
             {errors.status && (
               <span className="error-text">{errors.status}</span>
             )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Date Joined</label>
-            <input
-              type="text"
-              name="dateJoined"
-              value={formData.dateJoined}
-              onChange={handleChange}
-              className="form-input"
-              placeholder="MM/DD/YYYY"
-            />
           </div>
 
           <button type="submit" className="form-submit">
@@ -945,7 +963,7 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
 const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-      onDelete(user.id);
+      onDelete(user.userId);
       onClose();
     }
   };
@@ -1001,8 +1019,16 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
           </div>
           <div className="info-row">
             <span className="info-label">Status</span>
-            <span className={`info-value status-badge ${user.status}`}>
-              {user.status === "active" ? "Active" : "Inactive"}
+            <span
+              className={`info-value status-badge ${
+                user.status === "ACTIVE" ? "active" : "inactive"
+              }`}
+            >
+              {user.status === "ACTIVE"
+                ? "Active"
+                : user.status === "INACTIVE"
+                ? "Inactive"
+                : user.status}
             </span>
           </div>
         </div>

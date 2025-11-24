@@ -1,25 +1,57 @@
-import React, { useState } from "react";
-import { recentRequests as initialRequests } from "../../../../data/mockData";
+import React, { useState, useEffect } from "react";
+import { requestsAPI } from "../../../../services/api";
 import "./style.css";
 
 export const RequestCard = () => {
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApprove = (requestId) => {
-    setRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === requestId ? { ...req, status: "approved" } : req
-      )
-    );
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await requestsAPI.getAll();
+        const requestsArray = Array.isArray(response.data.requests) ? response.data.requests : [];
+        setRequests(requestsArray.slice(0, 5));
+      } catch (error) {
+        console.error('Failed to fetch requests:', error);
+        setRequests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
+  const handleApprove = async (requestId) => {
+    try {
+      await requestsAPI.approve(requestId);
+      setRequests(prevRequests =>
+        prevRequests.map(req =>
+          req.id === requestId ? { ...req, status: "APPROVED" } : req
+        )
+      );
+    } catch (error) {
+      console.error('Failed to approve request:', error);
+    }
   };
 
-  const handleDecline = (requestId) => {
-    setRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === requestId ? { ...req, status: "declined" } : req
-      )
-    );
+  const handleDecline = async (requestId) => {
+    try {
+      await requestsAPI.decline(requestId);
+      setRequests(prevRequests =>
+        prevRequests.map(req =>
+          req.id === requestId ? { ...req, status: "DECLINED" } : req
+        )
+      );
+    } catch (error) {
+      console.error('Failed to decline request:', error);
+    }
   };
+
+  if (loading) {
+    return <div className="request-card">Loading...</div>;
+  }
 
   return (
     <div className="request-card">
@@ -38,37 +70,41 @@ export const RequestCard = () => {
         </div>
 
         <div className="request-table-body">
-          {requests.map((request) => (
-            <div key={request.id} className="request-row">
-              <div className="table-cell request-id-col">{request.id}</div>
-              <div className="table-cell faculty-name-col">{request.facultyName}</div>
-              <div className="table-cell department-col">{request.department}</div>
-              <div className="table-cell file-name-col">{request.fileName}</div>
-              <div className="table-cell date-col">{request.dateRequested}</div>
-              <div className="table-cell status-col">
-                {request.status === "pending" ? (
-                  <div className="action-buttons">
-                    <button
-                      className="approve-btn"
-                      onClick={() => handleApprove(request.id)}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="decline-btn"
-                      onClick={() => handleDecline(request.id)}
-                    >
-                      Decline
-                    </button>
-                  </div>
-                ) : (
-                  <div className={`status-badge ${request.status}`}>
-                    {request.status === "approved" ? "Approved" : "Declined"}
-                  </div>
-                )}
+          {requests.length === 0 ? (
+            <div className="no-requests-message">No recent requests.</div>
+          ) : (
+            requests.map((request) => (
+              <div key={request.id} className="request-row">
+                <div className="table-cell request-id-col">{request.id}</div>
+                <div className="table-cell faculty-name-col">{request.user?.name || 'N/A'}</div>
+                <div className="table-cell department-col">{request.user?.department || 'N/A'}</div>
+                <div className="table-cell file-name-col">{request.title}</div>
+                <div className="table-cell date-col">{new Date(request.createdAt).toLocaleDateString()}</div>
+                <div className="table-cell status-col">
+                  {request.status === "PENDING" ? (
+                    <div className="action-buttons">
+                      <button
+                        className="approve-btn"
+                        onClick={() => handleApprove(request.id)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="decline-btn"
+                        onClick={() => handleDecline(request.id)}
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={`status-badge ${request.status.toLowerCase()}`}>
+                      {request.status === "APPROVED" ? "Approved" : "Declined"}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

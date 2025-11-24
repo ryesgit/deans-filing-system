@@ -1,13 +1,18 @@
 import React from "react";
 import "./style.css";
 
-export const QuickActionCard = ({ onAddFile, onRequest, onAddMember }) => {
+export const QuickActionCard = ({
+  onAddFile,
+  onRequest,
+  onAddMember,
+  role,
+}) => {
   return (
     <div className="quick-action-card">
       <div className="quick-action-header">
         <h3 className="quick-action-title">Quick Actions</h3>
         <p className="quick-action-instruction">
-        Lorem ipsum dolor sit amet consectetur. Risus enim.
+          Lorem ipsum dolor sit amet consectetur. Risus enim.
         </p>
       </div>
       <div className="quick-action-buttons">
@@ -17,9 +22,11 @@ export const QuickActionCard = ({ onAddFile, onRequest, onAddMember }) => {
         <button className="action-btn" onClick={onRequest}>
           Request
         </button>
-        <button className="action-btn" onClick={onAddMember}>
-          Add Member
-        </button>
+        {role === "ADMIN" && (
+          <button className="action-btn" onClick={onAddMember}>
+            Add Member
+          </button>
+        )}
       </div>
     </div>
   );
