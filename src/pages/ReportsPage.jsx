@@ -141,7 +141,7 @@ export const ReportsPage = () => {
                       <span
                         className={`status-badge status-${row.status?.toLowerCase() || 'pending'}`}
                       >
-                        {row.status}
+                        {row.status[0]+row.status.slice(1).toLowerCase()}
                       </span>
                     </td>
                   )}

@@ -39,36 +39,57 @@
   left: 0;
 }
 
-/* EXISTING ABSOLUTE ELEMENTS — UNCHANGED */
-.personal-information .text-wrapper-33 {
+/* UPDATED ELEMENTS — Profile, Name, Email aligned on same center line */
+.personal-information .User-name {
   color: #800000;
   font-family: "Poppins", Helvetica;
   font-size: 16px;
   font-weight: 600;
-  left: 6%;
+  left: 20.5%;
+  transform: translateX(-50%);
   letter-spacing: -0.96px;
   position: absolute;
-  top: 181px;
+  top: 188px;
+  white-space: nowrap;
 }
 
-.personal-information .text-wrapper-34 {
+.personal-information .User-email {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
   font-weight: 500;
-  left: 9.5%;
+  left: 20.5%;
+  transform: translateX(-50%);
   letter-spacing: -0.6px;
   position: absolute;
   top: 205px;
+  white-space: nowrap;
 }
 
 .personal-information .profile-2 {
   height: 142px;
   width: 142px;
-  object-fit: cover;
   position: absolute;
-  left: 7%;
+  left: 20.5%;
+  transform: translateX(-50%);
   top: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.personal-information .profile-image {
+  width: 100%;
+  height: 100%;
+  background-color: #b0b0b0;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.personal-information .profile-placeholder {
+  border: 3px solid #b0b0b0;
+  background-color: transparent;
 }
 
 .personal-information .linev {
@@ -79,7 +100,7 @@
   top: 19px;
 }
 
-.personal-information .text-wrapper-35 {
+.personal-information .User-role {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -89,7 +110,7 @@
   top: 65px;
 }
 
-.personal-information .text-wrapper-36 {
+.personal-information .User-gender {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -99,7 +120,7 @@
   top: 104px;
 }
 
-.personal-information .text-wrapper-37 {
+.personal-information .User-department {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -109,7 +130,7 @@
   top: 104px;
 }
 
-.personal-information .text-wrapper-38 {
+.personal-information .User-contact-number {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -119,7 +140,7 @@
   top: 152px;
 }
 
-.personal-information .text-wrapper-39 {
+.personal-information .User-date-of-birth {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -129,7 +150,7 @@
   top: 152px;
 }
 
-.personal-information .text-wrapper-40 {
+.personal-information .User-account-status {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -139,7 +160,7 @@
   top: 200px;
 }
 
-.personal-information .text-wrapper-41 {
+.personal-information .User-last-login {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -160,7 +181,7 @@
   gap: 8px;
 }
 
-.personal-information .text-wrapper-42 {
+.personal-information .User-id {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -195,10 +216,31 @@
   position: absolute;
 }
 
-.personal-information .text-wrapper-44 { left: 398px; top: 45px; }
-.personal-information .text-wrapper-45 { left: 248px; top: 130px; }
-.personal-information .text-wrapper-46 { left: 399px; top: 130px; }
-.personal-information .text-wrapper-47 { left: 248px; top: 83px; }
-.personal-information .text-wrapper-48 { left: 399px; top: 83px; }
-.personal-information .text-wrapper-49 { left: 246px; top: 178px; }
-.personal-information .text-wrapper-50 { left: 399px; top: 178px; }
+.personal-information .text-wrapper-44 {
+  left: 398px;
+  top: 45px;
+}
+.personal-information .text-wrapper-45 {
+  left: 248px;
+  top: 130px;
+}
+.personal-information .text-wrapper-46 {
+  left: 399px;
+  top: 130px;
+}
+.personal-information .text-wrapper-47 {
+  left: 248px;
+  top: 83px;
+}
+.personal-information .text-wrapper-48 {
+  left: 399px;
+  top: 83px;
+}
+.personal-information .text-wrapper-49 {
+  left: 246px;
+  top: 178px;
+}
+.personal-information .text-wrapper-50 {
+  left: 399px;
+  top: 178px;
+}

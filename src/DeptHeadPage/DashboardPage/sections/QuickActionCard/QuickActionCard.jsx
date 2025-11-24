@@ -1,12 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./style.css";
 
-export const QuickActionCard = ({
-  onAddFile,
-  onRequest,
-  onAddMember,
-  role,
-}) => {
+export const QuickActionCard = ({ role }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="quick-action-card">
       <div className="quick-action-header">
@@ -16,14 +14,20 @@ export const QuickActionCard = ({
         </p>
       </div>
       <div className="quick-action-buttons">
-        <button className="action-btn" onClick={onAddFile}>
+        <button
+          className="action-btn"
+          onClick={() => navigate("/file-management")}
+        >
           Add File
         </button>
-        <button className="action-btn" onClick={onRequest}>
+        <button className="action-btn" onClick={() => navigate("/request")}>
           Request
         </button>
         {role === "ADMIN" && (
-          <button className="action-btn" onClick={onAddMember}>
+          <button
+            className="action-btn"
+            onClick={() => navigate("/user-management")}
+          >
             Add Member
           </button>
         )}

@@ -5,16 +5,24 @@ import { filesAPI } from "../../services/api";
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
-    minHeight: "48px",
-    borderColor: state.isFocused ? "#4A90E2" : "#E0E0E0",
-    boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+    height: "55px",
+    width: "100%",
+    padding: "0 0.25rem",
+    border: `3px solid ${state.isFocused ? "#800000" : "#d9d9d9"}`,
+    borderRadius: "16px",
+    fontFamily: '"Poppins", Helvetica',
+    fontSize: "16px",
+    color: "#1e1e1e",
+    boxShadow: state.isFocused ? "0 0 0 3px rgba(128, 0, 0, 0.1)" : "none",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+    backgroundColor: "#ffffff",
     "&:hover": {
-      borderColor: "#4A90E2",
+      borderColor: "#800000",
     },
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: "#999",
+    color: "#c2c2c2",
   }),
   menu: (provided) => ({
     ...provided,
@@ -33,10 +41,29 @@ const customStyles = {
     "&:active": {
       backgroundColor: "#4A90E2",
     },
+    fontFamily: '"Poppins", Helvetica',
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "#333",
+    color: "#1e1e1e",
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    display: "none",
+  }),
+  dropdownIndicator: (provided, state) => ({
+    ...provided,
+    color: state.isFocused ? "#800000" : "#c2c2c2",
+    "&:hover": {
+      color: "#800000",
+    },
+  }),
+  noOptionsMessage: (provided) => ({
+    ...provided,
+    fontFamily: '"Poppins", Helvetica',
+    fontSize: "14px",
+    color: "#666",
+    padding: "12px 16px",
   }),
 };
 
@@ -69,10 +96,10 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
     if (selectedOption) {
       onChange(selectedOption.label);
       if (onFileSelect) {
-        console.log('File selected:', {
+        console.log("File selected:", {
           fileName: selectedOption.label,
           department: selectedOption.department,
-          fileCategory: selectedOption.category
+          fileCategory: selectedOption.category,
         });
         onFileSelect({
           fileName: selectedOption.label,

@@ -478,11 +478,3 @@
   width: auto;
 }
 
-.side-panel-logo {
-  position: absolute;
-  top: 5%;
-  left: 25%;
-  transform: translateX(-50%);
-  width: 75px;
-  height: 75px;
-}

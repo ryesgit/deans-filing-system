@@ -60,7 +60,7 @@ export const DashboardPage = () => {
       <div className="department-head-page" data-model-id="176:157">
         <header className="dashboard-header">
           <div className="welcome-message">
-            <div className="text-wrapper-71">Welcome Back,</div>
+            <div className="text-wrapper-71">Mabuhay,</div>
             <div className="text-wrapper-70">
               {user?.name || 'User'}!
             </div>

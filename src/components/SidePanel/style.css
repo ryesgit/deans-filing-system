@@ -23,7 +23,8 @@
 .side-panel .side-panel-logo {
   position: relative;
   z-index: 1;
-  margin: 20px auto 0;
+  margin-top: 15%;
+  margin-left: 10%;
   width: 80px;
   height: 80px;
 }
@@ -153,4 +154,38 @@
 .side-panel-nav a.active .vector-7 {
   filter: brightness(0) saturate(100%) invert(4%) sepia(94%) saturate(7498%)
     hue-rotate(359deg) brightness(95%) contrast(108%);
+}
+
+/* Logout Modal Styles */
+.confirmation-text-02 {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 40px;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.modal-actions .btn {
+  font-family: "Poppins", Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-actions .btn-primary {
+  background-color: #800000;
+  color: #ffffff;
 }

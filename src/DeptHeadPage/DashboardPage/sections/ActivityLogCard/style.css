@@ -22,7 +22,7 @@
 .al-content {
   position: relative;
   width: 100%;
-  max-width: 500px;     /* adjust this to match actual card width */
+  max-width: 500px; /* adjust this to match actual card width */
   transform: scale(var(--scale));
   transform-origin: top center;
   display: flex;
@@ -37,7 +37,7 @@
   margin-left: 35px;
   margin-top: 10px;
   position: relative;
-  width: 376px;
+  width: 500px;
 }
 
 .activity-log-card .p {
@@ -93,23 +93,30 @@
   width: 41px;
 }
 
+.activity-log-card .profile-placeholder {
+  background-color: #b0b0b0; /* Grey background */
+  border-radius: 50%;
+  height: 41px;
+  width: 41px;
+}
+
 .activity-log-card .profile-details-2 {
   height: 41px;
   margin-left: 35px;
   position: relative;
-  width: 465px;
+  width: 500px;
 }
 
 .activity-log-card .profile-details-3 {
   height: 41px;
   margin-left: 35px;
   position: relative;
-  width: 422px;
+  width: 500px;
 }
 
 .activity-log-card .profile-details-4 {
   height: 41px;
   margin-left: 35px;
   position: relative;
-  width: 408px;
+  width: 500px;
 }

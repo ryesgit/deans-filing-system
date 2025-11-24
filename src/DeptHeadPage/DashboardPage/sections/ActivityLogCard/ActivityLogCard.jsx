@@ -13,7 +13,7 @@ export const ActivityLogCard = () => {
         const { activityLog } = response.data;
         setActivities(Array.isArray(activityLog) ? activityLog : []);
       } catch (error) {
-        console.error('Failed to fetch activity log:', error);
+        console.error("Failed to fetch activity log:", error);
         setActivities([]);
       } finally {
         setLoading(false);
@@ -37,20 +37,35 @@ export const ActivityLogCard = () => {
               className={`profile-details${index > 0 ? `-${index + 1}` : ""}`}
             >
               <p className="p">
-                <span className="span">{activity.userName} {activity.type} </span>
+                <span className="span">
+                  {activity.userName} {activity.type}{" "}
+                </span>
                 <span className="text-wrapper-27">{activity.filename}</span>
               </p>
 
               <p className="due-oct">
                 <span className="text-wrapper-28">Time:</span>
-                <span className="text-wrapper-29"> {new Date(activity.timestamp).toLocaleString()}</span>
+                <span className="text-wrapper-29">
+                  {" "}
+                  {new Date(activity.timestamp).toLocaleString()}
+                </span>
               </p>
 
-              <img className="profile" alt="Profile" src={"https://c.animaapp.com/27o9iVJi/img/profile-02.svg"} />
+              {activity.userAvatar ? (
+                <img
+                  className="profile"
+                  alt="Profile"
+                  src={activity.userAvatar}
+                />
+              ) : (
+                <div className="profile profile-placeholder"></div>
+              )}
             </div>
           ))
         ) : (
-          <div style={{ textAlign: 'center', width: '100%', color: '#8c8c8c' }}>No activity log yet</div>
+          <div style={{ textAlign: "center", width: "100%", color: "#8c8c8c" }}>
+            No activity log yet
+          </div>
         )}
       </div>
     </div>

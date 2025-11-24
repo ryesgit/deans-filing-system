@@ -14,10 +14,12 @@ export const PersonalInformation = () => {
       <div className="pi-content">
         <div className="rectangle-5" />
 
-        <div className="text-wrapper-33">{user.name || 'N/A'}</div>
-        <div className="text-wrapper-34">{user.email || 'N/A'}</div>
+        <div className="User-name">{user.name || 'N/A'}</div>
+        <div className="User-email">{user.email || 'N/A'}</div>
 
-        <img className="profile-2" alt="Profile" src={user.avatar || "https://c.animaapp.com/27o9iVJi/img/profile-01.svg"} />
+        <div className={`profile-2 ${!user.avatar ? 'profile-placeholder' : ''}`}>
+          {user.avatar && <img className="profile-image" alt="" src={user.avatar} />}
+        </div>
 
         <img
           className="linev"
@@ -25,20 +27,20 @@ export const PersonalInformation = () => {
           src="https://c.animaapp.com/27o9iVJi/img/linev-01.svg"
         />
 
-        <div className="text-wrapper-35">{user.role || 'N/A'}</div>
-        <div className="text-wrapper-36">{user.gender || 'N/A'}</div>
-        <div className="text-wrapper-37">{user.department || 'N/A'}</div>
-        <div className="text-wrapper-38">{user.contactNumber || 'N/A'}</div>
-        <div className="text-wrapper-39">
+        <div className="User-role">{user.role || 'N/A'}</div>
+        <div className="User-gender">{user.gender || 'N/A'}</div>
+        <div className="User-department">{user.department || 'N/A'}</div>
+        <div className="User-contact-number">{user.contactNumber || 'N/A'}</div>
+        <div className="User-date-of-birth">
           {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'N/A'}
         </div>
-        <div className="text-wrapper-40">{user.status || 'ACTIVE'}</div>
-        <div className="text-wrapper-41">
+        <div className="User-account-status">{user.status || 'ACTIVE'}</div>
+        <div className="User-last-login">
           {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'}
         </div>
 
         <div className="group">
-          <div className="text-wrapper-42">{user.userId || user.id || 'N/A'}</div>
+          <div className="User-id">{user.userId || user.id || 'N/A'}</div>
           <div className="text-wrapper-43">ID Number</div>
         </div>
 

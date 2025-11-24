@@ -65,9 +65,9 @@ const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
               src={qrCodeUrl}
               alt="QR Code"
               style={{
-                width: '300px',
-                height: '300px',
-                objectFit: 'contain'
+                width: "300px",
+                height: "300px",
+                objectFit: "contain",
               }}
             />
           ) : (
@@ -170,7 +170,9 @@ const FormCard = ({ onSubmit }) => {
       `Purpose: ${formData.purpose}`,
       `Department: ${formData.department}`,
       `Category: ${formData.fileCategory}`,
-      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"}`
+      `Copy Type: ${
+        formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
+      }`,
     ];
 
     if (formData.copyType === "original" && formData.returnDate) {
@@ -179,9 +181,9 @@ const FormCard = ({ onSubmit }) => {
 
     const requestData = {
       title: formData.fileName,
-      description: descriptionParts.join('\n'),
-      type: 'FILE_ACCESS',
-      priority: formData.priority || 'normal'
+      description: descriptionParts.join("\n"),
+      type: "FILE_ACCESS",
+      priority: formData.priority || "normal",
     };
 
     try {
@@ -190,8 +192,12 @@ const FormCard = ({ onSubmit }) => {
       setShowSubmitModal(false);
       handleClear();
     } catch (error) {
-      console.error('Failed to submit request:', error);
-      alert(error.response?.data?.message || error.message || 'Failed to submit request');
+      console.error("Failed to submit request:", error);
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to submit request"
+      );
       setShowSubmitModal(false);
     }
   };
@@ -476,17 +482,17 @@ const QRCard = ({
         onClick={onQRCodeClick}
         title="Click to enlarge"
         style={{
-          background: 'white',
-          padding: '1rem',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          border: '2px solid #f0f0f0',
-          minHeight: '220px',
-          minWidth: '220px'
+          background: "white",
+          padding: "1rem",
+          borderRadius: "12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          transition: "all 0.3s ease",
+          border: "2px solid #f0f0f0",
+          minHeight: "220px",
+          minWidth: "220px",
         }}
       >
         {qrCodeUrl && !imageLoadError ? (
@@ -495,24 +501,32 @@ const QRCard = ({
             alt="QR Code"
             className="qr-code-image"
             style={{
-              width: '180px',
-              height: '180px',
-              objectFit: 'contain',
-              display: 'block'
+              width: "180px",
+              height: "180px",
+              objectFit: "contain",
+              display: "block",
             }}
             onError={(e) => {
               setImageLoadError(true);
             }}
           />
         ) : (
-          <div style={{ width: '180px', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div
+            style={{
+              width: "180px",
+              height: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <QRCodeSVG
               id="qr-code-svg"
               value={qrValue}
               size={180}
               level="H"
               className="qr-code-svg"
-              style={{ display: 'block' }}
+              style={{ display: "block" }}
             />
           </div>
         )}
@@ -665,9 +679,9 @@ export const RequestPage = () => {
         const userData = response.data.user || response.data;
 
         if (userData && userData.avatar) {
-          if (userData.avatar.startsWith('data:')) {
+          if (userData.avatar.startsWith("data:")) {
             setCurrentUser(userData);
-          } else if (userData.avatar.startsWith('http')) {
+          } else if (userData.avatar.startsWith("http")) {
             setCurrentUser(userData);
           } else {
             userData.avatar = null;
@@ -677,7 +691,7 @@ export const RequestPage = () => {
           setCurrentUser(userData);
         }
       } catch (error) {
-        console.error('Failed to fetch user:', error);
+        console.error("Failed to fetch user:", error);
       }
     };
 
@@ -691,18 +705,22 @@ export const RequestPage = () => {
         const response = await requestsAPI.getAll();
         const requestsData = response.data.requests || response.data;
         const mappedRequests = Array.isArray(requestsData)
-          ? requestsData.map(req => ({
+          ? requestsData.map((req) => ({
               id: req.id,
               fileName: req.title,
-              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
-              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
+              dateRequested: req.createdAt
+                ? new Date(req.createdAt).toLocaleDateString()
+                : "N/A",
+              returnDue: req.approvedAt
+                ? new Date(req.approvedAt).toLocaleDateString()
+                : "N/A",
               status: req.status,
-              copyType: req.type
+              copyType: req.type,
             }))
           : [];
         setRequests(mappedRequests);
       } catch (error) {
-        console.error('Failed to fetch requests:', error);
+        console.error("Failed to fetch requests:", error);
       } finally {
         setLoading(false);
       }
@@ -715,10 +733,14 @@ export const RequestPage = () => {
     const mappedRequest = {
       id: newRequest.id,
       fileName: newRequest.title,
-      dateRequested: newRequest.createdAt ? new Date(newRequest.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
-      returnDue: newRequest.approvedAt ? new Date(newRequest.approvedAt).toLocaleDateString() : 'N/A',
+      dateRequested: newRequest.createdAt
+        ? new Date(newRequest.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString(),
+      returnDue: newRequest.approvedAt
+        ? new Date(newRequest.approvedAt).toLocaleDateString()
+        : "N/A",
       status: newRequest.status,
-      copyType: newRequest.type
+      copyType: newRequest.type,
     };
     setRequests((prev) => [mappedRequest, ...prev]);
   };
@@ -803,7 +825,9 @@ export const RequestPage = () => {
             onClose={() => setIsQRModalOpen(false)}
             qrCodeUrl={currentUser?.avatar || null}
             userName={currentUser?.name || "User"}
-            qrValue={`USER:${currentUser?.id || 'N/A'}|NAME:${currentUser?.name || 'User'}`}
+            qrValue={`USER:${currentUser?.id || "N/A"}|NAME:${
+              currentUser?.name || "User"
+            }`}
           />
           <NotificationDropdown
             notifications={notifications}

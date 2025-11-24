@@ -37,6 +37,7 @@ export const UserManagementPage = () => {
               id: user.id,
               userId: user.userId,
               name: user.name,
+              username: user.username,
               email: user.email,
               idNumber: user.idNumber,
               contactNumber: user.contactNumber,
@@ -112,6 +113,7 @@ export const UserManagementPage = () => {
       const userData = {
         userId: `USER${Date.now()}`,
         name: newUser.name,
+        username: newUser.username,
         email: newUser.email || null,
         idNumber: newUser.idNumber || null,
         contactNumber: newUser.contactNumber || null,
@@ -131,6 +133,7 @@ export const UserManagementPage = () => {
         id: createdUser.id,
         userId: createdUser.userId,
         name: createdUser.name,
+        username: createdUser.username,
         email: createdUser.email,
         idNumber: createdUser.idNumber,
         contactNumber: createdUser.contactNumber,
@@ -163,6 +166,7 @@ export const UserManagementPage = () => {
     try {
       const userData = {
         name: updatedUser.name,
+        username: updatedUser.username,
         email: updatedUser.email || null,
         idNumber: updatedUser.idNumber || null,
         contactNumber: updatedUser.contactNumber || null,
@@ -181,6 +185,7 @@ export const UserManagementPage = () => {
         id: editedUser.id,
         userId: editedUser.userId,
         name: editedUser.name,
+        username: editedUser.username,
         email: editedUser.email,
         idNumber: editedUser.idNumber,
         contactNumber: editedUser.contactNumber,
@@ -201,7 +206,9 @@ export const UserManagementPage = () => {
         ].filter(Boolean),
       };
 
-      setUsers(users.map((user) => (user.id === editedUser.id ? mappedUser : user)));
+      setUsers(
+        users.map((user) => (user.id === editedUser.id ? mappedUser : user))
+      );
       setIsEditUserModalOpen(false);
       setSelectedUser(null);
     } catch (error) {
@@ -401,8 +408,8 @@ export const UserManagementPage = () => {
                   <div className="div">{user.role}</div>
                   <div className="text-wrapper-2">Department</div>
                   <div className="text-wrapper-3">{user.department}</div>
-                  <div className="text-wrapper-4">{user.dateJoined}</div>
-                  <div className="text-wrapper-5">Date Joined</div>
+                  <div className="user-datejoined">{user.dateJoined}</div>
+                  <div className="Date-joined">Date Joined</div>
                   <div className="user-photo">
                     {user.profilePicture && (
                       <img src={user.profilePicture} alt={user.name} />
@@ -463,6 +470,7 @@ export const UserManagementPage = () => {
             mode="add"
             onClose={() => setIsAddUserModalOpen(false)}
             onSave={handleAddUser}
+            departments={departments}
           />
         )}
 
@@ -476,6 +484,7 @@ export const UserManagementPage = () => {
               setSelectedUser(null);
             }}
             onSave={handleEditUser}
+            departments={departments}
           />
         )}
 
@@ -520,24 +529,34 @@ const toBase64 = (file) => {
 };
 
 const formatPhoneNumber = (value) => {
-  const cleaned = value.replace(/\D/g, '');
+  const cleaned = value.replace(/\D/g, "");
   if (cleaned.length <= 4) return cleaned;
   if (cleaned.length <= 7) return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
-  return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 11)}`;
+  return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(
+    7,
+    11
+  )}`;
 };
 
 const formatDateForInput = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return '';
-  return date.toISOString().split('T')[0];
+  if (isNaN(date.getTime())) return "";
+  return date.toISOString().split("T")[0];
 };
 
 // User Form Modal Component (for both add and edit)
-const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
+const UserFormModal = ({
+  mode = "add",
+  user = null,
+  onClose,
+  onSave,
+  departments = [],
+}) => {
   const [formData, setFormData] = useState(
     mode === "edit" && user
       ? {
+          username: user.username || "",
           name: user.name || "",
           email: user.email || "",
           idNumber: user.idNumber || "",
@@ -547,14 +566,17 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           role: user.role || "FACULTY",
           department: user.department || "",
           status: user.status === "ACTIVE" ? "active" : "inactive",
-          dateJoined: user.dateJoined || new Date().toLocaleDateString("en-US", {
-            month: "2-digit",
-            day: "2-digit",
-            year: "numeric",
-          }),
+          dateJoined:
+            user.dateJoined ||
+            new Date().toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            }),
           profilePicture: user.profilePicture || "",
         }
       : {
+          username: "",
           name: "",
           email: "",
           idNumber: "",
@@ -596,6 +618,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    if (!formData.username.trim()) newErrors.username = "Username is required";
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
@@ -684,6 +707,21 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
+            <label className="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className={`form-input ${errors.username ? "error" : ""}`}
+              placeholder="Enter username"
+            />
+            {errors.username && (
+              <span className="error-text">{errors.username}</span>
+            )}
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Email</label>
             <input
               type="email"
@@ -697,7 +735,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">ID Number (Optional)</label>
+            <label className="form-label">ID Number</label>
             <input
               type="text"
               name="idNumber"
@@ -712,7 +750,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Contact Number (Optional)</label>
+            <label className="form-label">Contact Number</label>
             <input
               type="text"
               name="contactNumber"
@@ -728,7 +766,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Date of Birth (Optional)</label>
+            <label className="form-label">Date of Birth</label>
             <input
               type="date"
               name="dateOfBirth"
@@ -742,7 +780,7 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Gender (Optional)</label>
+            <label className="form-label">Gender</label>
             <select
               name="gender"
               value={formData.gender}
@@ -761,15 +799,8 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
           {mode === "add" && (
             <div className="form-group">
               <label className="form-label">Password</label>
-              <div
-                style={{
-                  padding: "10px",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                }}
-              >
-                Default password: <strong>password123</strong>
+              <div className="form-input">
+                Default password will be auto-generated.
               </div>
             </div>
           )}
@@ -794,14 +825,21 @@ const UserFormModal = ({ mode = "add", user = null, onClose, onSave }) => {
 
           <div className="form-group">
             <label className="form-label">Department</label>
-            <input
-              type="text"
+            <select
               name="department"
               value={formData.department}
               onChange={handleChange}
-              className={`form-input ${errors.department ? "error" : ""}`}
-              placeholder="Enter department"
-            />
+              className={`form-select ${errors.department ? "error" : ""}`}
+            >
+              <option value="" disabled>
+                Select a department
+              </option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
             {errors.department && (
               <span className="error-text">{errors.department}</span>
             )}
@@ -992,6 +1030,10 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
           <div className="info-row">
             <span className="info-label">ID Number</span>
             <span className="info-value">{user.idNumber}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Username</span>
+            <span className="info-value">{user.username}</span>
           </div>
           <div className="info-row">
             <span className="info-label">Email</span>
