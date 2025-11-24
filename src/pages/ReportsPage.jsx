@@ -24,7 +24,7 @@ export const ReportsPage = () => {
         const data = Array.isArray(response.data.requests) ? response.data.requests : [];
 
         setReportsData({
-          request: data.filter(r => r.status === 'PENDING' || r.status === 'APPROVED' || r.status === 'DECLINED'),
+          request: data.filter(r => r.status !== 'CANCELLED'),
           borrowed: [],
           returned: []
         });

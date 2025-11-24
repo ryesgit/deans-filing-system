@@ -5,6 +5,8 @@ import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { usersAPI } from "../services/api";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
 export const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export const UserManagementPage = () => {
               contactNumber: user.contactNumber,
               dateOfBirth: user.dateOfBirth,
               gender: user.gender,
-              profilePicture: user.profilePicture,
+              profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
               role: user.role,
               department: user.department || "N/A",
               status: user.status,
@@ -136,7 +138,7 @@ export const UserManagementPage = () => {
         contactNumber: createdUser.contactNumber,
         dateOfBirth: createdUser.dateOfBirth,
         gender: createdUser.gender,
-        profilePicture: createdUser.profilePicture,
+        profilePicture: createdUser.avatar ? `${API_BASE_URL}${createdUser.avatar}` : createdUser.profilePicture,
         role: createdUser.role,
         department: createdUser.department || "N/A",
         status: createdUser.status,
@@ -186,7 +188,7 @@ export const UserManagementPage = () => {
         contactNumber: editedUser.contactNumber,
         dateOfBirth: editedUser.dateOfBirth,
         gender: editedUser.gender,
-        profilePicture: editedUser.profilePicture,
+        profilePicture: editedUser.avatar ? `${API_BASE_URL}${editedUser.avatar}` : editedUser.profilePicture,
         role: editedUser.role,
         department: editedUser.department || "N/A",
         status: editedUser.status,

@@ -55,7 +55,7 @@ createRoot(document.getElementById("app")).render(
             <Route
               path="/user-management"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
                   <UserManagementPage />
                 </ProtectedRoute>
               }
@@ -63,7 +63,7 @@ createRoot(document.getElementById("app")).render(
             <Route
               path="/reports"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
                   <ReportsPage />
                 </ProtectedRoute>
               }
@@ -71,7 +71,7 @@ createRoot(document.getElementById("app")).render(
             <Route
               path="/settings"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
                   <SettingsPage />
                 </ProtectedRoute>
               }
