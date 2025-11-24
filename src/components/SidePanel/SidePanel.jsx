@@ -88,7 +88,7 @@ export const SidePanel = () => {
           <div className="text-wrapper-54">Request</div>
         </Link>
 
-        {user?.role === "ADMIN" && (
+        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
           <Link
             to="/user-management"
             className={`user-management ${
@@ -105,35 +105,39 @@ export const SidePanel = () => {
           </Link>
         )}
 
-        <Link
-          to="/reports"
-          className={`report-log ${
-            currentActiveItem === "report-log" ? "active" : ""
-          }`}
-          onClick={() => handleNavigation("report-log")}
-        >
-          <img
-            className="vector-3"
-            alt="Vector"
-            src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
-          />
-          <div className="text-wrapper-53">Reports &amp; Log</div>
-        </Link>
+        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
+          <Link
+            to="/reports"
+            className={`report-log ${
+              currentActiveItem === "report-log" ? "active" : ""
+            }`}
+            onClick={() => handleNavigation("report-log")}
+          >
+            <img
+              className="vector-3"
+              alt="Vector"
+              src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
+            />
+            <div className="text-wrapper-53">Reports &amp; Log</div>
+          </Link>
+        )}
 
-        <Link
-          to="/settings"
-          className={`settings ${
-            currentActiveItem === "settings" ? "active" : ""
-          }`}
-          onClick={() => handleNavigation("settings")}
-        >
-          <img
-            className="vector-2"
-            alt="Vector"
-            src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
-          />
-          <div className="text-wrapper-52">Settings</div>
-        </Link>
+        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
+          <Link
+            to="/settings"
+            className={`settings ${
+              currentActiveItem === "settings" ? "active" : ""
+            }`}
+            onClick={() => handleNavigation("settings")}
+          >
+            <img
+              className="vector-2"
+              alt="Vector"
+              src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
+            />
+            <div className="text-wrapper-52">Settings</div>
+          </Link>
+        )}
       </nav>
 
       <div className="logout" onClick={handleLogout}>

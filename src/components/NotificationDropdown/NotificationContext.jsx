@@ -19,8 +19,14 @@ export const NotificationProvider = ({ children }) => {
     const fetchNotifications = async () => {
       try {
         const response = await notificationsAPI.getAll();
-        const data = response.data;
-        setNotifications(Array.isArray(data) ? data : []);
+        const notificationsData = response.data.notifications || response.data;
+        const mappedNotifications = Array.isArray(notificationsData)
+          ? notificationsData.map(n => ({
+              ...n,
+              read: n.isRead || n.read || false
+            }))
+          : [];
+        setNotifications(mappedNotifications);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
         setNotifications([]);

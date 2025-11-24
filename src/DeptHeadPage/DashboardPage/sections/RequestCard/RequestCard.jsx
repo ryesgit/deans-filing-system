@@ -11,7 +11,8 @@ export const RequestCard = () => {
       try {
         const response = await requestsAPI.getAll();
         const requestsArray = Array.isArray(response.data.requests) ? response.data.requests : [];
-        setRequests(requestsArray.slice(0, 5));
+        const filteredRequests = requestsArray.filter(req => req.status !== 'CANCELLED');
+        setRequests(filteredRequests.slice(0, 5));
       } catch (error) {
         console.error('Failed to fetch requests:', error);
         setRequests([]);

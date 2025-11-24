@@ -12,7 +12,8 @@ export const RecentRequestsCard = () => {
         const response = await statsAPI.getDashboard();
         const stats = response.data?.stats || response.data;
         const recentRequests = stats?.recentRequests || [];
-        setRequests(recentRequests.slice(0, 5));
+        const filteredRequests = recentRequests.filter(req => req.status !== 'CANCELLED');
+        setRequests(filteredRequests.slice(0, 5));
       } catch (error) {
         console.error('Failed to fetch recent requests:', error);
         setRequests([]);

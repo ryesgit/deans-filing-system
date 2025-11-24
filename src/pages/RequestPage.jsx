@@ -705,18 +705,16 @@ export const RequestPage = () => {
         const response = await requestsAPI.getAll();
         const requestsData = response.data.requests || response.data;
         const mappedRequests = Array.isArray(requestsData)
-          ? requestsData.map((req) => ({
-              id: req.id,
-              fileName: req.title,
-              dateRequested: req.createdAt
-                ? new Date(req.createdAt).toLocaleDateString()
-                : "N/A",
-              returnDue: req.approvedAt
-                ? new Date(req.approvedAt).toLocaleDateString()
-                : "N/A",
-              status: req.status,
-              copyType: req.type,
-            }))
+          ? requestsData
+              .filter(req => req.status !== 'CANCELLED')
+              .map(req => ({
+                id: req.id,
+                fileName: req.title,
+                dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
+                returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
+                status: req.status,
+                copyType: req.type
+              }))
           : [];
         setRequests(mappedRequests);
       } catch (error) {
