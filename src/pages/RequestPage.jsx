@@ -3,9 +3,11 @@ import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
+import { requestsAPI, authAPI } from "../services/api";
 const ConfirmModal = ({
   isOpen,
   onClose,
@@ -47,7 +49,7 @@ const ConfirmModal = ({
   );
 };
 
-const QRModal = ({ isOpen, onClose, qrValue, userName }) => {
+const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
   if (!isOpen) return null;
 
   return (
@@ -58,7 +60,19 @@ const QRModal = ({ isOpen, onClose, qrValue, userName }) => {
         </button>
         <h2 className="qr-modal-title">Your QR Code</h2>
         <div className="qr-modal-code">
-          <QRCodeSVG value={qrValue} size={300} level="H" />
+          {qrCodeUrl ? (
+            <img
+              src={qrCodeUrl}
+              alt="QR Code"
+              style={{
+                width: '300px',
+                height: '300px',
+                objectFit: 'contain'
+              }}
+            />
+          ) : (
+            <QRCodeSVG value={qrValue} size={300} level="H" />
+          )}
         </div>
         <p className="qr-modal-user">{userName}</p>
       </div>
@@ -90,6 +104,9 @@ const FormCard = ({ onSubmit }) => {
 
   const categories = [
     "Thesis",
+    "Capstone",
+    "Research",
+    "Administrative",
     "Research Papers",
     "Reports",
     "Guidelines",
@@ -103,6 +120,15 @@ const FormCard = ({ onSubmit }) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleFileSelect = (fileInfo) => {
+    setFormData((prev) => ({
+      ...prev,
+      fileName: fileInfo.fileName,
+      department: fileInfo.department || "",
+      fileCategory: fileInfo.fileCategory || "",
     }));
   };
 
@@ -139,26 +165,35 @@ const FormCard = ({ onSubmit }) => {
     setShowSubmitModal(true);
   };
 
-  const handleConfirmSubmit = () => {
-    const request = {
-      id: `REQ-${String(Date.now()).slice(-4)}`,
-      fileName: formData.fileName,
-      dateRequested: format(new Date(), "MM/dd/yyyy"),
-      returnDue:
-        formData.copyType === "original"
-          ? format(new Date(formData.returnDate), "MM/dd/yyyy")
-          : "-",
-      status: "Pending",
-      copyType: formData.copyType,
-      priority: formData.priority,
-      department: formData.department,
-      category: formData.fileCategory,
-      purpose: formData.purpose,
+  const handleConfirmSubmit = async () => {
+    const descriptionParts = [
+      `Purpose: ${formData.purpose}`,
+      `Department: ${formData.department}`,
+      `Category: ${formData.fileCategory}`,
+      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"}`
+    ];
+
+    if (formData.copyType === "original" && formData.returnDate) {
+      descriptionParts.push(`Return Date: ${formData.returnDate}`);
+    }
+
+    const requestData = {
+      title: formData.fileName,
+      description: descriptionParts.join('\n'),
+      type: 'FILE_ACCESS',
+      priority: formData.priority || 'normal'
     };
 
-    onSubmit(request);
-    setShowSubmitModal(false);
-    handleClear();
+    try {
+      const response = await requestsAPI.create(requestData);
+      onSubmit(response.data.request || response.data);
+      setShowSubmitModal(false);
+      handleClear();
+    } catch (error) {
+      console.error('Failed to submit request:', error);
+      alert(error.response?.data?.message || error.message || 'Failed to submit request');
+      setShowSubmitModal(false);
+    }
   };
 
   const handleClearClick = () => {
@@ -196,12 +231,10 @@ const FormCard = ({ onSubmit }) => {
 
       <div className="form-row-three">
         <div className="form-field">
-          <input
-            type="text"
-            className="form-input"
-            placeholder="File Name"
+          <FileSearchInput
             value={formData.fileName}
-            onChange={(e) => handleChange("fileName", e.target.value)}
+            onChange={(value) => handleChange("fileName", value)}
+            onFileSelect={handleFileSelect}
           />
         </div>
 
@@ -398,30 +431,41 @@ const QRCard = ({
   filesAssigned = 0,
   filesToReturn = 0,
   onQRCodeClick,
+  qrCodeUrl = null,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const qrValue = `USER:${userId}|NAME:${userName}`;
 
   const handleDownload = () => {
-    const svg = document.getElementById("qr-code-svg");
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
+    if (qrCodeUrl) {
+      const link = document.createElement("a");
+      link.download = `QR_${userId}.png`;
+      link.href = qrCodeUrl;
+      link.click();
+    } else {
+      const svg = document.getElementById("qr-code-svg");
+      if (!svg) return;
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      const pngFile = canvas.toDataURL("image/png");
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
 
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `QR_${userId}.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
-    };
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const pngFile = canvas.toDataURL("image/png");
 
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `QR_${userId}.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+      };
+
+      img.src = "data:image/svg+xml;base64," + btoa(svgData);
+    }
   };
 
   return (
@@ -431,14 +475,47 @@ const QRCard = ({
         className="qr-code-wrapper"
         onClick={onQRCodeClick}
         title="Click to enlarge"
+        style={{
+          background: 'white',
+          padding: '1rem',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          border: '2px solid #f0f0f0',
+          minHeight: '220px',
+          minWidth: '220px'
+        }}
       >
-        <QRCodeSVG
-          id="qr-code-svg"
-          value={qrValue}
-          size={180}
-          level="H"
-          className="qr-code-svg"
-        />
+        {qrCodeUrl && !imageLoadError ? (
+          <img
+            src={qrCodeUrl}
+            alt="QR Code"
+            className="qr-code-image"
+            style={{
+              width: '180px',
+              height: '180px',
+              objectFit: 'contain',
+              display: 'block'
+            }}
+            onError={(e) => {
+              setImageLoadError(true);
+            }}
+          />
+        ) : (
+          <div style={{ width: '180px', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <QRCodeSVG
+              id="qr-code-svg"
+              value={qrValue}
+              size={180}
+              level="H"
+              className="qr-code-svg"
+              style={{ display: 'block' }}
+            />
+          </div>
+        )}
       </div>
       <button className="qr-btn qr-btn-download" onClick={handleDownload}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -484,6 +561,10 @@ const QRCard = ({
 const RequestCard = ({ requests = [] }) => {
   const getStatusClass = (status) => {
     const statusMap = {
+      PENDING: "status-pending",
+      APPROVED: "status-approved",
+      DECLINED: "status-declined",
+      CANCELLED: "status-cancelled",
       Pending: "status-pending",
       Approved: "status-approved",
       Borrowed: "status-borrowed",
@@ -492,6 +573,16 @@ const RequestCard = ({ requests = [] }) => {
       "View PDF": "status-view-pdf",
     };
     return statusMap[status] || "status-pending";
+  };
+
+  const getStatusLabel = (status) => {
+    const labelMap = {
+      PENDING: "Pending",
+      APPROVED: "Approved",
+      DECLINED: "Declined",
+      CANCELLED: "Cancelled",
+    };
+    return labelMap[status] || status;
   };
 
   const handleStatusClick = (request) => {
@@ -543,7 +634,7 @@ const RequestCard = ({ requests = [] }) => {
                           request.status === "View PDF" ? "pointer" : "default",
                       }}
                     >
-                      {request.status}
+                      {getStatusLabel(request.status)}
                     </span>
                   </td>
                 </tr>
@@ -558,40 +649,78 @@ const RequestCard = ({ requests = [] }) => {
 
 export const RequestPage = () => {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const { notifications, unreadCount } = useNotifications();
 
+  // Fetch user data on mount
   useEffect(() => {
-    const savedRequests = localStorage.getItem("fileRequests");
-    if (savedRequests) {
-      setRequests(JSON.parse(savedRequests));
-    }
+    const fetchUser = async () => {
+      try {
+        const response = await authAPI.getMe();
+        const userData = response.data.user || response.data;
+
+        if (userData && userData.avatar) {
+          if (userData.avatar.startsWith('data:')) {
+            setCurrentUser(userData);
+          } else if (userData.avatar.startsWith('http')) {
+            setCurrentUser(userData);
+          } else {
+            userData.avatar = null;
+            setCurrentUser(userData);
+          }
+        } else {
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    };
+
+    fetchUser();
   }, []);
 
+  // Fetch requests from API on mount
   useEffect(() => {
-    localStorage.setItem("fileRequests", JSON.stringify(requests));
-  }, [requests]);
+    const fetchRequests = async () => {
+      try {
+        const response = await requestsAPI.getAll();
+        const requestsData = response.data.requests || response.data;
+        const mappedRequests = Array.isArray(requestsData)
+          ? requestsData.map(req => ({
+              id: req.id,
+              fileName: req.title,
+              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
+              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
+              status: req.status,
+              copyType: req.type
+            }))
+          : [];
+        setRequests(mappedRequests);
+      } catch (error) {
+        console.error('Failed to fetch requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
 
   const handleSubmitRequest = (newRequest) => {
-    setRequests((prev) => [newRequest, ...prev]);
-
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) => {
-          if (req.id === newRequest.id && req.status === "Pending") {
-            if (req.copyType === "soft") {
-              return { ...req, status: "View PDF" };
-            } else {
-              return { ...req, status: "Approved" };
-            }
-          }
-          return req;
-        })
-      );
-    }, 3000);
+    const mappedRequest = {
+      id: newRequest.id,
+      fileName: newRequest.title,
+      dateRequested: newRequest.createdAt ? new Date(newRequest.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+      returnDue: newRequest.approvedAt ? new Date(newRequest.approvedAt).toLocaleDateString() : 'N/A',
+      status: newRequest.status,
+      copyType: newRequest.type
+    };
+    setRequests((prev) => [mappedRequest, ...prev]);
   };
 
   const filesAssigned = requests.filter(
@@ -660,19 +789,21 @@ export const RequestPage = () => {
           <div className="request-page-container">
             <FormCard onSubmit={handleSubmitRequest} />
             <QRCard
-              userName="John Doe"
-              userId="USER-001"
+              userName={currentUser?.name || "User"}
+              userId={currentUser?.id || "N/A"}
               filesAssigned={filesAssigned}
               filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
+              qrCodeUrl={currentUser?.avatar || null}
             />
             <RequestCard requests={requests} />
           </div>
           <QRModal
             isOpen={isQRModalOpen}
             onClose={() => setIsQRModalOpen(false)}
-            qrValue={`USER:USER-001|NAME:John Doe`}
-            userName="John Doe"
+            qrCodeUrl={currentUser?.avatar || null}
+            userName={currentUser?.name || "User"}
+            qrValue={`USER:${currentUser?.id || 'N/A'}|NAME:${currentUser?.name || 'User'}`}
           />
           <NotificationDropdown
             notifications={notifications}

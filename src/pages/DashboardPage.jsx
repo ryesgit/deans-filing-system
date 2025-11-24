@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { ActivityLogCard } from "../DeptHeadPage/DashboardPage/sections/ActivityLogCard";
 import { PersonalInformation } from "../DeptHeadPage/DashboardPage/sections/PersonalInformation";
 import { QuickActionCard } from "../DeptHeadPage/DashboardPage/sections/QuickActionCard";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
 import { NotificationCard } from "../DeptHeadPage/DashboardPage/sections/NotificationCard";
+
 import { Modal } from "../components/Modal";
 import { NotificationDropdown } from "../components/NotificationDropdown";
-import { userData, statsData } from "../data/mockData";
+import { useAuth } from "../components/Modal/AuthContext";
+import { statsAPI } from "../services/api";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
@@ -17,7 +19,37 @@ export const DashboardPage = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statsData, setStatsData] = useState({
+    files: { total: 0, newlyAdded: 0 },
+    borrowing: { activeBorrowed: 0, returnedToday: 0 },
+    approvals: { pending: 0, approved: 0 },
+    overdueFiles: { overdue: 0, resolved: 0 }
+  });
+  const [loading, setLoading] = useState(true);
   const { notifications, unreadCount } = useNotifications();
+  const { user } = useAuth();
+
+  // Fetch dashboard stats on mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await statsAPI.getDashboard();
+        const stats = response.data?.stats || response.data;
+        setStatsData({
+          files: stats?.files || { total: 0, newlyAdded: 0 },
+          borrowing: stats?.borrowing || { activeBorrowed: 0, returnedToday: 0 },
+          approvals: stats?.approvals || { pending: 0, approved: 0 },
+          overdueFiles: stats?.overdueFiles || { overdue: 0, resolved: 0 },
+        });
+      } catch (error) {
+        console.error('Failed to fetch dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -32,8 +64,7 @@ export const DashboardPage = () => {
           <div className="welcome-message">
             <div className="text-wrapper-71">Welcome Back,</div>
             <div className="text-wrapper-70">
-              {userData.name.split(" ")[0]} {userData.name.split(" ")[1]}{" "}
-              {userData.name.split(" ")[2]}!
+              {user?.name || 'User'}!
             </div>
           </div>
           <div className="header-actions">
@@ -79,11 +110,13 @@ export const DashboardPage = () => {
         </header>
 
         <PersonalInformation />
+
         <ActivityLogCard />
         <QuickActionCard
           onAddFile={() => setIsAddFileModalOpen(true)}
           onRequest={() => setIsRequestModalOpen(true)}
           onAddMember={() => setIsAddMemberModalOpen(true)}
+          role={user?.role}
         />
         <NotificationCard />
 
