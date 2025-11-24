@@ -22,16 +22,23 @@ const customStyles = {
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isSelected
+    backgroundColor: state.isDisabled
+      ? "#f5f5f5"
+      : state.isSelected
       ? "#4A90E2"
       : state.isFocused
       ? "#F0F7FF"
       : "white",
-    color: state.isSelected ? "white" : "#333",
+    color: state.isDisabled
+      ? "#999"
+      : state.isSelected
+      ? "white"
+      : "#333",
     padding: "12px 16px",
-    cursor: "pointer",
+    cursor: state.isDisabled ? "not-allowed" : "pointer",
+    opacity: state.isDisabled ? 0.6 : 1,
     "&:active": {
-      backgroundColor: "#4A90E2",
+      backgroundColor: state.isDisabled ? "#f5f5f5" : "#4A90E2",
     },
   }),
   singleValue: (provided) => ({
@@ -57,6 +64,8 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
         label: file.filename || file.name,
         department: file.department,
         category: file.category || "Uncategorized",
+        status: file.status || "AVAILABLE",
+        isDisabled: file.status && file.status !== "AVAILABLE",
         fileData: file,
       }));
     } catch (error) {
@@ -101,6 +110,7 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
       placeholder="Search for a file..."
       isClearable
       styles={customStyles}
+      isOptionDisabled={(option) => option.isDisabled}
       noOptionsMessage={({ inputValue }) =>
         inputValue.length < 2
           ? "Type at least 2 characters to search"
@@ -109,9 +119,27 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
       loadingMessage={() => "Searching files..."}
       formatOptionLabel={(option) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{option.label}</div>
+          <div style={{ fontWeight: 500 }}>
+            {option.label}
+            {option.isDisabled && (
+              <span
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "0.75em",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  backgroundColor: "#ff6b6b",
+                  color: "white",
+                  fontWeight: "normal",
+                }}
+              >
+                {option.status}
+              </span>
+            )}
+          </div>
           <div style={{ fontSize: "0.85em", color: "#666", marginTop: "2px" }}>
             {option.department} • {option.category}
+            {option.isDisabled && " • Not available for request"}
           </div>
         </div>
       )}
