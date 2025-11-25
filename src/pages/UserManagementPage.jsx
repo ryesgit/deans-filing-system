@@ -672,7 +672,7 @@ export const UserManagementPage = () => {
         )}
 
         <NotificationDropdown
-          notifications={notifications}
+
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />

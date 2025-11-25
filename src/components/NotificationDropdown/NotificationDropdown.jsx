@@ -1,4 +1,6 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useNotifications } from "./NotificationContext";
 import "./style.css";
 
 const formatTime = (dateString) => {
@@ -17,10 +19,30 @@ const formatTime = (dateString) => {
   return date.toLocaleDateString();
 };
 
-export const NotificationDropdown = ({ notifications, isOpen, onClose }) => {
+export const NotificationDropdown = ({ isOpen, onClose }) => {
+  const { notifications, markAsRead, markAllAsRead } = useNotifications();
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
 
   const notificationList = Array.isArray(notifications) ? notifications : [];
+  const unreadCount = notificationList.filter(n => !n.read && !n.isRead).length;
+
+  const handleNotificationClick = async (notification) => {
+    if (!notification.read && !notification.isRead) {
+      await markAsRead(notification.id);
+    }
+
+    if (notification.link) {
+      navigate(notification.link);
+      onClose();
+    }
+  };
+
+  const handleMarkAllAsRead = async (e) => {
+    e.stopPropagation();
+    await markAllAsRead();
+  };
 
   return (
     <>
@@ -28,7 +50,25 @@ export const NotificationDropdown = ({ notifications, isOpen, onClose }) => {
       <div className="notification-dropdown">
         <div className="notification-header">
           <h3>Notifications</h3>
-          <span className="notification-count">{notificationList.filter(n => !n.read).length} new</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span className="notification-count">{unreadCount} new</span>
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#8B0000",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  textDecoration: "underline",
+                  padding: "0",
+                }}
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
         </div>
         <div className="notification-list">
           {notificationList.length === 0 ? (
@@ -41,7 +81,11 @@ export const NotificationDropdown = ({ notifications, isOpen, onClose }) => {
             notificationList.map((notification) => (
               <div
                 key={notification.id}
-                className={`notification-item ${!notification.read ? "unread" : ""}`}
+                className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
+                onClick={() => handleNotificationClick(notification)}
+                style={{
+                  cursor: notification.link ? "pointer" : "default",
+                }}
               >
                 {notification.title && (
                   <h4 className="notification-title">{notification.title}</h4>

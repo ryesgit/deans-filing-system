@@ -31,11 +31,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Filter notifications for the current user if user is logged in
         // Assuming notifications have a userId field matching the user's ID
-        const userNotifications = user
-          ? mappedNotifications.filter(n => n.userId == user.id)
-          : mappedNotifications;
-
-        setNotifications(userNotifications);
+        setNotifications(mappedNotifications);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
         setNotifications([]);
@@ -56,12 +52,49 @@ export const NotificationProvider = ({ children }) => {
     try {
       await notificationsAPI.markAsRead(id);
       setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, read: true } : n)
+        prev.map(n => n.id === id ? { ...n, read: true, isRead: true } : n)
       );
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
   };
+
+  const markAllAsRead = async () => {
+    try {
+      await notificationsAPI.markAllAsRead();
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, read: true, isRead: true }))
+      );
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  };
+
+  const refreshNotifications = async () => {
+    try {
+      const response = await notificationsAPI.getAll();
+      const notificationsData = response.data.notifications || response.data;
+      const mappedNotifications = Array.isArray(notificationsData)
+        ? notificationsData.map(n => ({
+          ...n,
+          read: n.isRead || n.read || false
+        }))
+        : [];
+      setNotifications(mappedNotifications);
+    } catch (error) {
+      console.error('Failed to refresh notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -70,6 +103,8 @@ export const NotificationProvider = ({ children }) => {
     unreadCount,
     loading,
     markAsRead,
+    markAllAsRead,
+    refreshNotifications,
   };
 
   return (
