@@ -53,6 +53,22 @@
   flex-shrink: 0;
 }
 
+.activity-log-card .profile-initials {
+  background-color: #800000;
+  color: #ffffff;
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 .activity-log-card .text-content {
   display: flex;
   flex-direction: column;

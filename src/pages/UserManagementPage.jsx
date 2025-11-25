@@ -222,7 +222,11 @@ export const UserManagementPage = () => {
         contactNumber: createdUser.contactNumber,
         dateOfBirth: createdUser.dateOfBirth,
         gender: createdUser.gender,
-        profilePicture: createdUser.avatar ? `${API_BASE_URL}${createdUser.avatar}` : createdUser.profilePicture,
+        profilePicture: createdUser.avatar
+              ? (createdUser.avatar.startsWith('http') || createdUser.avatar.startsWith('data:')
+                  ? createdUser.avatar
+                  : `${API_BASE_URL}${createdUser.avatar}`)
+              : createdUser.profilePicture,
         role: createdUser.role,
         department: createdUser.department || "N/A",
         status: createdUser.status,
@@ -274,7 +278,11 @@ export const UserManagementPage = () => {
         contactNumber: editedUser.contactNumber,
         dateOfBirth: editedUser.dateOfBirth,
         gender: editedUser.gender,
-        profilePicture: editedUser.avatar ? `${API_BASE_URL}${editedUser.avatar}` : editedUser.profilePicture,
+        profilePicture: editedUser.avatar
+              ? (editedUser.avatar.startsWith('http') || editedUser.avatar.startsWith('data:')
+                  ? editedUser.avatar
+                  : `${API_BASE_URL}${editedUser.avatar}`)
+              : editedUser.profilePicture,
         role: editedUser.role,
         department: editedUser.department || "N/A",
         status: editedUser.status,
@@ -542,8 +550,10 @@ export const UserManagementPage = () => {
                   <div className="user-datejoined">{user.dateJoined}</div>
                   <div className="Date-joined">Date Joined</div>
                   <div className="user-photo">
-                    {user.profilePicture && (
+                    {user.profilePicture ? (
                       <img src={user.profilePicture} alt={user.name} />
+                    ) : (
+                      <div className="user-initials">{getInitials(user.name)}</div>
                     )}
                   </div>
                   <div
@@ -563,8 +573,10 @@ export const UserManagementPage = () => {
                   onClick={() => setSelectedUser(user)}
                 >
                   <div className="list-photo">
-                    {user.profilePicture && (
+                    {user.profilePicture ? (
                       <img src={user.profilePicture} alt={user.name} />
+                    ) : (
+                      <div className="user-initials">{getInitials(user.name)}</div>
                     )}
                   </div>
                   <div
@@ -650,6 +662,13 @@ export const UserManagementPage = () => {
 };
 
 // Helper functions
+const getInitials = (name) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
 const toBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1149,8 +1168,10 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
 
         <div className="user-details-header">
           <div className="user-details-photo">
-            {user.profilePicture && (
+            {user.profilePicture ? (
               <img src={user.profilePicture} alt={user.name} />
+            ) : (
+              <div className="user-initials">{getInitials(user.name)}</div>
             )}
           </div>
           <h2 className="user-details-name">{user.name}</h2>
