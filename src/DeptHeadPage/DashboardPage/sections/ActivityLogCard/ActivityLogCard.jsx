@@ -36,21 +36,6 @@ export const ActivityLogCard = () => {
               key={activity.id}
               className={`profile-details${index > 0 ? `-${index + 1}` : ""}`}
             >
-              <p className="p">
-                <span className="span">
-                  {activity.userName} {activity.type}{" "}
-                </span>
-                <span className="text-wrapper-27">{activity.filename}</span>
-              </p>
-
-              <p className="due-oct">
-                <span className="text-wrapper-28">Time:</span>
-                <span className="text-wrapper-29">
-                  {" "}
-                  {new Date(activity.timestamp).toLocaleString()}
-                </span>
-              </p>
-
               {activity.userAvatar ? (
                 <img
                   className="profile"
@@ -60,6 +45,23 @@ export const ActivityLogCard = () => {
               ) : (
                 <div className="profile profile-placeholder"></div>
               )}
+              
+              <div className="text-content">
+                <p className="p">
+                  <span className="span">
+                    {activity.userName} {activity.type}{" "}
+                  </span>
+                  <span className="text-wrapper-27">{activity.filename}</span>
+                </p>
+
+                <p className="due-oct">
+                  <span className="text-wrapper-28">Time:</span>
+                  <span className="text-wrapper-29">
+                    {" "}
+                    {new Date(activity.timestamp).toLocaleString()}
+                  </span>
+                </p>
+              </div>
             </div>
           ))
         ) : (

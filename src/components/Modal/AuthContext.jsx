@@ -103,6 +103,11 @@ export const AuthProvider = ({ children }) => {
     error,
     login,
     logout,
+    updateUser: (userData) => {
+      const processedData = processUserData(userData);
+      setUser(processedData);
+      localStorage.setItem('user', JSON.stringify(processedData));
+    },
     clearError,
   };
 

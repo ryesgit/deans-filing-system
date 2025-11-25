@@ -89,6 +89,7 @@ const FormCard = ({ onSubmit }) => {
     copyType: "soft",
     returnDate: "",
     priority: "",
+    fileId: null,
   });
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -127,6 +128,7 @@ const FormCard = ({ onSubmit }) => {
     setFormData((prev) => ({
       ...prev,
       fileName: fileInfo.fileName,
+      fileId: fileInfo.fileData?.id, // Store file ID
       department: fileInfo.department || "",
       fileCategory: fileInfo.fileCategory || "",
     }));
@@ -184,6 +186,7 @@ const FormCard = ({ onSubmit }) => {
       description: descriptionParts.join("\n"),
       type: "FILE_ACCESS",
       priority: formData.priority || "normal",
+      fileId: formData.fileId, // Include file ID in request
     };
 
     try {
@@ -215,6 +218,7 @@ const FormCard = ({ onSubmit }) => {
       copyType: "soft",
       returnDate: "",
       priority: "",
+      fileId: null,
     });
     setShowClearModal(false);
   };
@@ -228,6 +232,7 @@ const FormCard = ({ onSubmit }) => {
       copyType: "soft",
       returnDate: "",
       priority: "",
+      fileId: null,
     });
   };
 
@@ -441,37 +446,30 @@ const QRCard = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
-  const qrValue = `USER:${userId}|NAME:${userName}`;
+  const qrValue = userId || "USER-UNKNOWN";
 
   const handleDownload = () => {
-    if (qrCodeUrl) {
-      const link = document.createElement("a");
-      link.download = `QR_${userId}.png`;
-      link.href = qrCodeUrl;
-      link.click();
-    } else {
-      const svg = document.getElementById("qr-code-svg");
-      if (!svg) return;
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
 
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
 
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        const pngFile = canvas.toDataURL("image/png");
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL("image/png");
 
-        const downloadLink = document.createElement("a");
-        downloadLink.download = `QR_${userId}.png`;
-        downloadLink.href = pngFile;
-        downloadLink.click();
-      };
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `QR_${userId}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
 
-      img.src = "data:image/svg+xml;base64," + btoa(svgData);
-    }
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
   return (
@@ -495,41 +493,25 @@ const QRCard = ({
           minWidth: "220px",
         }}
       >
-        {qrCodeUrl && !imageLoadError ? (
-          <img
-            src={qrCodeUrl}
-            alt="QR Code"
-            className="qr-code-image"
-            style={{
-              width: "180px",
-              height: "180px",
-              objectFit: "contain",
-              display: "block",
-            }}
-            onError={(e) => {
-              setImageLoadError(true);
-            }}
+        {/* Always render QRCodeSVG, ignore qrCodeUrl from backend */}
+        <div
+          style={{
+            width: "180px",
+            height: "180px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <QRCodeSVG
+            id="qr-code-svg"
+            value={qrValue}
+            size={180}
+            level="H"
+            className="qr-code-svg"
+            style={{ display: "block" }}
           />
-        ) : (
-          <div
-            style={{
-              width: "180px",
-              height: "180px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <QRCodeSVG
-              id="qr-code-svg"
-              value={qrValue}
-              size={180}
-              level="H"
-              className="qr-code-svg"
-              style={{ display: "block" }}
-            />
-          </div>
-        )}
+        </div>
       </div>
       <button className="qr-btn qr-btn-download" onClick={handleDownload}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -810,30 +792,28 @@ export const RequestPage = () => {
             <FormCard onSubmit={handleSubmitRequest} />
             <QRCard
               userName={currentUser?.name || "User"}
-              userId={currentUser?.id || "N/A"}
+              userId={currentUser?.userId || "ID"}
               filesAssigned={filesAssigned}
               filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
-              qrCodeUrl={currentUser?.avatar || null}
             />
             <RequestCard requests={requests} />
           </div>
-          <QRModal
-            isOpen={isQRModalOpen}
-            onClose={() => setIsQRModalOpen(false)}
-            qrCodeUrl={currentUser?.avatar || null}
-            userName={currentUser?.name || "User"}
-            qrValue={`USER:${currentUser?.id || "N/A"}|NAME:${
-              currentUser?.name || "User"
-            }`}
-          />
-          <NotificationDropdown
-            notifications={notifications}
-            isOpen={isNotificationOpen}
-            onClose={() => setIsNotificationOpen(false)}
-          />
         </div>
       </div>
+
+      <QRModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        userName={currentUser?.name || "User"}
+        qrValue={currentUser?.userId || "USER-UNKNOWN"}
+      />
+      <NotificationDropdown
+        notifications={notifications}
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+      />
     </>
   );
 };
+// End of RequestPage component
