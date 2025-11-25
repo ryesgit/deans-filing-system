@@ -799,18 +799,6 @@ const RequestCard = ({ requests = [] }) => {
               </span>
             </div>
             <div className="details-row">
-              <span className="file-info-label">Faculty Name:</span>
-              <span className="file-info-value">
-                {selectedRequestForDetails.user?.name || "N/A"}
-              </span>
-            </div>
-            <div className="details-row">
-              <span className="file-info-label">Department:</span>
-              <span className="file-info-value">
-                {selectedRequestForDetails.user?.department || "N/A"}
-              </span>
-            </div>
-            <div className="details-row">
               <span className="file-info-label">File Name:</span>
               <span className="file-info-value">
                 {selectedRequestForDetails.fileName}
