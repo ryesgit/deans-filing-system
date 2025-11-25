@@ -40,17 +40,17 @@
       }
     },
     {
-      "id": "src/components/ProtectedRoute.jsx:14:11-to-src/components/ProtectedRoute.jsx",
+      "id": "src/components/ProtectedRoute.jsx:17:13-to-src/components/ProtectedRoute.jsx",
       "source": "src/components/ProtectedRoute.jsx",
       "target": "src/components/ProtectedRoute.jsx",
       "data": {
         "viaRoute": "/dashboard",
         "trigger": {
           "element": "<Navigate to=\"/dashboard\" replace />",
-          "line": 14,
-          "endLine": 14,
-          "column": 11,
-          "endColumn": 47,
+          "line": 17,
+          "endLine": 17,
+          "column": 13,
+          "endColumn": 49,
           "sourceFile": "src/components/ProtectedRoute.jsx"
         }
       }

@@ -49,35 +49,34 @@ export const SidePanel = () => {
       <nav className="side-panel-nav">
         <Link
           to="/dashboard"
-          className={`dashboard ${
-            currentActiveItem === "dashboard" ? "active" : ""
-          }`}
+          className={`dashboard ${currentActiveItem === "dashboard" ? "active" : ""
+            }`}
           onClick={() => handleNavigation("dashboard")}
         >
           <img className="vector-7" alt="Vector" src="/dashboard_icon.svg" />
           <div className="text-wrapper-56">Dashboard</div>
         </Link>
 
-        <Link
-          to="/file-management"
-          className={`file-management ${
-            currentActiveItem === "file-management" ? "active" : ""
-          }`}
-          onClick={() => handleNavigation("file-management")}
-        >
-          <img
-            className="vector-6"
-            alt="Vector"
-            src="https://c.animaapp.com/27o9iVJi/img/vector-5.svg"
-          />
-          <div className="text-wrapper-55">File Management</div>
-        </Link>
+        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
+          <Link
+            to="/file-management"
+            className={`file-management ${currentActiveItem === "file-management" ? "active" : ""
+              }`}
+            onClick={() => handleNavigation("file-management")}
+          >
+            <img
+              className="vector-6"
+              alt="Vector"
+              src="https://c.animaapp.com/27o9iVJi/img/vector-5.svg"
+            />
+            <div className="text-wrapper-55">File Management</div>
+          </Link>
+        )}
 
         <Link
           to="/request"
-          className={`request ${
-            currentActiveItem === "request" ? "active" : ""
-          }`}
+          className={`request ${currentActiveItem === "request" ? "active" : ""
+            }`}
           onClick={() => handleNavigation("request")}
         >
           <img
@@ -88,12 +87,11 @@ export const SidePanel = () => {
           <div className="text-wrapper-54">Request</div>
         </Link>
 
-        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
+        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
           <Link
             to="/user-management"
-            className={`user-management ${
-              currentActiveItem === "user-management" ? "active" : ""
-            }`}
+            className={`user-management ${currentActiveItem === "user-management" ? "active" : ""
+              }`}
             onClick={() => handleNavigation("user-management")}
           >
             <img
@@ -105,39 +103,33 @@ export const SidePanel = () => {
           </Link>
         )}
 
-        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
-          <Link
-            to="/reports"
-            className={`report-log ${
-              currentActiveItem === "report-log" ? "active" : ""
+        <Link
+          to="/reports"
+          className={`report-log ${currentActiveItem === "report-log" ? "active" : ""
             }`}
-            onClick={() => handleNavigation("report-log")}
-          >
-            <img
-              className="vector-3"
-              alt="Vector"
-              src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
-            />
-            <div className="text-wrapper-53">Reports &amp; Log</div>
-          </Link>
-        )}
+          onClick={() => handleNavigation("report-log")}
+        >
+          <img
+            className="vector-3"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-2.svg"
+          />
+          <div className="text-wrapper-53">Reports &amp; Log</div>
+        </Link>
 
-        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
-          <Link
-            to="/settings"
-            className={`settings ${
-              currentActiveItem === "settings" ? "active" : ""
+        <Link
+          to="/settings"
+          className={`settings ${currentActiveItem === "settings" ? "active" : ""
             }`}
-            onClick={() => handleNavigation("settings")}
-          >
-            <img
-              className="vector-2"
-              alt="Vector"
-              src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
-            />
-            <div className="text-wrapper-52">Settings</div>
-          </Link>
-        )}
+          onClick={() => handleNavigation("settings")}
+        >
+          <img
+            className="vector-2"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
+          />
+          <div className="text-wrapper-52">Settings</div>
+        </Link>
       </nav>
 
       <div className="logout" onClick={handleLogout}>

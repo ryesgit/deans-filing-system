@@ -7,7 +7,9 @@ import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-import { requestsAPI, authAPI } from "../services/api";
+import { requestsAPI, authAPI, filesAPI } from "../services/api";
+import { Modal } from "../components/Modal/Modal";
+import { useAuth } from "../components/Modal/AuthContext";
 const ConfirmModal = ({
   isOpen,
   onClose,
@@ -172,8 +174,7 @@ const FormCard = ({ onSubmit }) => {
       `Purpose: ${formData.purpose}`,
       `Department: ${formData.department}`,
       `Category: ${formData.fileCategory}`,
-      `Copy Type: ${
-        formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
+      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
       }`,
     ];
 
@@ -198,8 +199,8 @@ const FormCard = ({ onSubmit }) => {
       console.error("Failed to submit request:", error);
       alert(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to submit request"
+        error.message ||
+        "Failed to submit request"
       );
       setShowSubmitModal(false);
     }
@@ -285,9 +286,8 @@ const FormCard = ({ onSubmit }) => {
           <label className="copy-type-label">Copy Type</label>
           <div className="copy-type-buttons">
             <label
-              className={`copy-type-label-btn ${
-                formData.copyType === "soft" ? "active" : ""
-              }`}
+              className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
+                }`}
             >
               <input
                 type="radio"
@@ -299,9 +299,8 @@ const FormCard = ({ onSubmit }) => {
               Soft Copy Only
             </label>
             <label
-              className={`copy-type-label-btn ${
-                formData.copyType === "original" ? "active" : ""
-              }`}
+              className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
+                }`}
             >
               <input
                 type="radio"
@@ -578,6 +577,51 @@ const QRCard = ({
 };
 
 const RequestCard = ({ requests = [] }) => {
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const { user } = useAuth();
+
+  // Check if request is for soft copy based on description
+  const isSoftCopy = (description) => {
+    return description?.includes('Soft Copy Only');
+  };
+
+  // Handle View PDF click
+  const handleViewPDF = async (request) => {
+    if (!request.fileId) {
+      alert('File not available. Please contact support.');
+      return;
+    }
+
+    setSelectedRequest(request);
+    setShowPDFModal(true);
+    setPdfLoading(true);
+    setPdfUrl(null);
+
+    try {
+      const response = await filesAPI.download(request.fileId);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error('Failed to load PDF:', error);
+      alert('Failed to load PDF. Please try again or contact support.');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  // Clean up PDF URL when modal closes
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
+
   const getStatusClass = (status) => {
     const statusMap = {
       PENDING: "status-pending",
@@ -589,7 +633,6 @@ const RequestCard = ({ requests = [] }) => {
       Borrowed: "status-borrowed",
       Returned: "status-returned",
       Declined: "status-declined",
-      "View PDF": "status-view-pdf",
     };
     return statusMap[status] || "status-pending";
   };
@@ -604,65 +647,127 @@ const RequestCard = ({ requests = [] }) => {
     return labelMap[status] || status;
   };
 
-  const handleStatusClick = (request) => {
-    if (request.status === "View PDF") {
-      alert(
-        `Opening PDF: ${request.fileName}\n\nIn a real application, this would open the PDF viewer.`
-      );
-    }
-  };
-
   return (
-    <div className="request-card">
-      <h3 className="request-card-title">Request Status</h3>
-      <div className="table-container">
-        <table className="request-table">
-          <thead>
-            <tr>
-              <th>Request ID</th>
-              <th>File Name</th>
-              <th>Date Requested</th>
-              <th>Return Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.length === 0 ? (
+    <>
+      <div className="request-card">
+        <h3 className="request-card-title">Request Status</h3>
+        <div className="table-container">
+          <table className="request-table">
+            <thead>
               <tr>
-                <td colSpan="5" className="no-requests-row">
-                  No requests yet. Submit a request to get started!
-                </td>
+                <th>Request ID</th>
+                <th>File Name</th>
+                <th>Date Requested</th>
+                <th>Return Date</th>
+                <th>Status</th>
               </tr>
-            ) : (
-              requests.map((request) => (
-                <tr key={request.id} className="table-row">
-                  <td>{request.id}</td>
-                  <td className="file-name-cell" title={request.fileName}>
-                    {request.fileName}
-                  </td>
-                  <td>{request.dateRequested}</td>
-                  <td>{request.returnDue}</td>
-                  <td>
-                    <span
-                      className={`status-badge ${getStatusClass(
-                        request.status
-                      )}`}
-                      onClick={() => handleStatusClick(request)}
-                      style={{
-                        cursor:
-                          request.status === "View PDF" ? "pointer" : "default",
-                      }}
-                    >
-                      {getStatusLabel(request.status)}
-                    </span>
+            </thead>
+            <tbody>
+              {requests.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="no-requests-row">
+                    No requests yet. Submit a request to get started!
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                requests.map((request) => (
+                  <tr key={request.id} className="table-row">
+                    <td>{request.id}</td>
+                    <td className="file-name-cell" title={request.fileName}>
+                      {request.fileName}
+                    </td>
+                    <td>{request.dateRequested}</td>
+                    <td>{request.returnDue}</td>
+                    <td>
+                      {request.status === 'APPROVED' && isSoftCopy(request.description) && user?.role !== 'ADMIN' && user?.role !== 'STAFF' ? (
+                        <span
+                          className="status-badge status-view-pdf"
+                          onClick={() => handleViewPDF(request)}
+                          title="Click to view PDF"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          View PDF
+                        </span>
+                      ) : (
+                        <span
+                          className={`status-badge ${getStatusClass(
+                            request.status
+                          )}`}
+                        >
+                          {getStatusLabel(request.status)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* PDF Viewer Modal */}
+      <Modal
+        isOpen={showPDFModal}
+        onClose={() => {
+          setShowPDFModal(false);
+          if (pdfUrl) {
+            window.URL.revokeObjectURL(pdfUrl);
+          }
+          setPdfUrl(null);
+          setPdfLoading(false);
+        }}
+        title="File Preview"
+      >
+        {selectedRequest && (
+          <>
+            <div className="file-info">
+              <div className="file-info-row">
+                <span className="file-info-label">File Name:</span>
+                <span className="file-info-value">{selectedRequest.fileName}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Request ID:</span>
+                <span className="file-info-value">{selectedRequest.id}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Date Requested:</span>
+                <span className="file-info-value">{selectedRequest.dateRequested}</span>
+              </div>
+            </div>
+            {pdfLoading && (
+              <div className="pdf-preview" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '600px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '8px',
+                marginTop: '20px',
+                backgroundColor: '#f5f5f5'
+              }}>
+                <p style={{
+                  fontFamily: 'Poppins, Helvetica',
+                  fontSize: '16px',
+                  color: '#666'
+                }}>Loading PDF...</p>
+              </div>
+            )}
+            {!pdfLoading && pdfUrl && (
+              <div className="pdf-preview">
+                <iframe
+                  src={pdfUrl}
+                  title="PDF Preview"
+                  width="100%"
+                  height="600px"
+                  style={{ border: '1px solid #e0e0e0', borderRadius: '8px', marginTop: '20px' }}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
+    </>
   );
 };
 
@@ -711,15 +816,17 @@ export const RequestPage = () => {
         const requestsData = response.data.requests || response.data;
         const mappedRequests = Array.isArray(requestsData)
           ? requestsData
-              .filter(req => req.status !== 'CANCELLED')
-              .map(req => ({
-                id: req.id,
-                fileName: req.title,
-                dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
-                returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
-                status: req.status,
-                copyType: req.type
-              }))
+            .filter(req => req.status !== 'CANCELLED')
+            .map(req => ({
+              id: req.id,
+              fileName: req.title,
+              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
+              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
+              status: req.status,
+              copyType: req.type,
+              fileId: req.fileId,
+              description: req.description
+            }))
           : [];
         setRequests(mappedRequests);
       } catch (error) {
@@ -744,6 +851,8 @@ export const RequestPage = () => {
         : "N/A",
       status: newRequest.status,
       copyType: newRequest.type,
+      fileId: newRequest.fileId,
+      description: newRequest.description
     };
     setRequests((prev) => [mappedRequest, ...prev]);
   };
@@ -828,9 +937,8 @@ export const RequestPage = () => {
             onClose={() => setIsQRModalOpen(false)}
             qrCodeUrl={currentUser?.avatar || null}
             userName={currentUser?.name || "User"}
-            qrValue={`USER:${currentUser?.id || "N/A"}|NAME:${
-              currentUser?.name || "User"
-            }`}
+            qrValue={`USER:${currentUser?.id || "N/A"}|NAME:${currentUser?.name || "User"
+              }`}
           />
           <NotificationDropdown
             notifications={notifications}
