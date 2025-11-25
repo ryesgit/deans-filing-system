@@ -78,6 +78,7 @@
   border-radius: 10px;
   align-items: center;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .request-row:hover {
@@ -160,6 +161,11 @@
 .status-badge.declined {
   background-color: #dd0303;
   color: #ffffff;
+}
+
+.status-badge.pending {
+  background-color: #8a2be2; /* violet */
+  color: white;
 }
 
 .status-badge.status-view-pdf {

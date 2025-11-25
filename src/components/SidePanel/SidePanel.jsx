@@ -87,7 +87,7 @@ export const SidePanel = () => {
           <div className="text-wrapper-54">Request</div>
         </Link>
 
-        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
+        {user?.role?.toUpperCase() === 'ADMIN' && (
           <Link
             to="/user-management"
             className={`user-management ${currentActiveItem === "user-management" ? "active" : ""

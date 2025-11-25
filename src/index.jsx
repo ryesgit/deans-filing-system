@@ -55,7 +55,7 @@ createRoot(document.getElementById("app")).render(
             <Route
               path="/user-management"
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
                   <UserManagementPage />
                 </ProtectedRoute>
               }

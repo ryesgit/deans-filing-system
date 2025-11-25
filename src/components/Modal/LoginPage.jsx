@@ -66,6 +66,7 @@ export const LoginPage = () => {
               Lorem ipsum dolor sit amet consectetur. Risus enim.
             </p>
 
+            <form onSubmit={handleSubmit}>
             <div className="login-field username">
               <div
                 className={`login-field-border ${
@@ -164,13 +165,13 @@ export const LoginPage = () => {
             <div className="login-button-wrapper">
               <button
                 type="submit"
-                onClick={handleSubmit}
                 className="login-button"
                 aria-label="Log In"
               >
                 <span className="login-button-text">Log In</span>
               </button>
             </div>
+            </form>
 
             <button
               type="button"

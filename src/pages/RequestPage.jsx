@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
@@ -174,7 +175,8 @@ const FormCard = ({ onSubmit }) => {
       `Purpose: ${formData.purpose}`,
       `Department: ${formData.department}`,
       `Category: ${formData.fileCategory}`,
-      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
+      `Copy Type: ${
+        formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
       }`,
     ];
 
@@ -199,8 +201,8 @@ const FormCard = ({ onSubmit }) => {
       console.error("Failed to submit request:", error);
       alert(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to submit request"
+          error.message ||
+          "Failed to submit request"
       );
       setShowSubmitModal(false);
     }
@@ -286,8 +288,9 @@ const FormCard = ({ onSubmit }) => {
           <label className="copy-type-label">Copy Type</label>
           <div className="copy-type-buttons">
             <label
-              className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
-                }`}
+              className={`copy-type-label-btn ${
+                formData.copyType === "soft" ? "active" : ""
+              }`}
             >
               <input
                 type="radio"
@@ -299,8 +302,9 @@ const FormCard = ({ onSubmit }) => {
               Soft Copy Only
             </label>
             <label
-              className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
-                }`}
+              className={`copy-type-label-btn ${
+                formData.copyType === "original" ? "active" : ""
+              }`}
             >
               <input
                 type="radio"
@@ -553,22 +557,28 @@ const QRCard = ({
   );
 };
 
-const RequestCard = ({ requests = [] }) => {
+const RequestCard = ({ requests = [], onRequestCancelled }) => {
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRequestForDetails, setSelectedRequestForDetails] =
+    useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [requestToCancel, setRequestToCancel] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const { user } = useAuth();
 
   // Check if request is for soft copy based on description
   const isSoftCopy = (description) => {
-    return description?.includes('Soft Copy Only');
+    return description?.includes("Soft Copy Only");
   };
 
   // Handle View PDF click
   const handleViewPDF = async (request) => {
     if (!request.fileId) {
-      alert('File not available. Please contact support.');
+      alert("File not available. Please contact support.");
       return;
     }
 
@@ -579,12 +589,12 @@ const RequestCard = ({ requests = [] }) => {
 
     try {
       const response = await filesAPI.download(request.fileId);
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       setPdfUrl(url);
     } catch (error) {
-      console.error('Failed to load PDF:', error);
-      alert('Failed to load PDF. Please try again or contact support.');
+      console.error("Failed to load PDF:", error);
+      alert("Failed to load PDF. Please try again or contact support.");
     } finally {
       setPdfLoading(false);
     }
@@ -598,6 +608,54 @@ const RequestCard = ({ requests = [] }) => {
       }
     };
   }, [pdfUrl]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [openMenuId]);
+
+  const handleShowDetails = (request, e) => {
+    if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
+      return;
+    }
+
+    setSelectedRequestForDetails(request);
+    setShowDetailsModal(true);
+  };
+
+  const toggleMenu = (id, e) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
+
+  const handleCancelClick = (request, e) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    setRequestToCancel(request);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!requestToCancel) return;
+
+    try {
+      await requestsAPI.delete(requestToCancel.id);
+      setShowCancelModal(false);
+      setRequestToCancel(null);
+      if (onRequestCancelled) {
+        onRequestCancelled(requestToCancel.id);
+      }
+    } catch (error) {
+      console.error("Failed to cancel request:", error);
+      alert("Failed to cancel request. Please try again.");
+    }
+  };
 
   const getStatusClass = (status) => {
     const statusMap = {
@@ -637,18 +695,24 @@ const RequestCard = ({ requests = [] }) => {
                 <th>Date Requested</th>
                 <th>Return Date</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="no-requests-row">
+                  <td colSpan="6" className="no-requests-row">
                     No requests yet. Submit a request to get started!
                   </td>
                 </tr>
               ) : (
                 requests.map((request) => (
-                  <tr key={request.id} className="table-row">
+                  <tr
+                    key={request.id}
+                    className="table-row"
+                    onClick={(e) => handleShowDetails(request, e)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>{request.id}</td>
                     <td className="file-name-cell" title={request.fileName}>
                       {request.fileName}
@@ -656,12 +720,15 @@ const RequestCard = ({ requests = [] }) => {
                     <td>{request.dateRequested}</td>
                     <td>{request.returnDue}</td>
                     <td>
-                      {request.status === 'APPROVED' && isSoftCopy(request.description) && user?.role !== 'ADMIN' && user?.role !== 'STAFF' ? (
+                      {request.status === "APPROVED" &&
+                      isSoftCopy(request.description) &&
+                      user?.role !== "ADMIN" &&
+                      user?.role !== "STAFF" ? (
                         <span
                           className="status-badge status-view-pdf"
                           onClick={() => handleViewPDF(request)}
                           title="Click to view PDF"
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                         >
                           View PDF
                         </span>
@@ -674,6 +741,65 @@ const RequestCard = ({ requests = [] }) => {
                           {getStatusLabel(request.status)}
                         </span>
                       )}
+                    </td>
+                    <td style={{ position: "relative", textAlign: "center" }}>
+                      <div style={{ position: "relative", display: "inline-block" }} className="three-dot-menu">
+                        <button
+                          onClick={(e) => toggleMenu(request.id, e)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "20px",
+                            padding: "4px 8px",
+                          }}
+                        >
+                          ⋯
+                        </button>
+                        {openMenuId === request.id && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              right: 0,
+                              top: "100%",
+                              backgroundColor: "white",
+                              border: "1px solid #ddd",
+                              borderRadius: "4px",
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                              zIndex: 1000,
+                              minWidth: "120px",
+                            }}
+                          >
+                            <button
+                              onClick={
+                                request.status === "PENDING"
+                                  ? (e) => handleCancelClick(request, e)
+                                  : undefined
+                              }
+                              disabled={request.status !== "PENDING"}
+                              style={{
+                                width: "100%",
+                                padding: "8px 16px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: request.status === "PENDING" ? "pointer" : "not-allowed",
+                                color: request.status === "PENDING" ? "#d32f2f" : "#999",
+                                opacity: request.status === "PENDING" ? 1 : 0.5,
+                              }}
+                              onMouseEnter={(e) =>
+                                request.status === "PENDING" &&
+                                (e.target.style.backgroundColor = "#f5f5f5")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.target.style.backgroundColor = "transparent")
+                              }
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -701,7 +827,9 @@ const RequestCard = ({ requests = [] }) => {
             <div className="file-info">
               <div className="file-info-row">
                 <span className="file-info-label">File Name:</span>
-                <span className="file-info-value">{selectedRequest.fileName}</span>
+                <span className="file-info-value">
+                  {selectedRequest.fileName}
+                </span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Request ID:</span>
@@ -709,25 +837,34 @@ const RequestCard = ({ requests = [] }) => {
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Date Requested:</span>
-                <span className="file-info-value">{selectedRequest.dateRequested}</span>
+                <span className="file-info-value">
+                  {selectedRequest.dateRequested}
+                </span>
               </div>
             </div>
             {pdfLoading && (
-              <div className="pdf-preview" style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '600px',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                marginTop: '20px',
-                backgroundColor: '#f5f5f5'
-              }}>
-                <p style={{
-                  fontFamily: 'Poppins, Helvetica',
-                  fontSize: '16px',
-                  color: '#666'
-                }}>Loading PDF...</p>
+              <div
+                className="pdf-preview"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "600px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  marginTop: "20px",
+                  backgroundColor: "#f5f5f5",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "Poppins, Helvetica",
+                    fontSize: "16px",
+                    color: "#666",
+                  }}
+                >
+                  Loading PDF...
+                </p>
               </div>
             )}
             {!pdfLoading && pdfUrl && (
@@ -737,13 +874,96 @@ const RequestCard = ({ requests = [] }) => {
                   title="PDF Preview"
                   width="100%"
                   height="600px"
-                  style={{ border: '1px solid #e0e0e0', borderRadius: '8px', marginTop: '20px' }}
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                    marginTop: "20px",
+                  }}
                 />
               </div>
             )}
           </>
         )}
       </Modal>
+
+      {/* Request Details Modal */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title="Request Details"
+      >
+        {selectedRequestForDetails && (
+          <div className="request-details-modal-content">
+            <div className="details-row">
+              <span className="file-info-label">Request ID:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.id}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">File Name:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.fileName}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Copy Type:</span>
+              <span className="file-info-value">
+                {isSoftCopy(selectedRequestForDetails.description)
+                  ? "Soft Copy"
+                  : "Hard Copy"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Date Submitted:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.dateRequested}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Returned Date:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.returnedAt
+                  ? new Date(
+                      selectedRequestForDetails.returnedAt
+                    ).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Purpose:</span>
+              <span className="file-info-value purpose">
+                {selectedRequestForDetails.description || "No description"}
+              </span>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => {
+          setShowCancelModal(false);
+          setRequestToCancel(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Request"
+        confirmText="Yes, Cancel Request"
+        cancelText="No, Keep Request"
+      >
+        <p className="confirm-modal-message">
+          Are you sure you want to cancel this request?
+          {requestToCancel && (
+            <>
+              <br />
+              <strong>Request ID: {requestToCancel.id}</strong>
+              <br />
+              <strong>File: {requestToCancel.fileName}</strong>
+            </>
+          )}
+        </p>
+      </ConfirmModal>
     </>
   );
 };
@@ -793,17 +1013,21 @@ export const RequestPage = () => {
         const requestsData = response.data.requests || response.data;
         const mappedRequests = Array.isArray(requestsData)
           ? requestsData
-            .filter(req => req.status !== 'CANCELLED')
-            .map(req => ({
-              id: req.id,
-              fileName: req.title,
-              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
-              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
-              status: req.status,
-              copyType: req.type,
-              fileId: req.fileId,
-              description: req.description
-            }))
+              .filter((req) => req.status !== "CANCELLED")
+              .map((req) => ({
+                id: req.id,
+                fileName: req.title,
+                dateRequested: req.createdAt
+                  ? new Date(req.createdAt).toLocaleDateString()
+                  : "N/A",
+                returnDue: req.approvedAt
+                  ? new Date(req.approvedAt).toLocaleDateString()
+                  : "N/A",
+                status: req.status,
+                copyType: req.type,
+                fileId: req.fileId,
+                description: req.description,
+              }))
           : [];
         setRequests(mappedRequests);
       } catch (error) {
@@ -829,9 +1053,13 @@ export const RequestPage = () => {
       status: newRequest.status,
       copyType: newRequest.type,
       fileId: newRequest.fileId,
-      description: newRequest.description
+      description: newRequest.description,
     };
     setRequests((prev) => [mappedRequest, ...prev]);
+  };
+
+  const handleRequestCancelled = (requestId) => {
+    setRequests((prev) => prev.filter((req) => req.id !== requestId));
   };
 
   const filesAssigned = requests.filter(
@@ -855,32 +1083,7 @@ export const RequestPage = () => {
             </div>
             <div className="header-actions">
               <div className="search-wrapper">
-                <form
-                  onSubmit={(e) => e.preventDefault()}
-                  className="search-form"
-                >
-                  <svg
-                    className="search-icon"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                  </svg>
-                  <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search Requests..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </form>
+                <GlobalSearch />
               </div>
               <div
                 className="notification-button-wrapper"
@@ -906,7 +1109,7 @@ export const RequestPage = () => {
               filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
             />
-            <RequestCard requests={requests} />
+            <RequestCard requests={requests} onRequestCancelled={handleRequestCancelled} />
           </div>
           <QRModal
             isOpen={isQRModalOpen}
@@ -916,7 +1119,6 @@ export const RequestPage = () => {
             qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
           />
           <NotificationDropdown
-            notifications={notifications}
             isOpen={isNotificationOpen}
             onClose={() => setIsNotificationOpen(false)}
           />
