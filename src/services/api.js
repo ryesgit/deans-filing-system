@@ -124,4 +124,11 @@ export const notificationsAPI = {
   markAsRead: (id) => api.put(`/api/notifications/${id}/read`),
 };
 
+// Reports API
+export const reportsAPI = {
+  getUserActivity: (userId, days) => api.get(`/api/reports/user-activity/${userId}`, { params: { days } }),
+  generate: (params) => api.get('/api/reports/generate', { params }),
+  getFileActivity: (days) => api.get('/api/reports/file-activity', { params: { days } }),
+};
+
 export default api;
