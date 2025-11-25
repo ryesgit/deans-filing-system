@@ -163,6 +163,11 @@
   color: #ffffff;
 }
 
+.status-badge.pending {
+  background-color: #8a2be2; /* violet */
+  color: white;
+}
+
 .status-badge.status-view-pdf {
   background-color: #ffc107;
   color: #ffffff;

@@ -6,7 +6,8 @@ import { useNotifications } from "../components/NotificationDropdown/Notificatio
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
 export const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
@@ -23,7 +24,8 @@ export const UserManagementPage = () => {
     showAll: true,
     showActive: false,
     showFaculty: false,
-    showHeads: false,
+    showStaff: false, // Renamed from showHeads
+    showStudents: false, // Added for student filter
     department: "all",
   });
 
@@ -33,7 +35,9 @@ export const UserManagementPage = () => {
   const handleApprove = async (userId) => {
     try {
       await usersAPI.approve(userId);
-      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      setPendingUsersList(
+        pendingUsersList.filter((user) => user.userId !== userId)
+      );
       const response = await usersAPI.getAll();
       const usersData = response.data.users || response.data;
       const mappedUsers = Array.isArray(usersData)
@@ -48,9 +52,10 @@ export const UserManagementPage = () => {
             dateOfBirth: user.dateOfBirth,
             gender: user.gender,
             profilePicture: user.avatar
-              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
-                  ? user.avatar
-                  : `${API_BASE_URL}${user.avatar}`)
+              ? user.avatar.startsWith("http") ||
+                user.avatar.startsWith("data:")
+                ? user.avatar
+                : `${API_BASE_URL}${user.avatar}`
               : user.profilePicture,
             role: user.role,
             department: user.department || "N/A",
@@ -67,7 +72,7 @@ export const UserManagementPage = () => {
           }))
         : [];
       setUsers(mappedUsers);
-      alert('User approved successfully!');
+      alert("User approved successfully!");
     } catch (error) {
       console.error("Failed to approve user:", error);
       alert(error.message || "Failed to approve user");
@@ -80,8 +85,10 @@ export const UserManagementPage = () => {
 
     try {
       await usersAPI.reject(userId, reason);
-      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
-      alert('User registration declined successfully!');
+      setPendingUsersList(
+        pendingUsersList.filter((user) => user.userId !== userId)
+      );
+      alert("User registration declined successfully!");
     } catch (error) {
       console.error("Failed to decline user:", error);
       alert(error.message || "Failed to decline user");
@@ -109,9 +116,10 @@ export const UserManagementPage = () => {
             dateOfBirth: user.dateOfBirth,
             gender: user.gender,
             profilePicture: user.avatar
-              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
-                  ? user.avatar
-                  : `${API_BASE_URL}${user.avatar}`)
+              ? user.avatar.startsWith("http") ||
+                user.avatar.startsWith("data:")
+                ? user.avatar
+                : `${API_BASE_URL}${user.avatar}`
               : user.profilePicture,
             role: user.role,
             department: user.department || "N/A",
@@ -159,36 +167,42 @@ export const UserManagementPage = () => {
       user.name?.toLowerCase().includes(localSearchTerm.toLowerCase())
     );
 
-    if (!filterOptions.showAll) {
-      // Apply filters with AND logic - all selected filters must match
-      if (filterOptions.showActive) {
-        filtered = filtered.filter((user) => user.status === "ACTIVE");
-      }
-      if (filterOptions.showFaculty) {
-        filtered = filtered.filter((user) => user.role === "FACULTY");
-      }
-      if (filterOptions.showHeads) {
-        filtered = filtered.filter(
-          (user) => user.role === "ADMIN" || user.role === "STAFF"
-        );
-      }
+    // If "Show All Users" is selected, bypass all other filters except search term
+    if (filterOptions.showAll) {
+      return filtered; // Search term already applied
     }
 
+    // Apply department filter
     if (filterOptions.department !== "all") {
       filtered = filtered.filter(
         (user) => user.department === filterOptions.department
       );
     }
 
-    return filtered;
-  }, [users, filterOptions, localSearchTerm]);
+    // Apply role filters (OR logic)
+    const selectedRoles = [];
+    if (filterOptions.showFaculty) selectedRoles.push("FACULTY");
+    if (filterOptions.showStaff) selectedRoles.push("STAFF"); // Changed from showHeads to showStaff, and removed ADMIN
+    if (filterOptions.showStudents) selectedRoles.push("STUDENT");
+
+    if (selectedRoles.length > 0) {
+      filtered = filtered.filter((user) => selectedRoles.includes(user.role));
+    }
+
+    // Apply status filter
+    if (filterOptions.showActive) {
+      filtered = filtered.filter((user) => user.status === "ACTIVE");
+    }
+
+    return filtered; // Return the filtered list
+  }, [users, filterOptions, searchTerm]);
 
   const statistics = useMemo(() => {
     return {
       totalUsers: users.length,
       activeUsers: users.filter((u) => u.tags.includes("active")).length,
       facultyMembers: users.filter((u) => u.tags.includes("faculty")).length,
-      departmentHeads: users.filter((u) => u.tags.includes("head")).length,
+      staff: users.filter((u) => u.role === "STAFF").length, // Changed to count only staff
     };
   }, [users]);
 
@@ -224,10 +238,11 @@ export const UserManagementPage = () => {
         dateOfBirth: createdUser.dateOfBirth,
         gender: createdUser.gender,
         profilePicture: createdUser.avatar
-              ? (createdUser.avatar.startsWith('http') || createdUser.avatar.startsWith('data:')
-                  ? createdUser.avatar
-                  : `${API_BASE_URL}${createdUser.avatar}`)
-              : createdUser.profilePicture,
+          ? createdUser.avatar.startsWith("http") ||
+            createdUser.avatar.startsWith("data:")
+            ? createdUser.avatar
+            : `${API_BASE_URL}${createdUser.avatar}`
+          : createdUser.profilePicture,
         role: createdUser.role,
         department: createdUser.department || "N/A",
         status: createdUser.status,
@@ -280,10 +295,11 @@ export const UserManagementPage = () => {
         dateOfBirth: editedUser.dateOfBirth,
         gender: editedUser.gender,
         profilePicture: editedUser.avatar
-              ? (editedUser.avatar.startsWith('http') || editedUser.avatar.startsWith('data:')
-                  ? editedUser.avatar
-                  : `${API_BASE_URL}${editedUser.avatar}`)
-              : editedUser.profilePicture,
+          ? editedUser.avatar.startsWith("http") ||
+            editedUser.avatar.startsWith("data:")
+            ? editedUser.avatar
+            : `${API_BASE_URL}${editedUser.avatar}`
+          : editedUser.profilePicture,
         role: editedUser.role,
         department: editedUser.department || "N/A",
         status: editedUser.status,
@@ -375,8 +391,8 @@ export const UserManagementPage = () => {
             </div>
             <div className="stat-divider"></div>
             <div className="stat-item">
-              <div className="stat-number">{statistics.departmentHeads}</div>
-              <div className="stat-label">Department Heads</div>
+              <div className="stat-number">{statistics.staff}</div>
+              <div className="stat-label">Staff</div>
             </div>
           </div>
         </div>
@@ -532,7 +548,9 @@ export const UserManagementPage = () => {
                     {user.profilePicture ? (
                       <img src={user.profilePicture} alt={user.name} />
                     ) : (
-                      <div className="user-initials">{getInitials(user.name)}</div>
+                      <div className="user-initials">
+                        {getInitials(user.name)}
+                      </div>
                     )}
                   </div>
                   <div
@@ -555,7 +573,9 @@ export const UserManagementPage = () => {
                     {user.profilePicture ? (
                       <img src={user.profilePicture} alt={user.name} />
                     ) : (
-                      <div className="user-initials">{getInitials(user.name)}</div>
+                      <div className="user-initials">
+                        {getInitials(user.name)}
+                      </div>
                     )}
                   </div>
                   <div
@@ -631,7 +651,6 @@ export const UserManagementPage = () => {
         )}
 
         <NotificationDropdown
-
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />
@@ -875,7 +894,11 @@ const UserFormModal = ({
               placeholder="Enter user ID"
               readOnly={mode === "edit"}
               disabled={mode === "edit"}
-              style={mode === "edit" ? { backgroundColor: "#f5f5f5", cursor: "not-allowed" } : {}}
+              style={
+                mode === "edit"
+                  ? { backgroundColor: "#f5f5f5", cursor: "not-allowed" }
+                  : {}
+              }
             />
             {errors.username && (
               <span className="error-text">{errors.username}</span>
@@ -977,6 +1000,8 @@ const UserFormModal = ({
               <option value="" disabled>
                 Select a role
               </option>
+              <option value="STUDENT">Student</option>{" "}
+              {/* Added Student role */}
               <option value="FACULTY">Faculty Member</option>
               <option value="ADMIN">Department Head</option>
               <option value="STAFF">Staff</option>
@@ -1118,16 +1143,31 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
           </div>
 
           <div
-            className={`filter-option ${filters.showHeads ? "selected" : ""}`}
+            className={`filter-option ${
+              filters.showStudents ? "selected" : ""
+            }`}
           >
             <label className="filter-label">
               <input
                 type="checkbox"
-                checked={filters.showHeads}
-                onChange={() => handleCheckboxChange("showHeads")}
+                checked={filters.showStudents}
+                onChange={() => handleCheckboxChange("showStudents")}
                 className="filter-checkbox"
               />
-              <span className="filter-text">Show Department Heads</span>
+              <span className="filter-text">Show Students</span>
+            </label>
+          </div>
+          <div
+            className={`filter-option ${filters.showStaff ? "selected" : ""}`}
+          >
+            <label className="filter-label">
+              <input
+                type="checkbox"
+                checked={filters.showStaff}
+                onChange={() => handleCheckboxChange("showStaff")}
+                className="filter-checkbox"
+              />
+              <span className="filter-text">Show Staff</span>
             </label>
           </div>
 
