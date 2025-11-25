@@ -4,7 +4,7 @@ import { filesAPI, requestsAPI, usersAPI } from "../../services/api";
 import { useAuth } from "../Modal/AuthContext";
 import "./GlobalSearch.css";
 
-export const GlobalSearch = () => {
+export const GlobalSearch = ({ onSearchChange }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({
     files: [],
@@ -36,10 +36,13 @@ export const GlobalSearch = () => {
         setSearchResults({ files: [], requests: [], users: [] });
         setShowResults(false);
       }
+      if (onSearchChange) {
+        onSearchChange(searchQuery.trim());
+      }
     }, 300);
 
     return () => clearTimeout(searchTimeout);
-  }, [searchQuery]);
+  }, [searchQuery, onSearchChange]);
 
   const performSearch = async (query) => {
     setIsSearching(true);
