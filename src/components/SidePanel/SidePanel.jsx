@@ -105,7 +105,9 @@ export const SidePanel = () => {
           </Link>
         )}
 
-        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
+        {(user?.role === "ADMIN" ||
+          user?.role === "STAFF" ||
+          user?.role === "FACULTY") && (
           <Link
             to="/reports"
             className={`report-log ${
@@ -122,22 +124,20 @@ export const SidePanel = () => {
           </Link>
         )}
 
-        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
-          <Link
-            to="/settings"
-            className={`settings ${
-              currentActiveItem === "settings" ? "active" : ""
-            }`}
-            onClick={() => handleNavigation("settings")}
-          >
-            <img
-              className="vector-2"
-              alt="Vector"
-              src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
-            />
-            <div className="text-wrapper-52">Settings</div>
-          </Link>
-        )}
+        <Link
+          to="/settings"
+          className={`settings ${
+            currentActiveItem === "settings" ? "active" : ""
+          }`}
+          onClick={() => handleNavigation("settings")}
+        >
+          <img
+            className="vector-2"
+            alt="Vector"
+            src="https://c.animaapp.com/27o9iVJi/img/vector-1.svg"
+          />
+          <div className="text-wrapper-52">Settings</div>
+        </Link>
       </nav>
 
       <div className="logout" onClick={handleLogout}>
