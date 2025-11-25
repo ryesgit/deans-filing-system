@@ -4,7 +4,6 @@ import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { usersAPI } from "../services/api";
-import { pendingUsers } from "../data/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
@@ -28,14 +27,60 @@ export const UserManagementPage = () => {
   });
 
   const { notifications, unreadCount } = useNotifications();
-  const [pendingUsersList, setPendingUsersList] = useState(pendingUsers);
+  const [pendingUsersList, setPendingUsersList] = useState([]);
 
-  const handleApprove = (userId) => {
-    setPendingUsersList(pendingUsersList.filter((user) => user.id !== userId));
+  const handleApprove = async (userId) => {
+    try {
+      await usersAPI.approve(userId);
+      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      const response = await usersAPI.getAll();
+      const usersData = response.data.users || response.data;
+      const mappedUsers = Array.isArray(usersData)
+        ? usersData.map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            idNumber: user.idNumber,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
+            role: user.role,
+            department: user.department || "N/A",
+            status: user.status,
+            dateJoined: user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "N/A",
+            tags: [
+              user.status === "ACTIVE" ? "active" : "inactive",
+              user.role === "FACULTY" ? "faculty" : null,
+              user.role === "ADMIN" ? "head" : null,
+              user.role === "STAFF" ? "head" : null,
+            ].filter(Boolean),
+          }))
+        : [];
+      setUsers(mappedUsers);
+      alert('User approved successfully!');
+    } catch (error) {
+      console.error("Failed to approve user:", error);
+      alert(error.message || "Failed to approve user");
+    }
   };
 
-  const handleDecline = (userId) => {
-    setPendingUsersList(pendingUsersList.filter((user) => user.id !== userId));
+  const handleDecline = async (userId) => {
+    const reason = prompt("Please provide a reason for declining this user:");
+    if (reason === null) return;
+
+    try {
+      await usersAPI.reject(userId, reason);
+      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      alert('User registration declined successfully!');
+    } catch (error) {
+      console.error("Failed to decline user:", error);
+      alert(error.message || "Failed to decline user");
+    }
   };
 
   // Fetch users from API on mount
@@ -44,36 +89,54 @@ export const UserManagementPage = () => {
       try {
         const response = await usersAPI.getAll();
         const usersData = response.data.users || response.data;
-        const mappedUsers = Array.isArray(usersData)
-          ? usersData.map((user) => ({
-              id: user.id,
-              userId: user.userId,
-              name: user.name,
-              username: user.username,
-              email: user.email,
-              idNumber: user.idNumber,
-              contactNumber: user.contactNumber,
-              dateOfBirth: user.dateOfBirth,
-              gender: user.gender,
-              profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
-              role: user.role,
-              department: user.department || "N/A",
-              status: user.status,
-              dateJoined: user.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
-                : "N/A",
-              tags: [
-                user.status === "ACTIVE" ? "active" : "inactive",
-                user.role === "FACULTY" ? "faculty" : null,
-                user.role === "ADMIN" ? "head" : null,
-                user.role === "STAFF" ? "head" : null,
-              ].filter(Boolean),
-            }))
-          : [];
+        const allUsers = Array.isArray(usersData) ? usersData : [];
+
+        const mappedUsers = allUsers
+          .filter((user) => user.status !== "PENDING")
+          .map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            idNumber: user.idNumber,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
+            role: user.role,
+            department: user.department || "N/A",
+            status: user.status,
+            dateJoined: user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "N/A",
+            tags: [
+              user.status === "ACTIVE" ? "active" : "inactive",
+              user.role === "FACULTY" ? "faculty" : null,
+              user.role === "ADMIN" ? "head" : null,
+              user.role === "STAFF" ? "head" : null,
+            ].filter(Boolean),
+          }));
+
+        const pendingUsers = allUsers
+          .filter((user) => user.status === "PENDING")
+          .map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            dateOfBirth: user.dateOfBirth
+              ? new Date(user.dateOfBirth).toLocaleDateString()
+              : "N/A",
+            role: user.role,
+            department: user.department || "N/A",
+          }));
+
         setUsers(mappedUsers);
+        setPendingUsersList(pendingUsers);
       } catch (error) {
         console.error("Failed to fetch users:", error);
         setUsers([]);
+        setPendingUsersList([]);
       } finally {
         setLoading(false);
       }
@@ -343,7 +406,7 @@ export const UserManagementPage = () => {
               ) : (
                 pendingUsersList.map((user) => (
                   <div key={user.id} className="pending-user-row">
-                    <div className="table-cell">{user.id}</div>
+                    <div className="table-cell">{user.userId}</div>
                     <div className="table-cell">{user.name}</div>
                     <div className="table-cell">{user.dateOfBirth}</div>
                     <div className="table-cell">{user.role}</div>
@@ -352,13 +415,13 @@ export const UserManagementPage = () => {
                       <div className="action-buttons">
                         <button
                           className="approve-btn"
-                          onClick={() => handleApprove(user.id)}
+                          onClick={() => handleApprove(user.userId)}
                         >
                           Approve
                         </button>
                         <button
                           className="decline-btn"
-                          onClick={() => handleDecline(user.id)}
+                          onClick={() => handleDecline(user.userId)}
                         >
                           Decline
                         </button>

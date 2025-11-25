@@ -63,6 +63,7 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (credentials) => api.post('/api/auth/login', credentials),
+  register: (userData) => api.post('/api/auth/register', userData),
   getMe: () => api.get('/api/auth/me'),
   logout: () => api.post('/api/auth/logout'),
 };
@@ -112,6 +113,8 @@ export const usersAPI = {
   create: (data) => api.post('/api/users', data),
   update: (id, data) => api.put(`/api/users/${id}`, data),
   delete: (id) => api.delete(`/api/users/${id}`),
+  approve: (id) => api.post(`/api/users/${id}/approve`),
+  reject: (id, reason) => api.post(`/api/users/${id}/reject`, { reason }),
 };
 
 // Notifications API
