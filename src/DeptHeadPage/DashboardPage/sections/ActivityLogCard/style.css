@@ -43,7 +43,8 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  position: static; /* Reset absolute */
+  position: static; 
+  margin-left: 5%;
 }
 
 .activity-log-card .profile-placeholder {

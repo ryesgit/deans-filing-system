@@ -60,7 +60,7 @@ export const LoginPage = () => {
               src="https://c.animaapp.com/JQfrdw9b/img/pup-logo@2x.png"
             />
 
-            <h1 className="login-title">Welcome Back!</h1>
+            <h1 className="login-title">Mabuhay, Iskolar!</h1>
 
             <p className="login-subtitle">
               Lorem ipsum dolor sit amet consectetur. Risus enim.

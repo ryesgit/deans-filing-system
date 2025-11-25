@@ -30,7 +30,7 @@
   background-color: #f8f8f8 !important;
   /* Visual debugging - should see slight gray background */
   grid-template-columns: repeat(4, 1fr) !important;
-  grid-template-rows: auto 170px 170px auto minmax(0, 1fr) !important;
+  grid-template-rows: auto 130px 130px auto minmax(0, 1fr) !important;
   grid-template-areas:
     "header header header header"
     "personal-info personal-info files-stat approvals-stat"
@@ -53,7 +53,8 @@
   border-radius: 20px;
   grid-area: files-stat;
   position: relative;
-  min-height: 150px;
+  min-height: 130px;
+  max-height: 50px;
   /* Give the card a height */
 }
 
@@ -67,6 +68,9 @@
   /* Keep for internal positioning */
   width: 100%;
   height: 100%;
+  min-height: 130px;
+  max-height: 50px;
+
 }
 
 .department-head-page .text-wrapper-58 {
@@ -143,6 +147,8 @@
 .department-head-page .borrowing-card {
   grid-area: borrowing-stat;
   position: relative;
+  min-height: 130px;
+  max-height: 50px;
 }
 
 .department-head-page .text-wrapper-63 {
@@ -186,6 +192,8 @@
 .department-head-page .approval-card {
   grid-area: approvals-stat;
   position: relative;
+  min-height: 130px;
+  max-height: 50px;
 }
 
 .department-head-page .text-wrapper-66 {
@@ -217,6 +225,8 @@
 .department-head-page .overdue-files-card {
   grid-area: overdue-stat;
   position: relative;
+  min-height: 130px;
+  max-height: 50px;
 }
 
 .department-head-page .text-wrapper-68 {

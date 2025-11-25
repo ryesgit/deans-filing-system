@@ -251,12 +251,12 @@
 }
 
 .status-approved {
-  background-color: #DD0303;
+  background-color: #4bd046;
   color: #ffffff;
 }
 
 .status-declined {
-  background-color: #f8d7da;
+  background-color: #de0400;
   color: #ffffff;
 }
 
