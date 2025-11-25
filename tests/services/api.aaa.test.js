@@ -363,7 +363,7 @@ describe('API Service - Arrange-Act-Assert Tests', () => {
 
       const totalEndpoints = Object.values(endpointCounts).reduce((sum, count) => sum + count, 0);
 
-      expect(totalEndpoints).toBe(28);
+      expect(totalEndpoints).toBe(32);
     });
 
     it('should have consistent callable interface for all endpoints', async () => {
