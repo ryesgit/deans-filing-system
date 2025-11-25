@@ -5,6 +5,7 @@ import { Camera } from "lucide-react";
 import "../DeptHeadPage/SettingsPage/Settings.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { useAuth } from "../components/Modal/AuthContext";
+import { usersAPI } from "../services/api";
 
 // Helper to convert file to base64
 const toBase64 = (file) =>
@@ -48,16 +49,22 @@ export const SettingsPage = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.type.startsWith("image/")) {
-        const base64 = await toBase64(file);
-        setProfilePicturePreview(base64);
+        try {
+          const base64 = await toBase64(file);
+          
+          // Optimistic update
+          setProfilePicturePreview(base64);
+          
+          await usersAPI.update(currentUser.id, { avatar: base64 });
 
-        // --- TODO: API Call to save the image to the backend ---
-        // In a real application, you would make an API call here to permanently save the new profile picture.
-        // For example:
-        // await usersAPI.updateProfilePicture(currentUser.id, { avatar: base64 });
-        // ---------------------------------------------------------
-
-        updateUser({ ...currentUser, profilePicture: base64, avatar: base64 });
+          // Update context
+          updateUser({ ...currentUser, profilePicture: base64, avatar: base64 });
+          alert("Profile picture updated successfully!");
+        } catch (error) {
+          console.error("Failed to update profile picture:", error);
+          alert("Failed to update profile picture. Please try again.");
+          setProfilePicturePreview(null); // Revert on failure
+        }
       } else {
         alert("Please select an image file.");
       }

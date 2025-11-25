@@ -103,9 +103,13 @@ export const SidePanel = () => {
           </Link>
         )}
 
-        <Link
-          to="/reports"
-          className={`report-log ${currentActiveItem === "report-log" ? "active" : ""
+        {(user?.role === "ADMIN" ||
+          user?.role === "STAFF" ||
+          user?.role === "FACULTY") && (
+          <Link
+            to="/reports"
+            className={`report-log ${
+              currentActiveItem === "report-log" ? "active" : ""
             }`}
           onClick={() => handleNavigation("report-log")}
         >
@@ -119,8 +123,9 @@ export const SidePanel = () => {
 
         <Link
           to="/settings"
-          className={`settings ${currentActiveItem === "settings" ? "active" : ""
-            }`}
+          className={`settings ${
+            currentActiveItem === "settings" ? "active" : ""
+          }`}
           onClick={() => handleNavigation("settings")}
         >
           <img

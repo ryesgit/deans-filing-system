@@ -27,6 +27,65 @@ export const UserManagementPage = () => {
   });
 
   const { notifications, unreadCount } = useNotifications();
+  const [pendingUsersList, setPendingUsersList] = useState([]);
+
+  const handleApprove = async (userId) => {
+    try {
+      await usersAPI.approve(userId);
+      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      const response = await usersAPI.getAll();
+      const usersData = response.data.users || response.data;
+      const mappedUsers = Array.isArray(usersData)
+        ? usersData.map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            idNumber: user.idNumber,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            profilePicture: user.avatar
+              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+                  ? user.avatar
+                  : `${API_BASE_URL}${user.avatar}`)
+              : user.profilePicture,
+            role: user.role,
+            department: user.department || "N/A",
+            status: user.status,
+            dateJoined: user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "N/A",
+            tags: [
+              user.status === "ACTIVE" ? "active" : "inactive",
+              user.role === "FACULTY" ? "faculty" : null,
+              user.role === "ADMIN" ? "head" : null,
+              user.role === "STAFF" ? "head" : null,
+            ].filter(Boolean),
+          }))
+        : [];
+      setUsers(mappedUsers);
+      alert('User approved successfully!');
+    } catch (error) {
+      console.error("Failed to approve user:", error);
+      alert(error.message || "Failed to approve user");
+    }
+  };
+
+  const handleDecline = async (userId) => {
+    const reason = prompt("Please provide a reason for declining this user:");
+    if (reason === null) return;
+
+    try {
+      await usersAPI.reject(userId, reason);
+      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      alert('User registration declined successfully!');
+    } catch (error) {
+      console.error("Failed to decline user:", error);
+      alert(error.message || "Failed to decline user");
+    }
+  };
 
   // Fetch users from API on mount
   useEffect(() => {
@@ -34,36 +93,58 @@ export const UserManagementPage = () => {
       try {
         const response = await usersAPI.getAll();
         const usersData = response.data.users || response.data;
-        const mappedUsers = Array.isArray(usersData)
-          ? usersData.map((user) => ({
-              id: user.id,
-              userId: user.userId,
-              name: user.name,
-              username: user.username,
-              email: user.email,
-              idNumber: user.idNumber,
-              contactNumber: user.contactNumber,
-              dateOfBirth: user.dateOfBirth,
-              gender: user.gender,
-              profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
-              role: user.role,
-              department: user.department || "N/A",
-              status: user.status,
-              dateJoined: user.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
-                : "N/A",
-              tags: [
-                user.status === "ACTIVE" ? "active" : "inactive",
-                user.role === "FACULTY" ? "faculty" : null,
-                user.role === "ADMIN" ? "head" : null,
-                user.role === "STAFF" ? "head" : null,
-              ].filter(Boolean),
-            }))
-          : [];
+        const allUsers = Array.isArray(usersData) ? usersData : [];
+
+        const mappedUsers = allUsers
+          .filter((user) => user.status !== "PENDING")
+          .map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            idNumber: user.idNumber,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            profilePicture: user.avatar
+              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+                  ? user.avatar
+                  : `${API_BASE_URL}${user.avatar}`)
+              : user.profilePicture,
+            role: user.role,
+            department: user.department || "N/A",
+            status: user.status,
+            dateJoined: user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "N/A",
+            tags: [
+              user.status === "ACTIVE" ? "active" : "inactive",
+              user.role === "FACULTY" ? "faculty" : null,
+              user.role === "ADMIN" ? "head" : null,
+              user.role === "STAFF" ? "head" : null,
+            ].filter(Boolean),
+          }));
+
+        const pendingUsers = allUsers
+          .filter((user) => user.status === "PENDING")
+          .map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            dateOfBirth: user.dateOfBirth
+              ? new Date(user.dateOfBirth).toLocaleDateString()
+              : "N/A",
+            role: user.role,
+            department: user.department || "N/A",
+          }));
+
         setUsers(mappedUsers);
+        setPendingUsersList(pendingUsers);
       } catch (error) {
         console.error("Failed to fetch users:", error);
         setUsers([]);
+        setPendingUsersList([]);
       } finally {
         setLoading(false);
       }
@@ -309,6 +390,54 @@ export const UserManagementPage = () => {
             <div className="stat-item">
               <div className="stat-number">{statistics.departmentHeads}</div>
               <div className="stat-label">Department Heads</div>
+            </div>
+          </div>
+        </div>
+        <div className="pending-users-card">
+          <div className="pending-users-card-header">
+            <h2 className="pending-users-card-title">Pending Users</h2>
+          </div>
+          <div className="pending-users-table">
+            <div className="pending-users-table-header">
+              <div className="header-cell">ID</div>
+              <div className="header-cell">Name</div>
+              <div className="header-cell">Date of Birth</div>
+              <div className="header-cell">Role</div>
+              <div className="header-cell">Department</div>
+              <div className="header-cell"></div>
+            </div>
+            <div className="pending-users-table-body">
+              {pendingUsersList.length === 0 ? (
+                <div className="no-pending-users-message">
+                  No pending users.
+                </div>
+              ) : (
+                pendingUsersList.map((user) => (
+                  <div key={user.id} className="pending-user-row">
+                    <div className="table-cell">{user.userId}</div>
+                    <div className="table-cell">{user.name}</div>
+                    <div className="table-cell">{user.dateOfBirth}</div>
+                    <div className="table-cell">{user.role}</div>
+                    <div className="table-cell">{user.department}</div>
+                    <div className="table-cell">
+                      <div className="action-buttons">
+                        <button
+                          className="approve-btn"
+                          onClick={() => handleApprove(user.userId)}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="decline-btn"
+                          onClick={() => handleDecline(user.userId)}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

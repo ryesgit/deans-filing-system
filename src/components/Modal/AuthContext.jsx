@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      setError(null); // Clear previous errors
+      setError(null);
       const response = await authAPI.login(credentials);
       const { token, user: rawUserData } = response.data;
       const userData = processUserData(rawUserData);
@@ -83,15 +83,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (userData) => {
+    try {
+      setError(null);
+      const response = await authAPI.register(userData);
+      const message = response.data.message || 'Registration submitted successfully. Your account is pending admin approval.';
+
+      return {
+        success: true,
+        message: message,
+        pending: true
+      };
+    } catch (err) {
+      const errorMessage = err.message || 'Registration failed';
+      setError(errorMessage);
+      return {
+        success: false,
+        message: errorMessage
+      };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
     setError(null);
-    navigate('/login'); // Redirect to login page on logout
+    navigate('/login');
   };
-  
+
   const clearError = () => {
     setError(null);
   }
@@ -102,7 +123,13 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    register,
     logout,
+    updateUser: (userData) => {
+      const processedData = processUserData(userData);
+      setUser(processedData);
+      localStorage.setItem('user', JSON.stringify(processedData));
+    },
     clearError,
   };
 
