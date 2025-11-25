@@ -4,10 +4,11 @@
   display: grid;
   gap: 1.5rem;
   grid-template-columns: 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   grid-template-areas:
     "header"
     "summary"
+    "pending"
     "users";
 }
 
@@ -1042,4 +1043,137 @@
   .user-details-actions {
     flex-direction: column;
   }
+}
+
+/* Pending Users Card */
+.pending-users-card {
+  grid-area: pending;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px #00000026;
+  padding: 20px;
+  margin-top: 0.2rem;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pending-users-card-header {
+  margin-bottom: 20px;
+}
+
+.pending-users-card-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  margin: 0;
+}
+
+.pending-users-table {
+  width: 100%;
+  flex-grow: 1;
+}
+
+.pending-users-table-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr 2fr 2fr;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.pending-users-table-header .header-cell {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.pending-users-table-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pending-user-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr 2fr 2fr;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.pending-user-row:hover {
+  background-color: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pending-user-row .table-cell {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pending-user-row .action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.pending-user-row .approve-btn,
+.pending-user-row .decline-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 20px;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: -0.3px;
+}
+
+.pending-user-row .approve-btn {
+  background-color: #4ccf47;
+  color: #ffffff;
+}
+
+.pending-user-row .approve-btn:hover {
+  background-color: #3db838;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 207, 71, 0.3);
+}
+
+.pending-user-row .decline-btn {
+  background-color: #dd0303;
+  color: #ffffff;
+}
+
+.pending-user-row .decline-btn:hover {
+  background-color: #b80202;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(221, 3, 3, 0.3);
+}
+
+.no-pending-users-message {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
 }
