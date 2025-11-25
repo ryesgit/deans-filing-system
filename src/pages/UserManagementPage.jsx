@@ -195,7 +195,7 @@ export const UserManagementPage = () => {
     }
 
     return filtered; // Return the filtered list
-  }, [users, filterOptions, searchTerm]);
+  }, [users, filterOptions, localSearchTerm]);
 
   const statistics = useMemo(() => {
     return {
