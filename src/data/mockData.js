@@ -131,3 +131,27 @@ export const notifications = [
     read: true
   }
 ];
+
+export const pendingUsers = [
+  {
+    id: "USR-001",
+    name: "John Doe",
+    dateOfBirth: "1990-05-15",
+    role: "Faculty",
+    department: "Computer Engineering",
+  },
+  {
+    id: "USR-002",
+    name: "Jane Smith",
+    dateOfBirth: "1988-11-20",
+    role: "Faculty",
+    department: "Electrical Engineering",
+  },
+  {
+    id: "USR-003",
+    name: "Peter Jones",
+    dateOfBirth: "1992-02-28",
+    role: "Staff",
+    department: "Civil Engineering",
+  },
+];

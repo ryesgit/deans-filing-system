@@ -4,6 +4,7 @@ import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { usersAPI } from "../services/api";
+import { pendingUsers } from "../data/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
@@ -27,6 +28,15 @@ export const UserManagementPage = () => {
   });
 
   const { notifications, unreadCount } = useNotifications();
+  const [pendingUsersList, setPendingUsersList] = useState(pendingUsers);
+
+  const handleApprove = (userId) => {
+    setPendingUsersList(pendingUsersList.filter((user) => user.id !== userId));
+  };
+
+  const handleDecline = (userId) => {
+    setPendingUsersList(pendingUsersList.filter((user) => user.id !== userId));
+  };
 
   // Fetch users from API on mount
   useEffect(() => {
@@ -309,6 +319,54 @@ export const UserManagementPage = () => {
             <div className="stat-item">
               <div className="stat-number">{statistics.departmentHeads}</div>
               <div className="stat-label">Department Heads</div>
+            </div>
+          </div>
+        </div>
+        <div className="pending-users-card">
+          <div className="pending-users-card-header">
+            <h2 className="pending-users-card-title">Pending Users</h2>
+          </div>
+          <div className="pending-users-table">
+            <div className="pending-users-table-header">
+              <div className="header-cell">ID</div>
+              <div className="header-cell">Name</div>
+              <div className="header-cell">Date of Birth</div>
+              <div className="header-cell">Role</div>
+              <div className="header-cell">Department</div>
+              <div className="header-cell"></div>
+            </div>
+            <div className="pending-users-table-body">
+              {pendingUsersList.length === 0 ? (
+                <div className="no-pending-users-message">
+                  No pending users.
+                </div>
+              ) : (
+                pendingUsersList.map((user) => (
+                  <div key={user.id} className="pending-user-row">
+                    <div className="table-cell">{user.id}</div>
+                    <div className="table-cell">{user.name}</div>
+                    <div className="table-cell">{user.dateOfBirth}</div>
+                    <div className="table-cell">{user.role}</div>
+                    <div className="table-cell">{user.department}</div>
+                    <div className="table-cell">
+                      <div className="action-buttons">
+                        <button
+                          className="approve-btn"
+                          onClick={() => handleApprove(user.id)}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="decline-btn"
+                          onClick={() => handleDecline(user.id)}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

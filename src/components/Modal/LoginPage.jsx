@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import "./LoginPage.css";
+import { Modal } from "./Modal";
+import { RegistrationPage } from "./RegistrationPage";
 
 export const LoginPage = () => {
   const { login, error, clearError } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
@@ -25,12 +29,20 @@ export const LoginPage = () => {
     await login({ userId: username, password });
   };
 
-  const handleResetPassword = () => {
-    console.log("Reset password clicked");
+  const handleRegisterClick = () => {
+    setIsRegistrationOpen(true);
   };
 
   return (
     <div className="login-page">
+      <Modal
+        isOpen={isRegistrationOpen}
+        onClose={() => setIsRegistrationOpen(false)}
+        title="Register New User"
+      >
+        <RegistrationPage onClose={() => setIsRegistrationOpen(false)} />
+      </Modal>
+
       <img className="login-page-image" alt="Frame" src="/frame_2.png" />
 
       <div className="login-page-right">
@@ -162,7 +174,7 @@ export const LoginPage = () => {
 
             <button
               type="button"
-              onClick={handleResetPassword}
+              onClick={handleRegisterClick}
               className="reset-password-button"
               aria-label="Reset your password"
             >
@@ -174,7 +186,7 @@ export const LoginPage = () => {
 
               <div className="reset-password-bg" />
 
-              <div className="reset-password-text">Reset your password</div>
+              <div className="reset-password-text">Register here</div>
             </button>
           </div>
         </div>
