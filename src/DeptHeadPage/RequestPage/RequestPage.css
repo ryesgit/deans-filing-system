@@ -6,7 +6,8 @@
 .request-page .page-title {
   color: #800000;
   font-family: "Poppins", Helvetica;
-  font-size: clamp(32px, 3.7vw, 52.9px); /* Responsive font size */
+  font-size: clamp(32px, 3.7vw, 52.9px);
+  /* Responsive font size */
   font-weight: 600;
   letter-spacing: -3.17px;
   line-height: normal;
@@ -16,13 +17,14 @@
 }
 
 /* Request Page Container */
-.request-page > .request-page-container {
+.request-page>.request-page-container {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-areas: "form form" "qr status";
   gap: 2rem;
   width: 100%;
-  margin-top: 2rem; /* Add space below the header */
+  margin-top: 2rem;
+  /* Add space below the header */
 }
 
 .request-header {
@@ -82,7 +84,8 @@
 .request-page .form-field,
 .request-page .form-field-full {
   display: flex;
-  position: relative; /* Needed for placeholder positioning */
+  position: relative;
+  /* Needed for placeholder positioning */
   flex-direction: column;
 }
 
@@ -266,7 +269,8 @@
   width: 100%;
   min-width: 320px;
   height: 450px;
-  min-height: 450px; /* Ensure a minimum height */
+  min-height: 450px;
+  /* Ensure a minimum height */
 }
 
 .request-page .qr-card-title {
@@ -379,6 +383,8 @@
   width: 100%;
   overflow: hidden;
   height: 450px;
+  min-height: 450px;
+  /* Ensure fixed height */
 }
 
 .request-page .request-card-title {
@@ -392,25 +398,40 @@
 }
 
 .request-page .table-container {
-  overflow-x: auto;
-  overflow-y: auto;
   flex: 1;
+  min-height: 0;
+  /* Important for flexbox scrolling */
+  display: flex;
+  flex-direction: column;
   border-radius: 12px;
   border: 1px solid #f0f0f0;
-  min-height: 0;
+  overflow: hidden;
+  /* Hide overflow on container */
 }
 
 .request-page .request-table {
   width: 100%;
   border-collapse: collapse;
   font-family: "Poppins", Helvetica;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  /* Important for flexbox scrolling */
 }
 
 .request-page .request-table thead {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
+  /* Prevent header from shrinking */
   background-color: #ffffff;
   z-index: 10;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.request-page .request-table thead tr {
+  display: table-row;
 }
 
 .request-page .request-table th {
@@ -424,7 +445,19 @@
   background-color: #ffffff;
 }
 
+.request-page .request-table tbody {
+  flex: 1;
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  display: block;
+  min-height: 0;
+  /* Important for flexbox scrolling */
+}
+
 .request-page .request-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
 }
@@ -492,16 +525,44 @@
 }
 
 .request-page .status-view-pdf {
-  background-color: #cf4747;
+  background-color: #FFC107;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
 }
 
 .request-page .status-view-pdf:hover {
-  background-color: #b03d3d;
+  background-color: #FFB300;
   transform: scale(1.05);
 }
+
+/* View PDF Button Styles */
+.request-page .view-pdf-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 100px;
+  font-family: "Poppins", Helvetica;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+.request-page .view-pdf-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.request-page .view-pdf-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
 
 /* Confirm Modal Styles */
 .request-page .confirm-modal-overlay {
@@ -522,6 +583,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -545,6 +607,7 @@
     transform: translateY(50px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;

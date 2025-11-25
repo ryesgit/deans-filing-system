@@ -32,14 +32,14 @@ api.interceptors.response.use(
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
-      
+
       // Handle unauthorized errors
       if (status === 401 && window.location.pathname !== '/login') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
-      
+
       // Return error with message
       return Promise.reject({
         status,
@@ -120,6 +120,7 @@ export const usersAPI = {
 // Notifications API
 export const notificationsAPI = {
   getAll: () => api.get('/api/notifications'),
+  create: (data) => api.post('/api/notifications', data),
   markAsRead: (id) => api.put(`/api/notifications/${id}/read`),
 };
 

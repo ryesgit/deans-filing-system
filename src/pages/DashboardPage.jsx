@@ -54,10 +54,17 @@ export const DashboardPage = () => {
     console.log(`Searching for: ${searchQuery}`);
   };
 
+  // Debug logging
+  console.log('User role:', user?.role);
+  console.log('User role uppercase:', user?.role?.toUpperCase());
+  const isStudent = user?.role?.toUpperCase() === 'STUDENT';
+  console.log('Is STUDENT?:', isStudent);
+  console.log('Dashboard class:', `department-head-page ${isStudent ? 'user-dashboard' : ''}`);
+
   return (
     <>
       <SidePanel />
-      <div className="department-head-page" data-model-id="176:157">
+      <div className={`department-head-page ${isStudent ? 'user-dashboard' : ''}`} data-model-id="176:157">
         <header className="dashboard-header">
           <div className="welcome-message">
             <div className="text-wrapper-71">Mabuhay,</div>
@@ -109,7 +116,7 @@ export const DashboardPage = () => {
 
         <PersonalInformation />
 
-        <ActivityLogCard />
+        {user?.role?.toUpperCase() !== 'STUDENT' && <ActivityLogCard />}
         <QuickActionCard
           onAddFile={() => navigate('/file-management')}
           onRequest={() => navigate('/request')}
