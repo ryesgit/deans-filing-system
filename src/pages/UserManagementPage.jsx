@@ -46,7 +46,11 @@ export const UserManagementPage = () => {
             contactNumber: user.contactNumber,
             dateOfBirth: user.dateOfBirth,
             gender: user.gender,
-            profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
+            profilePicture: user.avatar
+              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+                  ? user.avatar
+                  : `${API_BASE_URL}${user.avatar}`)
+              : user.profilePicture,
             role: user.role,
             department: user.department || "N/A",
             status: user.status,
@@ -103,7 +107,11 @@ export const UserManagementPage = () => {
             contactNumber: user.contactNumber,
             dateOfBirth: user.dateOfBirth,
             gender: user.gender,
-            profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
+            profilePicture: user.avatar
+              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+                  ? user.avatar
+                  : `${API_BASE_URL}${user.avatar}`)
+              : user.profilePicture,
             role: user.role,
             department: user.department || "N/A",
             status: user.status,
