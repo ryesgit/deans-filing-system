@@ -24,9 +24,9 @@
   ],
   "edges": [
     {
-      "id": "src/components/ProtectedRoute.jsx:10:11-to-src/components/Modal/LoginPage.jsx",
-      "source": "src/components/ProtectedRoute.jsx",
-      "target": "src/components/Modal/LoginPage.jsx",
+      "id": "src\\components\\ProtectedRoute.jsx:10:11-to-src\\components\\Modal\\LoginPage.jsx",
+      "source": "src\\components\\ProtectedRoute.jsx",
+      "target": "src\\components\\Modal\\LoginPage.jsx",
       "data": {
         "viaRoute": "/login",
         "trigger": {
@@ -35,7 +35,7 @@
           "endLine": 10,
           "column": 11,
           "endColumn": 70,
-          "sourceFile": "src/components/ProtectedRoute.jsx"
+          "sourceFile": "src\\components\\ProtectedRoute.jsx"
         }
       }
     }
