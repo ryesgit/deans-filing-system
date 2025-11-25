@@ -1143,7 +1143,6 @@ export const RequestPage = () => {
             qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
           />
           <NotificationDropdown
-            notifications={notifications}
             isOpen={isNotificationOpen}
             onClose={() => setIsNotificationOpen(false)}
           />

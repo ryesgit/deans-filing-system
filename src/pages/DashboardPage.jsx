@@ -262,7 +262,7 @@ export const DashboardPage = () => {
         <RequestCard />
 
         <NotificationDropdown
-          notifications={notifications}
+
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />

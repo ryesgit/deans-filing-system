@@ -1002,7 +1002,7 @@ export const FileManagementPage = () => {
       </Modal>
 
       <NotificationDropdown
-        notifications={notifications}
+
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
       />

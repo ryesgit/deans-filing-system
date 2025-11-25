@@ -295,7 +295,6 @@ export const ReportsPage = () => {
             {renderTable()}
           </div>
           <NotificationDropdown
-            notifications={notifications}
             isOpen={isNotificationOpen}
             onClose={() => setIsNotificationOpen(false)}
           />

@@ -305,7 +305,7 @@ export const SettingsPage = () => {
           </div>
         )}
         <NotificationDropdown
-          notifications={notifications}
+
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />

@@ -122,6 +122,8 @@ export const notificationsAPI = {
   getAll: () => api.get('/api/notifications'),
   create: (data) => api.post('/api/notifications', data),
   markAsRead: (id) => api.put(`/api/notifications/${id}/read`),
+  markAllAsRead: () => api.put('/api/notifications/read-all'),
+  delete: (id) => api.delete(`/api/notifications/${id}`),
 };
 
 // Reports API
