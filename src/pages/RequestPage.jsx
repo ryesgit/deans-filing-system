@@ -89,6 +89,7 @@ const FormCard = ({ onSubmit }) => {
     copyType: "soft",
     returnDate: "",
     priority: "",
+    fileId: null,
   });
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -127,6 +128,7 @@ const FormCard = ({ onSubmit }) => {
     setFormData((prev) => ({
       ...prev,
       fileName: fileInfo.fileName,
+      fileId: fileInfo.fileData?.id, // Store file ID
       department: fileInfo.department || "",
       fileCategory: fileInfo.fileCategory || "",
     }));
@@ -184,6 +186,7 @@ const FormCard = ({ onSubmit }) => {
       description: descriptionParts.join("\n"),
       type: "FILE_ACCESS",
       priority: formData.priority || "normal",
+      fileId: formData.fileId, // Include file ID in request
     };
 
     try {
@@ -215,6 +218,7 @@ const FormCard = ({ onSubmit }) => {
       copyType: "soft",
       returnDate: "",
       priority: "",
+      fileId: null,
     });
     setShowClearModal(false);
   };
@@ -228,6 +232,7 @@ const FormCard = ({ onSubmit }) => {
       copyType: "soft",
       returnDate: "",
       priority: "",
+      fileId: null,
     });
   };
 

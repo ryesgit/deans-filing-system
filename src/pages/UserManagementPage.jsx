@@ -115,13 +115,13 @@ export const UserManagementPage = () => {
       const userData = {
         userId: `USER${Date.now()}`,
         name: newUser.name,
-        username: newUser.username,
+        // username: newUser.username, // Removed as backend does not support it
         email: newUser.email || null,
         idNumber: newUser.idNumber || null,
         contactNumber: newUser.contactNumber || null,
         dateOfBirth: newUser.dateOfBirth || null,
         gender: newUser.gender || null,
-        profilePicture: newUser.profilePicture || null,
+        avatar: newUser.profilePicture || null, // Map to avatar
         password: "password123",
         role: newUser.role,
         department: newUser.department,
@@ -168,13 +168,13 @@ export const UserManagementPage = () => {
     try {
       const userData = {
         name: updatedUser.name,
-        username: updatedUser.username,
+        // username: updatedUser.username, // Removed
         email: updatedUser.email || null,
         idNumber: updatedUser.idNumber || null,
         contactNumber: updatedUser.contactNumber || null,
         dateOfBirth: updatedUser.dateOfBirth || null,
         gender: updatedUser.gender || null,
-        profilePicture: updatedUser.profilePicture || null,
+        avatar: updatedUser.profilePicture || null, // Map to avatar
         role: updatedUser.role,
         department: updatedUser.department,
         status: updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
