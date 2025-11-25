@@ -706,7 +706,7 @@ const UserFormModal = ({
   const [formData, setFormData] = useState(
     mode === "edit" && user
       ? {
-          username: user.username || "",
+          username: user.userId || "",
           name: user.name || "",
           email: user.email || "",
           idNumber: user.idNumber || "",
@@ -747,6 +747,33 @@ const UserFormModal = ({
 
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (mode === "edit" && user) {
+      console.log("User data in edit modal:", user);
+      console.log("idNumber value:", user.idNumber);
+      setFormData({
+        username: user.userId || "",
+        name: user.name || "",
+        email: user.email || "",
+        idNumber: user.idNumber || "",
+        contactNumber: user.contactNumber || "",
+        dateOfBirth: formatDateForInput(user.dateOfBirth),
+        gender: user.gender || "",
+        role: user.role || "FACULTY",
+        department: user.department || "",
+        status: user.status === "ACTIVE" ? "active" : "inactive",
+        dateJoined:
+          user.dateJoined ||
+          new Date().toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          }),
+        profilePicture: user.profilePicture || "",
+      });
+    }
+  }, [mode, user]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -768,7 +795,9 @@ const UserFormModal = ({
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.username.trim()) newErrors.username = "Username is required";
+    if (mode === "add" && !formData.username.trim()) {
+      newErrors.username = "User ID is required";
+    }
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
@@ -857,14 +886,17 @@ const UserFormModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Username</label>
+            <label className="form-label">User ID</label>
             <input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
               className={`form-input ${errors.username ? "error" : ""}`}
-              placeholder="Enter username"
+              placeholder="Enter user ID"
+              readOnly={mode === "edit"}
+              disabled={mode === "edit"}
+              style={mode === "edit" ? { backgroundColor: "#f5f5f5", cursor: "not-allowed" } : {}}
             />
             {errors.username && (
               <span className="error-text">{errors.username}</span>
