@@ -4,6 +4,7 @@ import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { usersAPI } from "../services/api";
+import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
@@ -17,8 +18,8 @@ export const UserManagementPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid");
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
   const [filterOptions, setFilterOptions] = useState({
     showAll: true,
     showActive: false,
@@ -163,7 +164,7 @@ export const UserManagementPage = () => {
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) =>
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      user.name?.toLowerCase().includes(localSearchTerm.toLowerCase())
     );
 
     // If "Show All Users" is selected, bypass all other filters except search term
@@ -194,7 +195,7 @@ export const UserManagementPage = () => {
     }
 
     return filtered; // Return the filtered list
-  }, [users, filterOptions, searchTerm]);
+  }, [users, filterOptions, localSearchTerm]);
 
   const statistics = useMemo(() => {
     return {
@@ -351,29 +352,7 @@ export const UserManagementPage = () => {
           </div>
           <div className="header-actions">
             <div className="search-wrapper">
-              <form className="search-form">
-                <svg
-                  className="search-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.35-4.35"></path>
-                </svg>
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search users..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </form>
+              <GlobalSearch onSearchChange={setLocalSearchTerm} />
             </div>
             <div
               className="notification-button-wrapper"
@@ -672,7 +651,6 @@ export const UserManagementPage = () => {
         )}
 
         <NotificationDropdown
-
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />

@@ -5,6 +5,7 @@ import "../DeptHeadPage/FileManagementPage/style.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
+import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { filesAPI, categoriesAPI } from "../services/api";
 
 const categories = [
@@ -415,36 +416,7 @@ export const FileManagementPage = () => {
             </div>
             <div className="header-actions">
               <div className="search-wrapper">
-                <form className="search-form">
-                  <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search files, folders..."
-                  />
-                  <svg
-                    className="search-icon"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M21 21L16.65 16.65"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </form>
+                <GlobalSearch />
               </div>
               <div
                 className="notification-button-wrapper"
