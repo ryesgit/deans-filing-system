@@ -174,7 +174,8 @@ const FormCard = ({ onSubmit }) => {
       `Purpose: ${formData.purpose}`,
       `Department: ${formData.department}`,
       `Category: ${formData.fileCategory}`,
-      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
+      `Copy Type: ${
+        formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
       }`,
     ];
 
@@ -199,8 +200,8 @@ const FormCard = ({ onSubmit }) => {
       console.error("Failed to submit request:", error);
       alert(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to submit request"
+          error.message ||
+          "Failed to submit request"
       );
       setShowSubmitModal(false);
     }
@@ -286,8 +287,9 @@ const FormCard = ({ onSubmit }) => {
           <label className="copy-type-label">Copy Type</label>
           <div className="copy-type-buttons">
             <label
-              className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
-                }`}
+              className={`copy-type-label-btn ${
+                formData.copyType === "soft" ? "active" : ""
+              }`}
             >
               <input
                 type="radio"
@@ -299,8 +301,9 @@ const FormCard = ({ onSubmit }) => {
               Soft Copy Only
             </label>
             <label
-              className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
-                }`}
+              className={`copy-type-label-btn ${
+                formData.copyType === "original" ? "active" : ""
+              }`}
             >
               <input
                 type="radio"
@@ -558,17 +561,20 @@ const RequestCard = ({ requests = [] }) => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRequestForDetails, setSelectedRequestForDetails] =
+    useState(null);
   const { user } = useAuth();
 
   // Check if request is for soft copy based on description
   const isSoftCopy = (description) => {
-    return description?.includes('Soft Copy Only');
+    return description?.includes("Soft Copy Only");
   };
 
   // Handle View PDF click
   const handleViewPDF = async (request) => {
     if (!request.fileId) {
-      alert('File not available. Please contact support.');
+      alert("File not available. Please contact support.");
       return;
     }
 
@@ -579,12 +585,12 @@ const RequestCard = ({ requests = [] }) => {
 
     try {
       const response = await filesAPI.download(request.fileId);
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       setPdfUrl(url);
     } catch (error) {
-      console.error('Failed to load PDF:', error);
-      alert('Failed to load PDF. Please try again or contact support.');
+      console.error("Failed to load PDF:", error);
+      alert("Failed to load PDF. Please try again or contact support.");
     } finally {
       setPdfLoading(false);
     }
@@ -598,6 +604,16 @@ const RequestCard = ({ requests = [] }) => {
       }
     };
   }, [pdfUrl]);
+
+  const handleShowDetails = (request, e) => {
+    // Prevent modal from opening when clicking on elements with their own onClick
+    if (e.target.closest(".status-badge")) {
+      return;
+    }
+
+    setSelectedRequestForDetails(request);
+    setShowDetailsModal(true);
+  };
 
   const getStatusClass = (status) => {
     const statusMap = {
@@ -648,7 +664,12 @@ const RequestCard = ({ requests = [] }) => {
                 </tr>
               ) : (
                 requests.map((request) => (
-                  <tr key={request.id} className="table-row">
+                  <tr
+                    key={request.id}
+                    className="table-row"
+                    onClick={(e) => handleShowDetails(request, e)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>{request.id}</td>
                     <td className="file-name-cell" title={request.fileName}>
                       {request.fileName}
@@ -656,12 +677,15 @@ const RequestCard = ({ requests = [] }) => {
                     <td>{request.dateRequested}</td>
                     <td>{request.returnDue}</td>
                     <td>
-                      {request.status === 'APPROVED' && isSoftCopy(request.description) && user?.role !== 'ADMIN' && user?.role !== 'STAFF' ? (
+                      {request.status === "APPROVED" &&
+                      isSoftCopy(request.description) &&
+                      user?.role !== "ADMIN" &&
+                      user?.role !== "STAFF" ? (
                         <span
                           className="status-badge status-view-pdf"
                           onClick={() => handleViewPDF(request)}
                           title="Click to view PDF"
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                         >
                           View PDF
                         </span>
@@ -701,7 +725,9 @@ const RequestCard = ({ requests = [] }) => {
             <div className="file-info">
               <div className="file-info-row">
                 <span className="file-info-label">File Name:</span>
-                <span className="file-info-value">{selectedRequest.fileName}</span>
+                <span className="file-info-value">
+                  {selectedRequest.fileName}
+                </span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Request ID:</span>
@@ -709,25 +735,34 @@ const RequestCard = ({ requests = [] }) => {
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Date Requested:</span>
-                <span className="file-info-value">{selectedRequest.dateRequested}</span>
+                <span className="file-info-value">
+                  {selectedRequest.dateRequested}
+                </span>
               </div>
             </div>
             {pdfLoading && (
-              <div className="pdf-preview" style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '600px',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                marginTop: '20px',
-                backgroundColor: '#f5f5f5'
-              }}>
-                <p style={{
-                  fontFamily: 'Poppins, Helvetica',
-                  fontSize: '16px',
-                  color: '#666'
-                }}>Loading PDF...</p>
+              <div
+                className="pdf-preview"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "600px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  marginTop: "20px",
+                  backgroundColor: "#f5f5f5",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "Poppins, Helvetica",
+                    fontSize: "16px",
+                    color: "#666",
+                  }}
+                >
+                  Loading PDF...
+                </p>
               </div>
             )}
             {!pdfLoading && pdfUrl && (
@@ -737,11 +772,81 @@ const RequestCard = ({ requests = [] }) => {
                   title="PDF Preview"
                   width="100%"
                   height="600px"
-                  style={{ border: '1px solid #e0e0e0', borderRadius: '8px', marginTop: '20px' }}
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                    marginTop: "20px",
+                  }}
                 />
               </div>
             )}
           </>
+        )}
+      </Modal>
+
+      {/* Request Details Modal */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title="Request Details"
+      >
+        {selectedRequestForDetails && (
+          <div className="request-details-modal-content">
+            <div className="details-row">
+              <span className="file-info-label">Request ID:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.id}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Faculty Name:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.user?.name || "N/A"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Department:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.user?.department || "N/A"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">File Name:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.fileName}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Copy Type:</span>
+              <span className="file-info-value">
+                {isSoftCopy(selectedRequestForDetails.description)
+                  ? "Soft Copy"
+                  : "Hard Copy"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Date Submitted:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.dateRequested}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Returned Date:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.returnedAt
+                  ? new Date(
+                      selectedRequestForDetails.returnedAt
+                    ).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Purpose:</span>
+              <span className="file-info-value purpose">
+                {selectedRequestForDetails.description || "No description"}
+              </span>
+            </div>
+          </div>
         )}
       </Modal>
     </>
@@ -793,17 +898,21 @@ export const RequestPage = () => {
         const requestsData = response.data.requests || response.data;
         const mappedRequests = Array.isArray(requestsData)
           ? requestsData
-            .filter(req => req.status !== 'CANCELLED')
-            .map(req => ({
-              id: req.id,
-              fileName: req.title,
-              dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A',
-              returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : 'N/A',
-              status: req.status,
-              copyType: req.type,
-              fileId: req.fileId,
-              description: req.description
-            }))
+              .filter((req) => req.status !== "CANCELLED")
+              .map((req) => ({
+                id: req.id,
+                fileName: req.title,
+                dateRequested: req.createdAt
+                  ? new Date(req.createdAt).toLocaleDateString()
+                  : "N/A",
+                returnDue: req.approvedAt
+                  ? new Date(req.approvedAt).toLocaleDateString()
+                  : "N/A",
+                status: req.status,
+                copyType: req.type,
+                fileId: req.fileId,
+                description: req.description,
+              }))
           : [];
         setRequests(mappedRequests);
       } catch (error) {
@@ -829,7 +938,7 @@ export const RequestPage = () => {
       status: newRequest.status,
       copyType: newRequest.type,
       fileId: newRequest.fileId,
-      description: newRequest.description
+      description: newRequest.description,
     };
     setRequests((prev) => [mappedRequest, ...prev]);
   };
