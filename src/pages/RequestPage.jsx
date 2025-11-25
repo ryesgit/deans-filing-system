@@ -923,20 +923,6 @@ export const RequestPage = () => {
           />
         </div>
       </div>
-    </div >
-      </div >
-
-      <QRModal
-        isOpen={isQRModalOpen}
-        onClose={() => setIsQRModalOpen(false)}
-        userName={currentUser?.name || "User"}
-        qrValue={currentUser?.userId || "USER-UNKNOWN"}
-      />
-      <NotificationDropdown
-        notifications={notifications}
-        isOpen={isNotificationOpen}
-        onClose={() => setIsNotificationOpen(false)}
-      />
     </>
   );
 };
