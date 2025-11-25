@@ -37,7 +37,7 @@
 
 .request-table-header {
   display: grid;
-  grid-template-columns: 1fr 1.3fr 2fr 3.1fr 1.2fr 2.2fr;
+  grid-template-columns: 1.3fr 1.5fr 2.2fr 1.2fr 1fr 2.2fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #f9f9f9;
@@ -70,7 +70,7 @@
 
 .request-row {
   display: grid;
-  grid-template-columns: 1fr 1.3fr 2fr 3.2fr 1.2fr 2fr;
+  grid-template-columns: 1.3fr 1.5fr 2.2fr 1.2fr 1fr 2fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #ffffff;
@@ -163,14 +163,14 @@
 }
 
 .status-badge.status-view-pdf {
-  background-color: #FFC107;
+  background-color: #ffc107;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
 }
 
 .status-badge.status-view-pdf:hover {
-  background-color: #FFB300;
+  background-color: #ffb300;
   transform: scale(1.05);
 }
 
@@ -179,10 +179,6 @@
 }
 
 .faculty-name-col {
-  justify-self: start;
-}
-
-.department-col {
   justify-self: start;
 }
 
@@ -204,4 +200,43 @@
   color: #888;
   font-family: "Poppins", Helvetica;
   font-size: 16px;
+}
+
+/* Request Details Modal Styles */
+.request-details-modal-content {
+  font-family: "Poppins", Helvetica;
+  color: #333;
+  padding: 10px;
+}
+
+.details-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: start;
+}
+
+.details-row:last-child {
+  border-bottom: none;
+}
+
+.file-info-label {
+  font-weight: 600;
+  color: #800000;
+  font-size: 14px;
+}
+
+.file-info-value {
+  font-size: 14px;
+  color: #1e1e1e;
+  word-break: break-word;
+}
+
+/* Style for the purpose to allow for more text */
+.details-row .file-info-value.purpose {
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow-y: auto;
 }
