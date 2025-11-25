@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SidePanel } from "../components/SidePanel";
 import { ActivityLogCard } from "../DeptHeadPage/DashboardPage/sections/ActivityLogCard";
 import { PersonalInformation } from "../DeptHeadPage/DashboardPage/sections/PersonalInformation";
@@ -6,7 +7,6 @@ import { QuickActionCard } from "../DeptHeadPage/DashboardPage/sections/QuickAct
 import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/RequestCard";
 import { NotificationCard } from "../DeptHeadPage/DashboardPage/sections/NotificationCard";
 
-import { Modal } from "../components/Modal";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useAuth } from "../components/Modal/AuthContext";
 import { statsAPI } from "../services/api";
@@ -14,9 +14,7 @@ import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 
 export const DashboardPage = () => {
-  const [isAddFileModalOpen, setIsAddFileModalOpen] = useState(false);
-  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statsData, setStatsData] = useState({
@@ -56,13 +54,20 @@ export const DashboardPage = () => {
     console.log(`Searching for: ${searchQuery}`);
   };
 
+  // Debug logging
+  console.log('User role:', user?.role);
+  console.log('User role uppercase:', user?.role?.toUpperCase());
+  const isStudent = user?.role?.toUpperCase() === 'STUDENT';
+  console.log('Is STUDENT?:', isStudent);
+  console.log('Dashboard class:', `department-head-page ${isStudent ? 'user-dashboard' : ''}`);
+
   return (
     <>
       <SidePanel />
-      <div className="department-head-page" data-model-id="176:157">
+      <div className={`department-head-page ${isStudent ? 'user-dashboard' : ''}`} data-model-id="176:157">
         <header className="dashboard-header">
           <div className="welcome-message">
-            <div className="text-wrapper-71">Welcome Back,</div>
+            <div className="text-wrapper-71">Mabuhay,</div>
             <div className="text-wrapper-70">
               {user?.name || 'User'}!
             </div>
@@ -111,11 +116,11 @@ export const DashboardPage = () => {
 
         <PersonalInformation />
 
-        <ActivityLogCard />
+        {user?.role?.toUpperCase() !== 'STUDENT' && <ActivityLogCard />}
         <QuickActionCard
-          onAddFile={() => setIsAddFileModalOpen(true)}
-          onRequest={() => setIsRequestModalOpen(true)}
-          onAddMember={() => setIsAddMemberModalOpen(true)}
+          onAddFile={() => navigate('/file-management')}
+          onRequest={() => navigate('/request')}
+          onAddMember={() => navigate('/user-management')}
           role={user?.role}
         />
         <NotificationCard />
@@ -255,101 +260,6 @@ export const DashboardPage = () => {
         </div>
 
         <RequestCard />
-
-        <Modal
-          isOpen={isAddFileModalOpen}
-          onClose={() => setIsAddFileModalOpen(false)}
-          title="Add New File"
-        >
-          <form className="modal-form">
-            <div className="form-group">
-              <label>File Name</label>
-              <input type="text" placeholder="Enter file name" />
-            </div>
-            <div className="form-group">
-              <label>Department</label>
-              <select>
-                <option>Computer Engineering</option>
-                <option>Electrical Engineering</option>
-                <option>Mechanical Engineering</option>
-                <option>Civil Engineering</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Upload File</label>
-              <input type="file" />
-            </div>
-            <button type="submit" className="submit-btn">
-              Add File
-            </button>
-          </form>
-        </Modal>
-
-        <Modal
-          isOpen={isRequestModalOpen}
-          onClose={() => setIsRequestModalOpen(false)}
-          title="New Request"
-        >
-          <form className="modal-form">
-            <div className="form-group">
-              <label>Faculty Name</label>
-              <input type="text" placeholder="Enter faculty name" />
-            </div>
-            <div className="form-group">
-              <label>File Name</label>
-              <input type="text" placeholder="Enter file name" />
-            </div>
-            <div className="form-group">
-              <label>Department</label>
-              <select>
-                <option>Computer Engineering</option>
-                <option>Electrical Engineering</option>
-                <option>Mechanical Engineering</option>
-                <option>Civil Engineering</option>
-              </select>
-            </div>
-            <button type="submit" className="submit-btn">
-              Submit Request
-            </button>
-          </form>
-        </Modal>
-
-        <Modal
-          isOpen={isAddMemberModalOpen}
-          onClose={() => setIsAddMemberModalOpen(false)}
-          title="Add New Member"
-        >
-          <form className="modal-form">
-            <div className="form-group">
-              <label>Full Name</label>
-              <input type="text" placeholder="Enter full name" />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" placeholder="Enter email" />
-            </div>
-            <div className="form-group">
-              <label>Role</label>
-              <select>
-                <option>Faculty</option>
-                <option>Department Head</option>
-                <option>Admin</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Department</label>
-              <select>
-                <option>Computer Engineering</option>
-                <option>Electrical Engineering</option>
-                <option>Mechanical Engineering</option>
-                <option>Civil Engineering</option>
-              </select>
-            </div>
-            <button type="submit" className="submit-btn">
-              Add Member
-            </button>
-          </form>
-        </Modal>
 
         <NotificationDropdown
           notifications={notifications}

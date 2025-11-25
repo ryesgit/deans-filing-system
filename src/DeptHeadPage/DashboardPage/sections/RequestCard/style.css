@@ -5,8 +5,10 @@
   padding: 20px;
   grid-area: requests;
   width: 100%;
-  height: 100%;
-  overflow-y: auto;
+  height: 320px;
+  /* Fixed height to match Personal Information */
+  overflow: hidden;
+  /* Prevent global scroll */
   display: flex;
   flex-direction: column;
 }
@@ -26,17 +28,23 @@
 
 .request-table {
   width: 100%;
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
+  min-height: 0;
+  /* Important for flexbox scrolling */
 }
 
 .request-table-header {
   display: grid;
-  grid-template-columns: 1fr 2fr 2fr 2.5fr 1.5fr 2fr;
+  grid-template-columns: 1fr 1.3fr 2fr 3.2fr 1.2fr 2fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #f9f9f9;
   border-radius: 10px;
   margin-bottom: 10px;
+  flex-shrink: 0;
+  /* Prevent header from shrinking */
 }
 
 .header-cell {
@@ -51,11 +59,18 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
+  /* Enable scroll for list */
+  flex: 1;
+  min-height: 0;
+  /* Important for flexbox scrolling */
+  padding-right: 5px;
+  /* Space for scrollbar */
 }
 
 .request-row {
   display: grid;
-  grid-template-columns: 1fr 2fr 2fr 2.5fr 1.5fr 2fr;
+  grid-template-columns: 1fr 1.3fr 2fr 3.2fr 1.2fr 2fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #ffffff;
@@ -145,6 +160,18 @@
 .status-badge.declined {
   background-color: #dd0303;
   color: #ffffff;
+}
+
+.status-badge.status-view-pdf {
+  background-color: #FFC107;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.status-badge.status-view-pdf:hover {
+  background-color: #FFB300;
+  transform: scale(1.05);
 }
 
 .request-id-col {

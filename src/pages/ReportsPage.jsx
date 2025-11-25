@@ -3,7 +3,9 @@ import { SidePanel } from "../components/SidePanel";
 import "../DeptHeadPage/ReportsPage/ReportsPage.css";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-import { requestsAPI } from "../services/api";
+import { useAuth } from "../components/Modal/AuthContext";
+import { requestsAPI, filesAPI } from "../services/api";
+import { Modal } from "../components/Modal/Modal";
 
 export const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState("request");
@@ -12,10 +14,15 @@ export const ReportsPage = () => {
   const [reportsData, setReportsData] = useState({
     request: [],
     borrowed: [],
-    returned: []
+    returned: [],
   });
   const [loading, setLoading] = useState(true);
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const { notifications, unreadCount } = useNotifications();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -23,10 +30,17 @@ export const ReportsPage = () => {
         const response = await requestsAPI.getAll();
         const data = Array.isArray(response.data.requests) ? response.data.requests : [];
 
+        // Filter data based on user role
+        // USER role should only see their own reports
+        // ADMIN and STAFF can see all reports
+        const filteredData = user?.role?.toUpperCase() === 'USER'
+          ? data.filter(r => r.userId == user.id)
+          : data;
+
         setReportsData({
-          request: data.filter(r => r.status === 'PENDING' || r.status === 'APPROVED' || r.status === 'DECLINED'),
-          borrowed: [],
-          returned: []
+          request: filteredData,
+          borrowed: filteredData.filter(r => r.status === 'APPROVED'),
+          returned: filteredData.filter(r => r.status === 'RETURNED')
         });
       } catch (error) {
         console.error('Failed to fetch reports:', error);
@@ -41,27 +55,27 @@ export const ReportsPage = () => {
     };
 
     fetchReports();
-  }, []);
+  }, [user]);
 
   const handleExport = () => {
     const data = Array.isArray(reportsData[activeTab]) ? reportsData[activeTab] : [];
     const headers =
       activeTab === "request"
         ? [
-            "Transaction ID",
-            "Faculty Name",
-            "Department",
-            "File Name",
-            "Date",
-            "Status",
-          ]
+          "Transaction ID",
+          "Faculty Name",
+          "Department",
+          "File Name",
+          "Date",
+          "Status",
+        ]
         : [
-            "Transaction ID",
-            "Faculty Name",
-            "Department",
-            "File Name",
-            `Date ${activeTab === "borrowed" ? "Borrowed" : "Returned"}`,
-          ];
+          "Transaction ID",
+          "Faculty Name",
+          "Department",
+          "File Name",
+          `Date ${activeTab === "borrowed" ? "Borrowed" : "Returned"}`,
+        ];
 
     let csv = headers.join(",") + "\n";
     data.forEach((row) => {
@@ -80,11 +94,49 @@ export const ReportsPage = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${activeTab}_report_${
-      new Date().toISOString().split("T")[0]
-    }.csv`;
+    a.download = `${activeTab}_report_${new Date().toISOString().split("T")[0]
+      }.csv`;
     a.click();
   };
+
+  // Check if request is for soft copy based on description
+  const isSoftCopy = (description) => {
+    return description?.includes('Soft Copy Only');
+  };
+
+  // Handle View PDF click
+  const handleViewPDF = async (request) => {
+    if (!request.fileId) {
+      alert('File not available. Please contact support.');
+      return;
+    }
+
+    setSelectedRequest(request);
+    setShowPDFModal(true);
+    setPdfLoading(true);
+    setPdfUrl(null);
+
+    try {
+      const response = await filesAPI.download(request.fileId);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error('Failed to load PDF:', error);
+      alert('Failed to load PDF. Please try again or contact support.');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  // Clean up PDF URL when modal closes
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   const renderTable = () => {
     const data = Array.isArray(reportsData[activeTab]) ? reportsData[activeTab] : [];
@@ -112,8 +164,8 @@ export const ReportsPage = () => {
                   {activeTab === "borrowed"
                     ? "Borrowed"
                     : activeTab === "returned"
-                    ? "Returned"
-                    : "Requested"}
+                      ? "Returned"
+                      : "Requested"}
                 </th>
                 {activeTab === "request" && <th>Status</th>}
               </tr>
@@ -126,23 +178,33 @@ export const ReportsPage = () => {
                   <td data-label="Department">{row.user?.department || 'N/A'}</td>
                   <td data-label="File Name">{row.title}</td>
                   <td
-                    data-label={`Date ${
-                      activeTab === "borrowed"
-                        ? "Borrowed"
-                        : activeTab === "returned"
+                    data-label={`Date ${activeTab === "borrowed"
+                      ? "Borrowed"
+                      : activeTab === "returned"
                         ? "Returned"
                         : "Requested"
-                    }`}
+                      }`}
                   >
                     {new Date(row.createdAt).toLocaleDateString()}
                   </td>
                   {activeTab === "request" && (
                     <td data-label="Status">
-                      <span
-                        className={`status-badge status-${row.status?.toLowerCase() || 'pending'}`}
-                      >
-                        {row.status}
-                      </span>
+                      {row.status === 'APPROVED' && isSoftCopy(row.description) && user?.role !== 'ADMIN' && user?.role !== 'STAFF' ? (
+                        <span
+                          className="status-badge status-view-pdf"
+                          onClick={() => handleViewPDF(row)}
+                          title="Click to view PDF"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          View PDF
+                        </span>
+                      ) : (
+                        <span
+                          className={`status-badge status-${row.status?.toLowerCase() || 'pending'}`}
+                        >
+                          {row.status[0] + row.status.slice(1).toLowerCase()}
+                        </span>
+                      )}
                     </td>
                   )}
                 </tr>
@@ -267,6 +329,68 @@ export const ReportsPage = () => {
           />
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      <Modal
+        isOpen={showPDFModal}
+        onClose={() => {
+          setShowPDFModal(false);
+          if (pdfUrl) {
+            window.URL.revokeObjectURL(pdfUrl);
+          }
+          setPdfUrl(null);
+          setPdfLoading(false);
+        }}
+        title="File Preview"
+      >
+        {selectedRequest && (
+          <>
+            <div className="file-info">
+              <div className="file-info-row">
+                <span className="file-info-label">File Name:</span>
+                <span className="file-info-value">{selectedRequest.title}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Request ID:</span>
+                <span className="file-info-value">{selectedRequest.id}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Date Requested:</span>
+                <span className="file-info-value">{new Date(selectedRequest.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            {pdfLoading && (
+              <div className="pdf-preview" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '600px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '8px',
+                marginTop: '20px',
+                backgroundColor: '#f5f5f5'
+              }}>
+                <p style={{
+                  fontFamily: 'Poppins, Helvetica',
+                  fontSize: '16px',
+                  color: '#666'
+                }}>Loading PDF...</p>
+              </div>
+            )}
+            {!pdfLoading && pdfUrl && (
+              <div className="pdf-preview">
+                <iframe
+                  src={pdfUrl}
+                  title="PDF Preview"
+                  width="100%"
+                  height="600px"
+                  style={{ border: '1px solid #e0e0e0', borderRadius: '8px', marginTop: '20px' }}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
     </>
   );
 };

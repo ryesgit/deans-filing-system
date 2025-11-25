@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { notificationsAPI } from "../../services/api";
+import { useAuth } from "../Modal/AuthContext";
 
 // Create the context
 const NotificationContext = createContext();
@@ -13,14 +14,28 @@ export const useNotifications = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   // Fetch notifications from backend
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const response = await notificationsAPI.getAll();
-        const data = response.data;
-        setNotifications(Array.isArray(data) ? data : []);
+        const notificationsData = response.data.notifications || response.data;
+        const mappedNotifications = Array.isArray(notificationsData)
+          ? notificationsData.map(n => ({
+            ...n,
+            read: n.isRead || n.read || false
+          }))
+          : [];
+
+        // Filter notifications for the current user if user is logged in
+        // Assuming notifications have a userId field matching the user's ID
+        const userNotifications = user
+          ? mappedNotifications.filter(n => n.userId == user.id)
+          : mappedNotifications;
+
+        setNotifications(userNotifications);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
         setNotifications([]);
@@ -30,18 +45,17 @@ export const NotificationProvider = ({ children }) => {
     };
 
     // Only fetch if user is authenticated
-    const token = localStorage.getItem('authToken');
-    if (token) {
+    if (user) {
       fetchNotifications();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const markAsRead = async (id) => {
     try {
       await notificationsAPI.markAsRead(id);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
     } catch (error) {

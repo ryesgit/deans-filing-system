@@ -64,11 +64,20 @@
   background-color: #fff5f5;
 }
 
+.notification-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+}
+
 .notification-message {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
-  font-size: 14px;
+  font-size: 13px;
   margin: 0 0 5px 0;
+  line-height: 1.4;
 }
 
 .notification-time {

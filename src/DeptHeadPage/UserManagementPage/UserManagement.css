@@ -4,10 +4,11 @@
   display: grid;
   gap: 1.5rem;
   grid-template-columns: 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   grid-template-areas:
     "header"
     "summary"
+    "pending"
     "users";
 }
 
@@ -292,7 +293,6 @@
 }
 
 .users-section .user-card {
-  /* min-width and max-width are now controlled by grid-template-columns */
   height: 184px;
   position: relative;
   cursor: pointer;
@@ -317,14 +317,14 @@
 .users-section .text-wrapper {
   color: #ffffff;
   font-family: "Poppins", Helvetica;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
   left: 112px;
   letter-spacing: -1.44px;
   line-height: 23.6px;
   position: absolute;
   top: 34px;
-  width: 199px;
+  width: 20px;
 }
 
 .users-section .div {
@@ -366,12 +366,12 @@
   white-space: nowrap;
 }
 
-.users-section .text-wrapper-4 {
+.users-section .user-datejoined {
   color: #ffffff;
   font-family: "Poppins", Helvetica;
   font-size: 11px;
   font-weight: 600;
-  left: 226px;
+  left: 250px;
   letter-spacing: -0.66px;
   line-height: 10.8px;
   position: absolute;
@@ -379,12 +379,12 @@
   white-space: nowrap;
 }
 
-.users-section .text-wrapper-5 {
+.users-section .Date-joined {
   color: #ffe3e3;
   font-family: "Poppins", Helvetica;
   font-size: 12px;
   font-weight: 400;
-  left: 226px;
+  left: 250px;
   letter-spacing: -0.72px;
   line-height: 11.8px;
   position: absolute;
@@ -397,19 +397,43 @@
   border-radius: 39.5px;
   height: 79px;
   left: 16px;
+  overflow: hidden; /* This is crucial to crop the image to the circle's shape */
   position: absolute;
   top: 28px;
   width: 79px;
+}
+
+.users-section .user-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* This scales the image to fill the container while preserving aspect ratio */
+}
+
+.users-section .user-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #800000;
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 32px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .users-section .status {
   border: 2.11px solid;
   border-color: #800000;
   border-radius: 11.61px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
   height: 23px;
   left: 13px;
+  left: 72px; /* Positioned relative to the card's left edge */
   position: absolute;
   top: 29px;
+  top: 84px; /* Positioned relative to the card's top edge */
   width: 23px;
 }
 
@@ -470,7 +494,28 @@
   border-radius: 25px;
   background-color: #e0e0e0;
   flex-shrink: 0;
+  overflow: hidden;
   position: relative;
+}
+
+.users-section .list-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.users-section .list-photo .user-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #800000;
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .users-section .list-status {
@@ -641,13 +686,72 @@
   color: #999999;
 }
 
+/* Error States */
+.form-input.error,
+.form-select.error {
+  border-color: #ff4444;
+}
+
+.form-input.error:focus,
+.form-select.error:focus {
+  border-color: #ff4444;
+  box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
+}
+
+.error-text {
+  color: #ff4444;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: -4px;
+}
+
+.form-group-centered {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.circular-upload-area {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px dashed #800000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.circular-upload-area:hover {
+  border-color: #800000;
+  background-color: #f0f0f0;
+}
+
+.upload-placeholder {
+  text-align: center;
+  color: #999;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  padding: 1rem;
+}
+
+.profile-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .form-submit {
   margin-top: 10px;
   padding: 14px 24px;
   background-color: #800000;
   color: #ffffff;
   border: none;
-  border-radius: 10px;
+  border-radius: 30px;
   font-family: "Poppins", Helvetica;
   font-size: 16px;
   font-weight: 600;
@@ -658,7 +762,6 @@
 .form-submit:hover {
   background-color: #660000;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
 }
 
 /* Filter Modal */
@@ -729,6 +832,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .filter-apply:hover {
@@ -758,8 +862,29 @@
   height: 100px;
   border-radius: 50px;
   background-color: #e0e0e0;
+  overflow: hidden;
   position: relative;
   margin-bottom: 8px;
+}
+
+.user-details-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-details-photo .user-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #800000;
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 42px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .user-details-status {
@@ -842,11 +967,17 @@
   color: #ff4444;
 }
 
-.delete-user-button {
+/* User Details Actions */
+.user-details-actions {
+  display: flex;
+  gap: 12px;
   margin-top: 30px;
+}
+
+.edit-user-button,
+.delete-user-button {
+  flex: 1;
   padding: 14px 24px;
-  background-color: #ff4444;
-  color: #ffffff;
   border: none;
   border-radius: 10px;
   font-family: "Poppins", Helvetica;
@@ -854,13 +985,30 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
+}
+
+.edit-user-button {
+  border-radius: 30px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #e0e0e0;
+}
+
+.edit-user-button:hover {
+  background-color: #e0e0e0;
+  color: #333;
+  transform: translateY(-2px);
+}
+
+.delete-user-button {
+  background-color: #800000;
+  color: #ffffff;
+  border-radius: 30px;
 }
 
 .delete-user-button:hover {
-  background-color: #cc0000;
+  background-color: #660000;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
 }
 
 /* Responsive Design */
@@ -894,7 +1042,7 @@
 @media (max-width: 768px) {
   .user-management-container {
     padding: 1rem;
-    padding-left: 1rem; /* Adjust for collapsed sidebar or no sidebar */
+    padding-left: 1rem;
   }
   .users-section .filter-button,
   .users-section .view-button,
@@ -908,12 +1056,8 @@
   .users-section .user-card {
     min-width: 280px;
   }
-  .user-summary-card .rectangle-5 {
-    height: 180px;
-  }
   .user-summary-card .instruction {
     font-size: 12px;
-    top: 20px;
   }
   .user-summary-card .stats-container {
     flex-wrap: wrap;
@@ -938,4 +1082,140 @@
   .modal-title {
     font-size: 24px;
   }
+  .user-details-actions {
+    flex-direction: column;
+  }
+}
+
+/* Pending Users Card */
+.pending-users-card {
+  grid-area: pending;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 3px 3px 13px #00000026;
+  padding: 20px;
+  margin-top: 0.2rem;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pending-users-card-header {
+  margin-bottom: 20px;
+}
+
+.pending-users-card-title {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  margin: 0;
+}
+
+.pending-users-table {
+  width: 100%;
+  flex-grow: 1;
+}
+
+.pending-users-table-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr 2fr 2fr;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.pending-users-table-header .header-cell {
+  color: #800000;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.pending-users-table-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pending-user-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr 2fr 2fr;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.pending-user-row:hover {
+  background-color: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pending-user-row .table-cell {
+  color: #1e1e1e;
+  font-family: "Poppins", Helvetica;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pending-user-row .action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.pending-user-row .approve-btn,
+.pending-user-row .decline-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 20px;
+  font-family: "Poppins", Helvetica;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: -0.3px;
+}
+
+.pending-user-row .approve-btn {
+  background-color: #4ccf47;
+  color: #ffffff;
+}
+
+.pending-user-row .approve-btn:hover {
+  background-color: #3db838;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 207, 71, 0.3);
+}
+
+.pending-user-row .decline-btn {
+  background-color: #dd0303;
+  color: #ffffff;
+}
+
+.pending-user-row .decline-btn:hover {
+  background-color: #b80202;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(221, 3, 3, 0.3);
+}
+
+.no-pending-users-message {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-family: "Poppins", Helvetica;
+  font-size: 16px;
 }

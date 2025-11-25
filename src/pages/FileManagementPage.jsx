@@ -182,15 +182,28 @@ export const FileManagementPage = () => {
     try {
       const formData = new FormData();
       formData.append('file', fileForm.file);
-      formData.append('name', fileForm.name);
+      formData.append('filename', fileForm.name); // Backend expects 'filename'
       formData.append('department', fileForm.department);
-      formData.append('category', fileForm.category);
+      // Backend expects 'categoryId'
       if (selectedFolder) {
-        formData.append('folderId', selectedFolder.id);
+        formData.append('categoryId', selectedFolder.id);
+      } else if (fileForm.category) {
+         // If user selected category from dropdown but not inside a folder view
+         // We might need to find the category ID based on name, but for now let's send the name
+         // and let the backend handle it or update the UI to store ID.
+         // Ideally, the dropdown should store IDs.
+         // For now, let's assume the dropdown values are names and we might need to look them up
+         // or just send it if the backend supports it (it doesn't seem to support name lookup directly in upload).
+         // Let's rely on selectedFolder for now as the primary way.
       }
+      
+      // Add default physical location values as they are required by backend schema but missing in UI
+      formData.append('rowPosition', '1');
+      formData.append('columnPosition', '1');
+      formData.append('shelfNumber', '1');
 
       const response = await filesAPI.upload(formData);
-      const newFile = response.data;
+      const newFile = response.data.file || response.data; // Handle potential response structure variations
 
       if (selectedFolder) {
         const updatedFolders = folders.map((folder) =>

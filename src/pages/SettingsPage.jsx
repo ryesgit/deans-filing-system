@@ -1,19 +1,27 @@
 import React, { useState } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
-import { User } from "lucide-react";
-import "../DeptHeadPage/DashboardPage/style.css";
+import { Camera } from "lucide-react";
 import "../DeptHeadPage/SettingsPage/Settings.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { useAuth } from "../components/Modal/AuthContext";
+import { usersAPI } from "../services/api";
+
+// Helper to convert file to base64
+const toBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
 
 export const SettingsPage = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateUser } = useAuth();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const { notifications, unreadCount } = useNotifications();
   const [passwords, setPasswords] = useState({
     oldPassword: "",
@@ -34,6 +42,31 @@ export const SettingsPage = () => {
     }
     alert("Password changed successfully!");
     setIsPasswordModalOpen(false);
+  };
+  const handleProfilePictureChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type.startsWith("image/")) {
+        try {
+          const base64 = await toBase64(file);
+          
+          // Optimistic update
+          setProfilePicturePreview(base64);
+          
+          await usersAPI.update(currentUser.id, { avatar: base64 });
+
+          // Update context
+          updateUser({ ...currentUser, profilePicture: base64, avatar: base64 });
+          alert("Profile picture updated successfully!");
+        } catch (error) {
+          console.error("Failed to update profile picture:", error);
+          alert("Failed to update profile picture. Please try again.");
+          setProfilePicturePreview(null); // Revert on failure
+        }
+      } else {
+        alert("Please select an image file.");
+      }
+    }
   };
 
   return (
@@ -89,9 +122,41 @@ export const SettingsPage = () => {
         <div className="settings-grid-single">
           <section className="settings-card user-profile-card">
             <div className="profile-left">
-              <div className="profile-avatar-container">
-                <User className="profile-avatar-icon" size={80} />
-              </div>
+              <label
+                htmlFor="profilePictureInput"
+                className="profile-avatar-container"
+                style={{ cursor: "pointer" }}
+              >
+                {profilePicturePreview ||
+                currentUser?.profilePicture ||
+                currentUser?.avatar ? (
+                  <img
+                    src={
+                      profilePicturePreview ||
+                      currentUser.profilePicture ||
+                      currentUser.avatar
+                    }
+                    alt=""
+                  />
+                ) : (
+                  <div className="profile-avatar-icon" style={{ fontSize: 80 }}>
+                    {currentUser?.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="profile-avatar-overlay">
+                  <Camera size={40} />
+                  <span>Change</span>
+                </div>
+              </label>
+              <input
+                id="profilePictureInput"
+                type="file"
+                name="profilePicture"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                style={{ display: "none" }}
+              />
+
               <h2 className="profile-name">{currentUser?.name || "N/A"}</h2>
               <p className="profile-email">{currentUser?.email || "N/A"}</p>
             </div>
@@ -100,12 +165,20 @@ export const SettingsPage = () => {
               <div className="profile-detail-group">
                 <span className="profile-detail-label">ID Number</span>
                 <span className="profile-detail-value">
-                  {currentUser?.idNumber || "N/A"}
+                  {currentUser?.userId || currentUser?.id || "N/A"}
+                </span>
+              </div>
+              <div className="profile-detail-group">
+                <span className="profile-detail-label">Username</span>
+                <span className="profile-detail-value">
+                  {currentUser?.username || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Role</span>
-                <span className="profile-detail-value">{currentUser?.role || "N/A"}</span>
+                <span className="profile-detail-value">
+                  {currentUser?.role || "N/A"}
+                </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Gender</span>
@@ -125,22 +198,34 @@ export const SettingsPage = () => {
                   {currentUser?.contactNumber || "N/A"}
                 </span>
               </div>
-              <div className="profile-.detail-group">
+              <div className="profile-detail-group">
                 <span className="profile-detail-label">Date of Birth</span>
                 <span className="profile-detail-value">
-                  {currentUser?.dateOfBirth || "N/A"}
+                  {currentUser?.dateOfBirth
+                    ? new Date(currentUser.dateOfBirth).toLocaleDateString()
+                    : "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Account Status</span>
                 <span className="profile-detail-value">
-                  {currentUser?.accountStatus || "N/A"}
+                  {currentUser?.status || "N/A"}
                 </span>
               </div>
               <div className="profile-detail-group">
                 <span className="profile-detail-label">Last Login</span>
                 <span className="profile-detail-value">
-                  {currentUser?.lastLogin || "N/A"}
+                  {currentUser?.lastLogin
+                    ? new Date(currentUser.lastLogin).toLocaleString()
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="profile-detail-group">
+                <span className="profile-detail-label">Date Joined</span>
+                <span className="profile-detail-value">
+                  {currentUser?.createdAt
+                    ? new Date(currentUser.createdAt).toLocaleDateString()
+                    : "N/A"}
                 </span>
               </div>
             </div>
@@ -154,32 +239,6 @@ export const SettingsPage = () => {
             >
               Reset Password
             </button>
-          </section>
-
-          <section className="settings-card">
-            <h2 className="settings-card-title">Notification Preferences</h2>
-            <div className="notification-preference-item">
-              <span className="preference-label">Push Notifications</span>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={pushNotifications}
-                  onChange={() => setPushNotifications((prev) => !prev)}
-                />
-                <span className="slider round"></span>
-              </label>
-            </div>
-            <div className="notification-preference-item">
-              <span className="preference-label">Email Notifications</span>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={emailNotifications}
-                  onChange={() => setEmailNotifications((prev) => !prev)}
-                />
-                <span className="slider round"></span>
-              </label>
-            </div>
           </section>
         </div>
         {isPasswordModalOpen && (

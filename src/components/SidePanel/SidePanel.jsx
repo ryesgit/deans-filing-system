@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../Modal/AuthContext";
+import { Modal } from "../Modal/Modal";
 import "./style.css";
 
 export const SidePanel = () => {
@@ -8,6 +9,7 @@ export const SidePanel = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [activeItem, setActiveItem] = useState("dashboard");
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const getActiveItem = () => {
     const path = location.pathname;
@@ -25,7 +27,12 @@ export const SidePanel = () => {
   };
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
+    setShowLogoutModal(false);
   };
 
   // The activeItem from the URL will take precedence
@@ -42,39 +49,34 @@ export const SidePanel = () => {
       <nav className="side-panel-nav">
         <Link
           to="/dashboard"
-          className={`dashboard ${
-            currentActiveItem === "dashboard" ? "active" : ""
-          }`}
+          className={`dashboard ${currentActiveItem === "dashboard" ? "active" : ""
+            }`}
           onClick={() => handleNavigation("dashboard")}
         >
-          <img
-            className="vector-7"
-            alt="Vector"
-            src="/dashboard_icon.png"
-          />
+          <img className="vector-7" alt="Vector" src="/dashboard_icon.svg" />
           <div className="text-wrapper-56">Dashboard</div>
         </Link>
 
-        <Link
-          to="/file-management"
-          className={`file-management ${
-            currentActiveItem === "file-management" ? "active" : ""
-          }`}
-          onClick={() => handleNavigation("file-management")}
-        >
-          <img
-            className="vector-6"
-            alt="Vector"
-            src="https://c.animaapp.com/27o9iVJi/img/vector-5.svg"
-          />
-          <div className="text-wrapper-55">File Management</div>
-        </Link>
+        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
+          <Link
+            to="/file-management"
+            className={`file-management ${currentActiveItem === "file-management" ? "active" : ""
+              }`}
+            onClick={() => handleNavigation("file-management")}
+          >
+            <img
+              className="vector-6"
+              alt="Vector"
+              src="https://c.animaapp.com/27o9iVJi/img/vector-5.svg"
+            />
+            <div className="text-wrapper-55">File Management</div>
+          </Link>
+        )}
 
         <Link
           to="/request"
-          className={`request ${
-            currentActiveItem === "request" ? "active" : ""
-          }`}
+          className={`request ${currentActiveItem === "request" ? "active" : ""
+            }`}
           onClick={() => handleNavigation("request")}
         >
           <img
@@ -85,12 +87,11 @@ export const SidePanel = () => {
           <div className="text-wrapper-54">Request</div>
         </Link>
 
-        {user?.role === "ADMIN" && (
+        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
           <Link
             to="/user-management"
-            className={`user-management ${
-              currentActiveItem === "user-management" ? "active" : ""
-            }`}
+            className={`user-management ${currentActiveItem === "user-management" ? "active" : ""
+              }`}
             onClick={() => handleNavigation("user-management")}
           >
             <img
@@ -104,9 +105,8 @@ export const SidePanel = () => {
 
         <Link
           to="/reports"
-          className={`report-log ${
-            currentActiveItem === "report-log" ? "active" : ""
-          }`}
+          className={`report-log ${currentActiveItem === "report-log" ? "active" : ""
+            }`}
           onClick={() => handleNavigation("report-log")}
         >
           <img
@@ -119,9 +119,8 @@ export const SidePanel = () => {
 
         <Link
           to="/settings"
-          className={`settings ${
-            currentActiveItem === "settings" ? "active" : ""
-          }`}
+          className={`settings ${currentActiveItem === "settings" ? "active" : ""
+            }`}
           onClick={() => handleNavigation("settings")}
         >
           <img
@@ -133,14 +132,35 @@ export const SidePanel = () => {
         </Link>
       </nav>
 
-      <Link to="/login" className="logout" onClick={handleLogout}>
+      <div className="logout" onClick={handleLogout}>
         <img
           className="vector"
           alt="Vector"
           src="https://c.animaapp.com/27o9iVJi/img/vector.svg"
         />
         <div className="text-wrapper-51">Log out</div>
-      </Link>
+      </div>
+
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        showCloseButton={false}
+      >
+        <p className="confirmation-text-02">
+          Are you sure you want to log out?
+        </p>
+        <div className="modal-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowLogoutModal(false)}
+          >
+            Cancel
+          </button>
+          <button className="btn btn-primary" onClick={confirmLogout}>
+            Log Out
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

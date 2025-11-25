@@ -5,16 +5,24 @@ import { filesAPI } from "../../services/api";
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
-    minHeight: "48px",
-    borderColor: state.isFocused ? "#4A90E2" : "#E0E0E0",
-    boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+    height: "55px",
+    width: "100%",
+    padding: "0 0.25rem",
+    border: `3px solid ${state.isFocused ? "#800000" : "#d9d9d9"}`,
+    borderRadius: "16px",
+    fontFamily: '"Poppins", Helvetica',
+    fontSize: "16px",
+    color: "#1e1e1e",
+    boxShadow: state.isFocused ? "0 0 0 3px rgba(128, 0, 0, 0.1)" : "none",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+    backgroundColor: "#ffffff",
     "&:hover": {
-      borderColor: "#4A90E2",
+      borderColor: "#800000",
     },
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: "#999",
+    color: "#c2c2c2",
   }),
   menu: (provided) => ({
     ...provided,
@@ -22,21 +30,47 @@ const customStyles = {
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isSelected
+    backgroundColor: state.isDisabled
+      ? "#f5f5f5"
+      : state.isSelected
       ? "#4A90E2"
       : state.isFocused
       ? "#F0F7FF"
       : "white",
-    color: state.isSelected ? "white" : "#333",
+    color: state.isDisabled
+      ? "#999"
+      : state.isSelected
+      ? "white"
+      : "#333",
     padding: "12px 16px",
-    cursor: "pointer",
+    cursor: state.isDisabled ? "not-allowed" : "pointer",
+    opacity: state.isDisabled ? 0.6 : 1,
     "&:active": {
-      backgroundColor: "#4A90E2",
+      backgroundColor: state.isDisabled ? "#f5f5f5" : "#4A90E2",
     },
+    fontFamily: '"Poppins", Helvetica',
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "#333",
+    color: "#1e1e1e",
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    display: "none",
+  }),
+  dropdownIndicator: (provided, state) => ({
+    ...provided,
+    color: state.isFocused ? "#800000" : "#c2c2c2",
+    "&:hover": {
+      color: "#800000",
+    },
+  }),
+  noOptionsMessage: (provided) => ({
+    ...provided,
+    fontFamily: '"Poppins", Helvetica',
+    fontSize: "14px",
+    color: "#666",
+    padding: "12px 16px",
   }),
 };
 
@@ -57,6 +91,8 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
         label: file.filename || file.name,
         department: file.department,
         category: file.category || "Uncategorized",
+        status: file.status || "AVAILABLE",
+        isDisabled: file.status && file.status !== "AVAILABLE",
         fileData: file,
       }));
     } catch (error) {
@@ -69,10 +105,10 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
     if (selectedOption) {
       onChange(selectedOption.label);
       if (onFileSelect) {
-        console.log('File selected:', {
+        console.log("File selected:", {
           fileName: selectedOption.label,
           department: selectedOption.department,
-          fileCategory: selectedOption.category
+          fileCategory: selectedOption.category,
         });
         onFileSelect({
           fileName: selectedOption.label,
@@ -101,6 +137,7 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
       placeholder="Search for a file..."
       isClearable
       styles={customStyles}
+      isOptionDisabled={(option) => option.isDisabled}
       noOptionsMessage={({ inputValue }) =>
         inputValue.length < 2
           ? "Type at least 2 characters to search"
@@ -109,9 +146,27 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
       loadingMessage={() => "Searching files..."}
       formatOptionLabel={(option) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{option.label}</div>
+          <div style={{ fontWeight: 500 }}>
+            {option.label}
+            {option.isDisabled && (
+              <span
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "0.75em",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  backgroundColor: "#ff6b6b",
+                  color: "white",
+                  fontWeight: "normal",
+                }}
+              >
+                {option.status}
+              </span>
+            )}
+          </div>
           <div style={{ fontSize: "0.85em", color: "#666", marginTop: "2px" }}>
             {option.department} • {option.category}
+            {option.isDisabled && " • Not available for request"}
           </div>
         </div>
       )}

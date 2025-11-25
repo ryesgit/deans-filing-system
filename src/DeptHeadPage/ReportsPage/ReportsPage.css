@@ -1,5 +1,6 @@
 .page-content-wrapper {
-  padding-left: 271px; /* Space for the SidePanel */
+  padding-left: 271px;
+  /* Space for the SidePanel */
   width: 100%;
 }
 
@@ -245,23 +246,35 @@
 }
 
 .status-pending {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: #5E48CF;
+  color: #ffffff;
 }
 
 .status-approved {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #DD0303;
+  color: #ffffff;
 }
 
 .status-declined {
   background-color: #f8d7da;
-  color: #721c24;
+  color: #ffffff;
 }
 
 .status-borrowed {
-  background-color: #d1ecf1;
-  color: #0c5460;
+  background-color: #CFC148;
+  color: #ffffff;
+}
+
+.status-view-pdf {
+  background-color: #FFC107;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.status-view-pdf:hover {
+  background-color: #FFB300;
+  transform: scale(1.05);
 }
 
 .card-list {
