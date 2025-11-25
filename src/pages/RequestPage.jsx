@@ -911,10 +911,9 @@ export const RequestPage = () => {
           <QRModal
             isOpen={isQRModalOpen}
             onClose={() => setIsQRModalOpen(false)}
-            qrCodeUrl={currentUser?.avatar || null}
+            qrCodeUrl={null}
             userName={currentUser?.name || "User"}
-            qrValue={`USER:${currentUser?.id || "N/A"}|NAME:${currentUser?.name || "User"
-              }`}
+            qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
           />
           <NotificationDropdown
             notifications={notifications}
