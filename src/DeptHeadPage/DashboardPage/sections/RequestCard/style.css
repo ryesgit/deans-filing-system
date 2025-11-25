@@ -78,6 +78,7 @@
   border-radius: 10px;
   align-items: center;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .request-row:hover {
