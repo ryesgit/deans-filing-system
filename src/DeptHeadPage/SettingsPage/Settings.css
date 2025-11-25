@@ -106,14 +106,16 @@
 .profile-divider {
   width: 1px;
   align-self: stretch;
-  background-color: #e5e7eb; /* Light gray for divider */
+  background-color: #800000; /* Light gray for divider */
+  width: 2px;
+
 }
 
 .profile-right {
   flex-grow: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem 1.5rem; /* row-gap and column-gap */
+  gap: 1rem 1.5rem; /* row-gap and column-gap */
 }
 
 .profile-detail-group {
@@ -166,7 +168,7 @@
   font-weight: 500;
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 }
