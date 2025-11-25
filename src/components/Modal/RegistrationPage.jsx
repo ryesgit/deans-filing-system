@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useAuth } from "./AuthContext";
 import "./RegistrationPage.css";
 
 export const RegistrationPage = ({ onClose }) => {
+  const { register, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -11,9 +13,13 @@ export const RegistrationPage = ({ onClose }) => {
     gender: "",
     role: "",
     department: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const validate = () => {
     const newErrors = {};
@@ -34,12 +40,24 @@ export const RegistrationPage = ({ onClose }) => {
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
 
     return newErrors;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (error) clearError();
+
     if (name === "contactNumber") {
       const numericValue = value.replace(/[^0-9]/g, "");
       setFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -52,16 +70,36 @@ export const RegistrationPage = ({ onClose }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-    } else {
-      console.log("Form Data Submitted:", formData);
-      // Here you would typically call a registration API
-      alert("Registration successful! Check the console for the form data.");
-      onClose(); // Close modal on successful submission
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const registrationData = {
+      userId: formData.pupId,
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      contactNumber: formData.contactNumber,
+      dateOfBirth: formData.dob,
+      gender: formData.gender,
+      role: formData.role,
+      department: formData.department,
+    };
+
+    const result = await register(registrationData);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setSuccessMessage(result.message);
+      setTimeout(() => {
+        onClose();
+      }, 3000);
     }
   };
 
@@ -75,6 +113,18 @@ export const RegistrationPage = ({ onClose }) => {
 
   return (
     <div className="registration-page">
+      {error && (
+        <div className="registration-error" role="alert">
+          <span>{error}</span>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="registration-success" role="alert">
+          <span>{successMessage}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} noValidate>
         <div className="form-grid">
           <div className="form-group full-width">
@@ -180,9 +230,10 @@ export const RegistrationPage = ({ onClose }) => {
               <option value="" disabled>
                 Select a role
               </option>
-              <option value="Student">Student</option>
-              <option value="Faculty">Faculty</option>
-              <option value="Admin">Admin</option>
+              <option value="STUDENT">Student</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="STAFF">Staff</option>
+              <option value="ADMIN">Admin</option>
             </select>
             {errors.role && <span className="error-text">{errors.role}</span>}
           </div>
@@ -209,11 +260,43 @@ export const RegistrationPage = ({ onClose }) => {
               <span className="error-text">{errors.department}</span>
             )}
           </div>
+
+          <div className="form-group full-width">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={errors.password ? "invalid" : ""}
+              placeholder="At least 6 characters"
+            />
+            {errors.password && (
+              <span className="error-text">{errors.password}</span>
+            )}
+          </div>
+
+          <div className="form-group full-width">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={errors.confirmPassword ? "invalid" : ""}
+              placeholder="Re-enter your password"
+            />
+            {errors.confirmPassword && (
+              <span className="error-text">{errors.confirmPassword}</span>
+            )}
+          </div>
         </div>
 
         <div className="form-actions">
-          <button type="submit" className="submit-btn">
-            Register
+          <button type="submit" className="submit-btn" disabled={isSubmitting}>
+            {isSubmitting ? "Registering..." : "Register"}
           </button>
         </div>
       </form>

@@ -14,12 +14,14 @@ export const QuickActionCard = ({ role }) => {
         </p>
       </div>
       <div className="quick-action-buttons">
-        <button
-          className="action-btn"
-          onClick={() => navigate("/file-management")}
-        >
-          Add File
-        </button>
+        {(role === "ADMIN" || role === "STAFF") && (
+          <button
+            className="action-btn"
+            onClick={() => navigate("/file-management")}
+          >
+            Add File
+          </button>
+        )}
         <button className="action-btn" onClick={() => navigate("/request")}>
           Request
         </button>

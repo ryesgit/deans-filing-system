@@ -4,7 +4,6 @@ import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { usersAPI } from "../services/api";
-import { pendingUsers } from "../data/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
@@ -28,14 +27,64 @@ export const UserManagementPage = () => {
   });
 
   const { notifications, unreadCount } = useNotifications();
-  const [pendingUsersList, setPendingUsersList] = useState(pendingUsers);
+  const [pendingUsersList, setPendingUsersList] = useState([]);
 
-  const handleApprove = (userId) => {
-    setPendingUsersList(pendingUsersList.filter((user) => user.id !== userId));
+  const handleApprove = async (userId) => {
+    try {
+      await usersAPI.approve(userId);
+      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      const response = await usersAPI.getAll();
+      const usersData = response.data.users || response.data;
+      const mappedUsers = Array.isArray(usersData)
+        ? usersData.map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            idNumber: user.idNumber,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            profilePicture: user.avatar
+              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+                  ? user.avatar
+                  : `${API_BASE_URL}${user.avatar}`)
+              : user.profilePicture,
+            role: user.role,
+            department: user.department || "N/A",
+            status: user.status,
+            dateJoined: user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "N/A",
+            tags: [
+              user.status === "ACTIVE" ? "active" : "inactive",
+              user.role === "FACULTY" ? "faculty" : null,
+              user.role === "ADMIN" ? "head" : null,
+              user.role === "STAFF" ? "head" : null,
+            ].filter(Boolean),
+          }))
+        : [];
+      setUsers(mappedUsers);
+      alert('User approved successfully!');
+    } catch (error) {
+      console.error("Failed to approve user:", error);
+      alert(error.message || "Failed to approve user");
+    }
   };
 
-  const handleDecline = (userId) => {
-    setPendingUsersList(pendingUsersList.filter((user) => user.id !== userId));
+  const handleDecline = async (userId) => {
+    const reason = prompt("Please provide a reason for declining this user:");
+    if (reason === null) return;
+
+    try {
+      await usersAPI.reject(userId, reason);
+      setPendingUsersList(pendingUsersList.filter((user) => user.userId !== userId));
+      alert('User registration declined successfully!');
+    } catch (error) {
+      console.error("Failed to decline user:", error);
+      alert(error.message || "Failed to decline user");
+    }
   };
 
   // Fetch users from API on mount
@@ -44,36 +93,58 @@ export const UserManagementPage = () => {
       try {
         const response = await usersAPI.getAll();
         const usersData = response.data.users || response.data;
-        const mappedUsers = Array.isArray(usersData)
-          ? usersData.map((user) => ({
-              id: user.id,
-              userId: user.userId,
-              name: user.name,
-              username: user.username,
-              email: user.email,
-              idNumber: user.idNumber,
-              contactNumber: user.contactNumber,
-              dateOfBirth: user.dateOfBirth,
-              gender: user.gender,
-              profilePicture: user.avatar ? `${API_BASE_URL}${user.avatar}` : user.profilePicture,
-              role: user.role,
-              department: user.department || "N/A",
-              status: user.status,
-              dateJoined: user.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
-                : "N/A",
-              tags: [
-                user.status === "ACTIVE" ? "active" : "inactive",
-                user.role === "FACULTY" ? "faculty" : null,
-                user.role === "ADMIN" ? "head" : null,
-                user.role === "STAFF" ? "head" : null,
-              ].filter(Boolean),
-            }))
-          : [];
+        const allUsers = Array.isArray(usersData) ? usersData : [];
+
+        const mappedUsers = allUsers
+          .filter((user) => user.status !== "PENDING")
+          .map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            idNumber: user.idNumber,
+            contactNumber: user.contactNumber,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            profilePicture: user.avatar
+              ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+                  ? user.avatar
+                  : `${API_BASE_URL}${user.avatar}`)
+              : user.profilePicture,
+            role: user.role,
+            department: user.department || "N/A",
+            status: user.status,
+            dateJoined: user.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : "N/A",
+            tags: [
+              user.status === "ACTIVE" ? "active" : "inactive",
+              user.role === "FACULTY" ? "faculty" : null,
+              user.role === "ADMIN" ? "head" : null,
+              user.role === "STAFF" ? "head" : null,
+            ].filter(Boolean),
+          }));
+
+        const pendingUsers = allUsers
+          .filter((user) => user.status === "PENDING")
+          .map((user) => ({
+            id: user.id,
+            userId: user.userId,
+            name: user.name,
+            dateOfBirth: user.dateOfBirth
+              ? new Date(user.dateOfBirth).toLocaleDateString()
+              : "N/A",
+            role: user.role,
+            department: user.department || "N/A",
+          }));
+
         setUsers(mappedUsers);
+        setPendingUsersList(pendingUsers);
       } catch (error) {
         console.error("Failed to fetch users:", error);
         setUsers([]);
+        setPendingUsersList([]);
       } finally {
         setLoading(false);
       }
@@ -151,7 +222,11 @@ export const UserManagementPage = () => {
         contactNumber: createdUser.contactNumber,
         dateOfBirth: createdUser.dateOfBirth,
         gender: createdUser.gender,
-        profilePicture: createdUser.avatar ? `${API_BASE_URL}${createdUser.avatar}` : createdUser.profilePicture,
+        profilePicture: createdUser.avatar
+              ? (createdUser.avatar.startsWith('http') || createdUser.avatar.startsWith('data:')
+                  ? createdUser.avatar
+                  : `${API_BASE_URL}${createdUser.avatar}`)
+              : createdUser.profilePicture,
         role: createdUser.role,
         department: createdUser.department || "N/A",
         status: createdUser.status,
@@ -203,7 +278,11 @@ export const UserManagementPage = () => {
         contactNumber: editedUser.contactNumber,
         dateOfBirth: editedUser.dateOfBirth,
         gender: editedUser.gender,
-        profilePicture: editedUser.avatar ? `${API_BASE_URL}${editedUser.avatar}` : editedUser.profilePicture,
+        profilePicture: editedUser.avatar
+              ? (editedUser.avatar.startsWith('http') || editedUser.avatar.startsWith('data:')
+                  ? editedUser.avatar
+                  : `${API_BASE_URL}${editedUser.avatar}`)
+              : editedUser.profilePicture,
         role: editedUser.role,
         department: editedUser.department || "N/A",
         status: editedUser.status,
@@ -343,7 +422,7 @@ export const UserManagementPage = () => {
               ) : (
                 pendingUsersList.map((user) => (
                   <div key={user.id} className="pending-user-row">
-                    <div className="table-cell">{user.id}</div>
+                    <div className="table-cell">{user.userId}</div>
                     <div className="table-cell">{user.name}</div>
                     <div className="table-cell">{user.dateOfBirth}</div>
                     <div className="table-cell">{user.role}</div>
@@ -352,13 +431,13 @@ export const UserManagementPage = () => {
                       <div className="action-buttons">
                         <button
                           className="approve-btn"
-                          onClick={() => handleApprove(user.id)}
+                          onClick={() => handleApprove(user.userId)}
                         >
                           Approve
                         </button>
                         <button
                           className="decline-btn"
-                          onClick={() => handleDecline(user.id)}
+                          onClick={() => handleDecline(user.userId)}
                         >
                           Decline
                         </button>
@@ -471,8 +550,10 @@ export const UserManagementPage = () => {
                   <div className="user-datejoined">{user.dateJoined}</div>
                   <div className="Date-joined">Date Joined</div>
                   <div className="user-photo">
-                    {user.profilePicture && (
+                    {user.profilePicture ? (
                       <img src={user.profilePicture} alt={user.name} />
+                    ) : (
+                      <div className="user-initials">{getInitials(user.name)}</div>
                     )}
                   </div>
                   <div
@@ -492,8 +573,10 @@ export const UserManagementPage = () => {
                   onClick={() => setSelectedUser(user)}
                 >
                   <div className="list-photo">
-                    {user.profilePicture && (
+                    {user.profilePicture ? (
                       <img src={user.profilePicture} alt={user.name} />
+                    ) : (
+                      <div className="user-initials">{getInitials(user.name)}</div>
                     )}
                   </div>
                   <div
@@ -579,6 +662,13 @@ export const UserManagementPage = () => {
 };
 
 // Helper functions
+const getInitials = (name) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
 const toBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -616,7 +706,7 @@ const UserFormModal = ({
   const [formData, setFormData] = useState(
     mode === "edit" && user
       ? {
-          username: user.username || "",
+          username: user.userId || "",
           name: user.name || "",
           email: user.email || "",
           idNumber: user.idNumber || "",
@@ -657,6 +747,33 @@ const UserFormModal = ({
 
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (mode === "edit" && user) {
+      console.log("User data in edit modal:", user);
+      console.log("idNumber value:", user.idNumber);
+      setFormData({
+        username: user.userId || "",
+        name: user.name || "",
+        email: user.email || "",
+        idNumber: user.idNumber || "",
+        contactNumber: user.contactNumber || "",
+        dateOfBirth: formatDateForInput(user.dateOfBirth),
+        gender: user.gender || "",
+        role: user.role || "FACULTY",
+        department: user.department || "",
+        status: user.status === "ACTIVE" ? "active" : "inactive",
+        dateJoined:
+          user.dateJoined ||
+          new Date().toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          }),
+        profilePicture: user.profilePicture || "",
+      });
+    }
+  }, [mode, user]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -678,7 +795,9 @@ const UserFormModal = ({
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.username.trim()) newErrors.username = "Username is required";
+    if (mode === "add" && !formData.username.trim()) {
+      newErrors.username = "User ID is required";
+    }
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
@@ -767,14 +886,17 @@ const UserFormModal = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Username</label>
+            <label className="form-label">User ID</label>
             <input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
               className={`form-input ${errors.username ? "error" : ""}`}
-              placeholder="Enter username"
+              placeholder="Enter user ID"
+              readOnly={mode === "edit"}
+              disabled={mode === "edit"}
+              style={mode === "edit" ? { backgroundColor: "#f5f5f5", cursor: "not-allowed" } : {}}
             />
             {errors.username && (
               <span className="error-text">{errors.username}</span>
@@ -1078,8 +1200,10 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
 
         <div className="user-details-header">
           <div className="user-details-photo">
-            {user.profilePicture && (
+            {user.profilePicture ? (
               <img src={user.profilePicture} alt={user.name} />
+            ) : (
+              <div className="user-initials">{getInitials(user.name)}</div>
             )}
           </div>
           <h2 className="user-details-name">{user.name}</h2>

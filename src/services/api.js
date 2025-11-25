@@ -32,14 +32,14 @@ api.interceptors.response.use(
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
-      
+
       // Handle unauthorized errors
       if (status === 401 && window.location.pathname !== '/login') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
-      
+
       // Return error with message
       return Promise.reject({
         status,
@@ -63,6 +63,7 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (credentials) => api.post('/api/auth/login', credentials),
+  register: (userData) => api.post('/api/auth/register', userData),
   getMe: () => api.get('/api/auth/me'),
   logout: () => api.post('/api/auth/logout'),
 };
@@ -112,11 +113,14 @@ export const usersAPI = {
   create: (data) => api.post('/api/users', data),
   update: (id, data) => api.put(`/api/users/${id}`, data),
   delete: (id) => api.delete(`/api/users/${id}`),
+  approve: (id) => api.post(`/api/users/${id}/approve`),
+  reject: (id, reason) => api.post(`/api/users/${id}/reject`, { reason }),
 };
 
 // Notifications API
 export const notificationsAPI = {
   getAll: () => api.get('/api/notifications'),
+  create: (data) => api.post('/api/notifications', data),
   markAsRead: (id) => api.put(`/api/notifications/${id}/read`),
 };
 

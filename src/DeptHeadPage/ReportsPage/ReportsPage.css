@@ -1,5 +1,6 @@
 .page-content-wrapper {
-  padding-left: 271px; /* Space for the SidePanel */
+  padding-left: 271px;
+  /* Space for the SidePanel */
   width: 100%;
 }
 
@@ -262,6 +263,18 @@
 .status-borrowed {
   background-color: #CFC148;
   color: #ffffff;
+}
+
+.status-view-pdf {
+  background-color: #FFC107;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.status-view-pdf:hover {
+  background-color: #FFB300;
+  transform: scale(1.05);
 }
 
 .card-list {

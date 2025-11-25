@@ -63,7 +63,7 @@ createRoot(document.getElementById("app")).render(
             <Route
               path="/reports"
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'FACULTY']}>
+                <ProtectedRoute>
                   <ReportsPage />
                 </ProtectedRoute>
               }

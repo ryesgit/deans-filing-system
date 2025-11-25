@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { statsAPI } from "../../../../services/api";
 import "./style.css";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+const getInitials = (name) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
 export const ActivityLogCard = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,16 +45,22 @@ export const ActivityLogCard = () => {
               key={activity.id}
               className={`profile-details${index > 0 ? `-${index + 1}` : ""}`}
             >
-              {activity.userAvatar ? (
+              {activity.avatar ? (
                 <img
                   className="profile"
                   alt="Profile"
-                  src={activity.userAvatar}
+                  src={
+                    activity.avatar.startsWith('http') || activity.avatar.startsWith('data:')
+                      ? activity.avatar
+                      : `${API_BASE_URL}${activity.avatar}`
+                  }
                 />
               ) : (
-                <div className="profile profile-placeholder"></div>
+                <div className="profile profile-initials">
+                  {getInitials(activity.userName)}
+                </div>
               )}
-              
+
               <div className="text-content">
                 <p className="p">
                   <span className="span">
