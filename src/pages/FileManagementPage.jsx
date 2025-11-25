@@ -204,7 +204,11 @@ export const FileManagementPage = () => {
       formData.append('shelfNumber', '1');
 
       const response = await filesAPI.upload(formData);
-      const newFile = response.data.file || response.data; // Handle potential response structure variations
+      const newFile = response.data.file || response.data;
+
+      if (!newFile || !newFile.id) {
+        throw new Error('Uploaded file missing ID or invalid structure');
+      }
 
       if (selectedFolder) {
         const updatedFolders = folders.map((folder) =>
