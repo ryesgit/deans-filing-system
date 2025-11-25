@@ -20,8 +20,6 @@ export const SettingsPage = () => {
   const { user: currentUser, updateUser } = useAuth();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const { notifications, unreadCount } = useNotifications();
@@ -241,32 +239,6 @@ export const SettingsPage = () => {
             >
               Reset Password
             </button>
-          </section>
-
-          <section className="settings-card">
-            <h2 className="settings-card-title">Notification Preferences</h2>
-            <div className="notification-preference-item">
-              <span className="preference-label">Push Notifications</span>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={pushNotifications}
-                  onChange={() => setPushNotifications((prev) => !prev)}
-                />
-                <span className="slider round"></span>
-              </label>
-            </div>
-            <div className="notification-preference-item">
-              <span className="preference-label">Email Notifications</span>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={emailNotifications}
-                  onChange={() => setEmailNotifications((prev) => !prev)}
-                />
-                <span className="slider round"></span>
-              </label>
-            </div>
           </section>
         </div>
         {isPasswordModalOpen && (
