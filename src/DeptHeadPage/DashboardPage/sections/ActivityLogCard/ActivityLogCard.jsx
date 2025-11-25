@@ -11,6 +11,43 @@ const getInitials = (name) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
+const formatActivityType = (type) => {
+  if (!type) return "";
+
+  const lowerType = type.toLowerCase().trim();
+
+  // Map of activity types to their past tense forms
+  const pastTenseMap = {
+    'check out': 'checked out',
+    'checkout': 'checked out',
+    'borrow': 'borrowed',
+    'return': 'returned',
+    'request': 'requested',
+    'approve': 'approved',
+    'decline': 'declined',
+    'declined': 'declined',
+    'upload': 'uploaded',
+    'download': 'downloaded',
+    'delete': 'deleted',
+    'update': 'updated',
+    'create': 'created',
+    'retrieval': 'retrieved',
+    'retrieve': 'retrieved',
+    'borrowed': 'borrowed',
+    'returned': 'returned',
+    'requested': 'requested',
+    'approved': 'approved',
+    'uploaded': 'uploaded',
+    'downloaded': 'downloaded',
+    'deleted': 'deleted',
+    'updated': 'updated',
+    'created': 'created',
+    'retrieved': 'retrieved'
+  };
+
+  return pastTenseMap[lowerType] || lowerType;
+};
+
 export const ActivityLogCard = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +101,7 @@ export const ActivityLogCard = () => {
               <div className="text-content">
                 <p className="p">
                   <span className="span">
-                    {activity.userName} {activity.type}{" "}
+                    {activity.userName} {formatActivityType(activity.type)}{" "}
                   </span>
                   <span className="text-wrapper-27">{activity.filename}</span>
                 </p>
