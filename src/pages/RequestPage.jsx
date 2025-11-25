@@ -556,7 +556,7 @@ const QRCard = ({
   );
 };
 
-const RequestCard = ({ requests = [] }) => {
+const RequestCard = ({ requests = [], onRequestCancelled }) => {
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -564,6 +564,9 @@ const RequestCard = ({ requests = [] }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedRequestForDetails, setSelectedRequestForDetails] =
     useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [requestToCancel, setRequestToCancel] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const { user } = useAuth();
 
   // Check if request is for soft copy based on description
@@ -605,14 +608,52 @@ const RequestCard = ({ requests = [] }) => {
     };
   }, [pdfUrl]);
 
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [openMenuId]);
+
   const handleShowDetails = (request, e) => {
-    // Prevent modal from opening when clicking on elements with their own onClick
-    if (e.target.closest(".status-badge")) {
+    if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
       return;
     }
 
     setSelectedRequestForDetails(request);
     setShowDetailsModal(true);
+  };
+
+  const toggleMenu = (id, e) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
+
+  const handleCancelClick = (request, e) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    setRequestToCancel(request);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!requestToCancel) return;
+
+    try {
+      await requestsAPI.delete(requestToCancel.id);
+      setShowCancelModal(false);
+      setRequestToCancel(null);
+      if (onRequestCancelled) {
+        onRequestCancelled(requestToCancel.id);
+      }
+    } catch (error) {
+      console.error("Failed to cancel request:", error);
+      alert("Failed to cancel request. Please try again.");
+    }
   };
 
   const getStatusClass = (status) => {
@@ -653,12 +694,13 @@ const RequestCard = ({ requests = [] }) => {
                 <th>Date Requested</th>
                 <th>Return Date</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="no-requests-row">
+                  <td colSpan="6" className="no-requests-row">
                     No requests yet. Submit a request to get started!
                   </td>
                 </tr>
@@ -698,6 +740,65 @@ const RequestCard = ({ requests = [] }) => {
                           {getStatusLabel(request.status)}
                         </span>
                       )}
+                    </td>
+                    <td style={{ position: "relative", textAlign: "center" }}>
+                      <div style={{ position: "relative", display: "inline-block" }} className="three-dot-menu">
+                        <button
+                          onClick={(e) => toggleMenu(request.id, e)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "20px",
+                            padding: "4px 8px",
+                          }}
+                        >
+                          ⋯
+                        </button>
+                        {openMenuId === request.id && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              right: 0,
+                              top: "100%",
+                              backgroundColor: "white",
+                              border: "1px solid #ddd",
+                              borderRadius: "4px",
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                              zIndex: 1000,
+                              minWidth: "120px",
+                            }}
+                          >
+                            <button
+                              onClick={
+                                request.status === "PENDING"
+                                  ? (e) => handleCancelClick(request, e)
+                                  : undefined
+                              }
+                              disabled={request.status !== "PENDING"}
+                              style={{
+                                width: "100%",
+                                padding: "8px 16px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: request.status === "PENDING" ? "pointer" : "not-allowed",
+                                color: request.status === "PENDING" ? "#d32f2f" : "#999",
+                                opacity: request.status === "PENDING" ? 1 : 0.5,
+                              }}
+                              onMouseEnter={(e) =>
+                                request.status === "PENDING" &&
+                                (e.target.style.backgroundColor = "#f5f5f5")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.target.style.backgroundColor = "transparent")
+                              }
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -837,6 +938,31 @@ const RequestCard = ({ requests = [] }) => {
           </div>
         )}
       </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => {
+          setShowCancelModal(false);
+          setRequestToCancel(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Request"
+        confirmText="Yes, Cancel Request"
+        cancelText="No, Keep Request"
+      >
+        <p className="confirm-modal-message">
+          Are you sure you want to cancel this request?
+          {requestToCancel && (
+            <>
+              <br />
+              <strong>Request ID: {requestToCancel.id}</strong>
+              <br />
+              <strong>File: {requestToCancel.fileName}</strong>
+            </>
+          )}
+        </p>
+      </ConfirmModal>
     </>
   );
 };
@@ -931,6 +1057,10 @@ export const RequestPage = () => {
     setRequests((prev) => [mappedRequest, ...prev]);
   };
 
+  const handleRequestCancelled = (requestId) => {
+    setRequests((prev) => prev.filter((req) => req.id !== requestId));
+  };
+
   const filesAssigned = requests.filter(
     (req) =>
       (req.status === "Approved" || req.status === "Borrowed") &&
@@ -1003,7 +1133,7 @@ export const RequestPage = () => {
               filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
             />
-            <RequestCard requests={requests} />
+            <RequestCard requests={requests} onRequestCancelled={handleRequestCancelled} />
           </div>
           <QRModal
             isOpen={isQRModalOpen}
