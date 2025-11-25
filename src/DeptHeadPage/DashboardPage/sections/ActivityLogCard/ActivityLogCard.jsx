@@ -36,16 +36,16 @@ export const ActivityLogCard = () => {
               key={activity.id}
               className={`profile-details${index > 0 ? `-${index + 1}` : ""}`}
             >
-              {activity.userAvatar ? (
+              {activity.avatar ? (
                 <img
                   className="profile"
                   alt="Profile"
-                  src={activity.userAvatar}
+                  src={activity.avatar}
                 />
               ) : (
                 <div className="profile profile-placeholder"></div>
               )}
-              
+
               <div className="text-content">
                 <p className="p">
                   <span className="span">
