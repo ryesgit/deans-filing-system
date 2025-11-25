@@ -33,12 +33,14 @@ const ConfirmModal = ({
         <h2 className="confirm-modal-title">{title}</h2>
         <div className="confirm-modal-body">{children}</div>
         <div className="confirm-modal-actions">
-          <button
-            className="confirm-modal-btn confirm-modal-cancel"
-            onClick={onClose}
-          >
-            {cancelText}
-          </button>
+          {cancelText && (
+            <button
+              className="confirm-modal-btn confirm-modal-cancel"
+              onClick={onClose}
+            >
+              {cancelText}
+            </button>
+          )}
           <button
             className="confirm-modal-btn confirm-modal-confirm"
             onClick={onConfirm}
@@ -82,7 +84,7 @@ const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
   );
 };
 
-const FormCard = ({ onSubmit }) => {
+const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
   const [formData, setFormData] = useState({
     fileName: "",
     department: "",
@@ -96,6 +98,7 @@ const FormCard = ({ onSubmit }) => {
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showFileLimitModal, setShowFileLimitModal] = useState(false);
 
   const departments = [
     "Computer Science",
@@ -156,6 +159,12 @@ const FormCard = ({ onSubmit }) => {
       return;
     }
 
+    // Check if user already has an active original file
+    if (formData.copyType === "original" && hasActiveOriginalFile) {
+      setShowFileLimitModal(true);
+      return;
+    }
+
     if (
       formData.copyType === "original" &&
       (!formData.returnDate || !formData.priority)
@@ -174,8 +183,7 @@ const FormCard = ({ onSubmit }) => {
       `Purpose: ${formData.purpose}`,
       `Department: ${formData.department}`,
       `Category: ${formData.fileCategory}`,
-      `Copy Type: ${
-        formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
+      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
       }`,
     ];
 
@@ -200,8 +208,8 @@ const FormCard = ({ onSubmit }) => {
       console.error("Failed to submit request:", error);
       alert(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to submit request"
+        error.message ||
+        "Failed to submit request"
       );
       setShowSubmitModal(false);
     }
@@ -287,9 +295,8 @@ const FormCard = ({ onSubmit }) => {
           <label className="copy-type-label">Copy Type</label>
           <div className="copy-type-buttons">
             <label
-              className={`copy-type-label-btn ${
-                formData.copyType === "soft" ? "active" : ""
-              }`}
+              className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
+                }`}
             >
               <input
                 type="radio"
@@ -301,9 +308,8 @@ const FormCard = ({ onSubmit }) => {
               Soft Copy Only
             </label>
             <label
-              className={`copy-type-label-btn ${
-                formData.copyType === "original" ? "active" : ""
-              }`}
+              className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
+                }`}
             >
               <input
                 type="radio"
@@ -432,6 +438,25 @@ const FormCard = ({ onSubmit }) => {
       >
         <p className="confirm-modal-message">
           Are you sure you want to clear all fields?
+        </p>
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={showFileLimitModal}
+        onClose={() => setShowFileLimitModal(false)}
+        onConfirm={() => setShowFileLimitModal(false)}
+        title="File Borrowing Limit Reached"
+        confirmText="OK"
+        cancelText=""
+      >
+        <p className="confirm-modal-message">
+          You currently have a file assigned for borrowing.
+          <br />
+          <br />
+          Please return your current file before requesting another original copy.
+          <br />
+          <br />
+          <strong>Note:</strong> You can still request soft copies.
         </p>
       </ConfirmModal>
     </div>
@@ -691,16 +716,15 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
               <tr>
                 <th>Request ID</th>
                 <th>File Name</th>
-                <th>Date Requested</th>
                 <th>Return Date</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th style={{ textAlign: "center" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="no-requests-row">
+                  <td colSpan="5" className="no-requests-row">
                     No requests yet. Submit a request to get started!
                   </td>
                 </tr>
@@ -716,13 +740,12 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
                     <td className="file-name-cell" title={request.fileName}>
                       {request.fileName}
                     </td>
-                    <td>{request.dateRequested}</td>
                     <td>{request.returnDue}</td>
                     <td>
                       {request.status === "APPROVED" &&
-                      isSoftCopy(request.description) &&
-                      user?.role !== "ADMIN" &&
-                      user?.role !== "STAFF" ? (
+                        isSoftCopy(request.description) &&
+                        user?.role !== "ADMIN" &&
+                        user?.role !== "STAFF" ? (
                         <span
                           className="status-badge status-view-pdf"
                           onClick={() => handleViewPDF(request)}
@@ -920,12 +943,12 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
               </span>
             </div>
             <div className="details-row">
-              <span className="file-info-label">Returned Date:</span>
+              <span className="file-info-label">Return Date:</span>
               <span className="file-info-value">
                 {selectedRequestForDetails.returnedAt
                   ? new Date(
-                      selectedRequestForDetails.returnedAt
-                    ).toLocaleDateString()
+                    selectedRequestForDetails.returnedAt
+                  ).toLocaleDateString()
                   : "N/A"}
               </span>
             </div>
@@ -1012,21 +1035,21 @@ export const RequestPage = () => {
         const requestsData = response.data.requests || response.data;
         const mappedRequests = Array.isArray(requestsData)
           ? requestsData
-              .filter((req) => req.status !== "CANCELLED")
-              .map((req) => ({
-                id: req.id,
-                fileName: req.title,
-                dateRequested: req.createdAt
-                  ? new Date(req.createdAt).toLocaleDateString()
-                  : "N/A",
-                returnDue: req.approvedAt
-                  ? new Date(req.approvedAt).toLocaleDateString()
-                  : "N/A",
-                status: req.status,
-                copyType: req.type,
-                fileId: req.fileId,
-                description: req.description,
-              }))
+            .filter((req) => req.status !== "CANCELLED")
+            .map((req) => ({
+              id: req.id,
+              fileName: req.title,
+              dateRequested: req.createdAt
+                ? new Date(req.createdAt).toLocaleDateString()
+                : "N/A",
+              returnDue: req.approvedAt
+                ? new Date(req.approvedAt).toLocaleDateString()
+                : "N/A",
+              status: req.status,
+              copyType: req.type,
+              fileId: req.fileId,
+              description: req.description,
+            }))
           : [];
         setRequests(mappedRequests);
       } catch (error) {
@@ -1061,15 +1084,27 @@ export const RequestPage = () => {
     setRequests((prev) => prev.filter((req) => req.id !== requestId));
   };
 
+  // Helper function to check if request is for original copy
+  const isOriginalCopy = (req) => {
+    return req.description?.includes("Original Copy");
+  };
+
+  // Files Assigned: Count only APPROVED original copy requests (approved but not yet borrowed)
   const filesAssigned = requests.filter(
     (req) =>
-      (req.status === "Approved" || req.status === "Borrowed") &&
-      req.copyType === "original"
+      (req.status === "APPROVED" || req.status === "Approved") &&
+      !["BORROWED", "Borrowed", "RETURNED", "Returned"].includes(req.status) &&
+      isOriginalCopy(req)
   ).length;
 
+  // Files to be Returned: Count only BORROWED original copy requests (checked out but not returned)
   const filesToReturn = requests.filter(
-    (req) => req.status === "Borrowed"
+    (req) => (req.status === "BORROWED" || req.status === "Borrowed") &&
+      isOriginalCopy(req)
   ).length;
+
+  // Check if user has any active original file (either assigned or borrowed)
+  const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
 
   return (
     <>
@@ -1125,11 +1160,11 @@ export const RequestPage = () => {
             </div>
           </header>
           <div className="request-page-container">
-            <FormCard onSubmit={handleSubmitRequest} />
+            <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} />
             <QRCard
               userName={currentUser?.name || "User"}
               userId={currentUser?.userId || "ID"}
-              filesAssigned={filesAssigned}
+              filesAssigned={Math.min(filesAssigned, 1)}
               filesToReturn={filesToReturn}
               onQRCodeClick={() => setIsQRModalOpen(true)}
             />
