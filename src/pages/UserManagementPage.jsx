@@ -42,34 +42,34 @@ export const UserManagementPage = () => {
       const usersData = response.data.users || response.data;
       const mappedUsers = Array.isArray(usersData)
         ? usersData.map((user) => ({
-            id: user.id,
-            userId: user.userId,
-            name: user.name,
-            username: user.username,
-            email: user.email,
-            idNumber: user.idNumber,
-            contactNumber: user.contactNumber,
-            dateOfBirth: user.dateOfBirth,
-            gender: user.gender,
-            profilePicture: user.avatar
-              ? user.avatar.startsWith("http") ||
-                user.avatar.startsWith("data:")
-                ? user.avatar
-                : `${API_BASE_URL}${user.avatar}`
-              : user.profilePicture,
-            role: user.role,
-            department: user.department || "N/A",
-            status: user.status,
-            dateJoined: user.createdAt
-              ? new Date(user.createdAt).toLocaleDateString()
-              : "N/A",
-            tags: [
-              user.status === "ACTIVE" ? "active" : "inactive",
-              user.role === "FACULTY" ? "faculty" : null,
-              user.role === "ADMIN" ? "head" : null,
-              user.role === "STAFF" ? "head" : null,
-            ].filter(Boolean),
-          }))
+          id: user.id,
+          userId: user.userId,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          idNumber: user.idNumber,
+          contactNumber: user.contactNumber,
+          dateOfBirth: user.dateOfBirth,
+          gender: user.gender,
+          profilePicture: user.avatar
+            ? user.avatar.startsWith("http") ||
+              user.avatar.startsWith("data:")
+              ? user.avatar
+              : `${API_BASE_URL}${user.avatar}`
+            : user.profilePicture,
+          role: user.role,
+          department: user.department || "N/A",
+          status: user.status,
+          dateJoined: user.createdAt
+            ? new Date(user.createdAt).toLocaleDateString()
+            : "N/A",
+          tags: [
+            user.status === "ACTIVE" ? "active" : "inactive",
+            user.role === "FACULTY" ? "faculty" : null,
+            user.role === "ADMIN" ? "head" : null,
+            user.role === "STAFF" ? "head" : null,
+          ].filter(Boolean),
+        }))
         : [];
       setUsers(mappedUsers);
       alert("User approved successfully!");
@@ -371,8 +371,7 @@ export const UserManagementPage = () => {
         </header>
         <div className="user-summary-card">
           <p className="instruction">
-            Lorem ipsum dolor sit amet consectetur. Purus in tellus nisl fames.
-            Rutrum sem id diam semper.
+            Manage and monitor all system users. View user statistics and approve pending registrations.
           </p>
           <div className="stats-container">
             <div className="stat-item">
@@ -554,9 +553,8 @@ export const UserManagementPage = () => {
                     )}
                   </div>
                   <div
-                    className={`status ${
-                      user.status === "ACTIVE" ? "active" : "inactive"
-                    }`}
+                    className={`status ${user.status === "ACTIVE" ? "active" : "inactive"
+                      }`}
                   />
                 </div>
               ))}
@@ -579,9 +577,8 @@ export const UserManagementPage = () => {
                     )}
                   </div>
                   <div
-                    className={`list-status ${
-                      user.status === "ACTIVE" ? "active" : "inactive"
-                    }`}
+                    className={`list-status ${user.status === "ACTIVE" ? "active" : "inactive"
+                      }`}
                   />
                   <div className="list-content">
                     <div className="list-name">{user.name}</div>
@@ -591,9 +588,8 @@ export const UserManagementPage = () => {
                       <span className="list-department">{user.department}</span>
                       <span className="list-separator">•</span>
                       <span
-                        className={`list-status-text ${
-                          user.status === "ACTIVE" ? "active" : "inactive"
-                        }`}
+                        className={`list-status-text ${user.status === "ACTIVE" ? "active" : "inactive"
+                          }`}
                       >
                         {user.status === "ACTIVE" ? "Active" : "Inactive"}
                       </span>
@@ -677,13 +673,34 @@ const toBase64 = (file) => {
 };
 
 const formatPhoneNumber = (value) => {
-  const cleaned = value.replace(/\D/g, "");
-  if (cleaned.length <= 4) return cleaned;
-  if (cleaned.length <= 7) return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
-  return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(
-    7,
-    11
-  )}`;
+  let cleaned = value.replace(/[^0-9+]/g, "");
+
+  // Auto-add +63 if user starts typing a number
+  if (cleaned && !cleaned.startsWith("+")) {
+    if (cleaned.startsWith("63")) {
+      cleaned = "+" + cleaned;
+    } else if (cleaned.startsWith("9")) {
+      cleaned = "+63" + cleaned;
+    } else if (cleaned.startsWith("0")) {
+      cleaned = "+63" + cleaned.substring(1);
+    } else {
+      cleaned = "+63" + cleaned;
+    }
+  }
+
+  // Format: +63 9XX XXX XXXX
+  if (cleaned.startsWith("+63")) {
+    const digits = cleaned.substring(3);
+    if (digits.length <= 3) {
+      return "+63 " + digits;
+    } else if (digits.length <= 6) {
+      return "+63 " + digits.slice(0, 3) + " " + digits.slice(3);
+    } else {
+      return "+63 " + digits.slice(0, 3) + " " + digits.slice(3, 6) + " " + digits.slice(6, 10);
+    }
+  }
+
+  return cleaned;
 };
 
 const formatDateForInput = (dateString) => {
@@ -704,43 +721,43 @@ const UserFormModal = ({
   const [formData, setFormData] = useState(
     mode === "edit" && user
       ? {
-          username: user.userId || "",
-          name: user.name || "",
-          email: user.email || "",
-          idNumber: user.idNumber || "",
-          contactNumber: user.contactNumber || "",
-          dateOfBirth: formatDateForInput(user.dateOfBirth),
-          gender: user.gender || "",
-          role: user.role || "FACULTY",
-          department: user.department || "",
-          status: user.status === "ACTIVE" ? "active" : "inactive",
-          dateJoined:
-            user.dateJoined ||
-            new Date().toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-            }),
-          profilePicture: user.profilePicture || "",
-        }
-      : {
-          username: "",
-          name: "",
-          email: "",
-          idNumber: "",
-          contactNumber: "",
-          dateOfBirth: "",
-          gender: "",
-          role: "FACULTY",
-          department: "",
-          status: "active",
-          dateJoined: new Date().toLocaleDateString("en-US", {
+        username: user.userId || "",
+        name: user.name || "",
+        email: user.email || "",
+        idNumber: user.idNumber || "",
+        contactNumber: user.contactNumber || "",
+        dateOfBirth: formatDateForInput(user.dateOfBirth),
+        gender: user.gender || "",
+        role: user.role || "FACULTY",
+        department: user.department || "",
+        status: user.status === "ACTIVE" ? "active" : "inactive",
+        dateJoined:
+          user.dateJoined ||
+          new Date().toLocaleDateString("en-US", {
             month: "2-digit",
             day: "2-digit",
             year: "numeric",
           }),
-          profilePicture: "",
-        }
+        profilePicture: user.profilePicture || "",
+      }
+      : {
+        username: "",
+        name: "",
+        email: "",
+        idNumber: "",
+        contactNumber: "",
+        dateOfBirth: "",
+        gender: "",
+        role: "FACULTY",
+        department: "",
+        status: "active",
+        dateJoined: new Date().toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric",
+        }),
+        profilePicture: "",
+      }
   );
 
   const [errors, setErrors] = useState({});
@@ -809,9 +826,9 @@ const UserFormModal = ({
 
     if (
       formData.contactNumber &&
-      formData.contactNumber.replace(/\D/g, "").length !== 11
+      !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
     ) {
-      newErrors.contactNumber = "Contact number must be 11 digits";
+      newErrors.contactNumber = "Contact number must be in format +63 9XX XXX XXXX";
     }
 
     return newErrors;
@@ -941,8 +958,8 @@ const UserFormModal = ({
               value={formData.contactNumber}
               onChange={handleChange}
               className={`form-input ${errors.contactNumber ? "error" : ""}`}
-              placeholder="0XXX XXX XXXX"
-              maxLength="13"
+              placeholder="+63 9XX XXX XXXX"
+              maxLength="17"
             />
             {errors.contactNumber && (
               <span className="error-text">{errors.contactNumber}</span>
@@ -1143,9 +1160,8 @@ const FilterModal = ({ currentFilters, onClose, onApply, departments }) => {
           </div>
 
           <div
-            className={`filter-option ${
-              filters.showStudents ? "selected" : ""
-            }`}
+            className={`filter-option ${filters.showStudents ? "selected" : ""
+              }`}
           >
             <label className="filter-label">
               <input
@@ -1265,15 +1281,14 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
           <div className="info-row">
             <span className="info-label">Status</span>
             <span
-              className={`info-value status-badge ${
-                user.status === "ACTIVE" ? "active" : "inactive"
-              }`}
+              className={`info-value status-badge ${user.status === "ACTIVE" ? "active" : "inactive"
+                }`}
             >
               {user.status === "ACTIVE"
                 ? "Active"
                 : user.status === "INACTIVE"
-                ? "Inactive"
-                : user.status}
+                  ? "Inactive"
+                  : user.status}
             </span>
           </div>
         </div>

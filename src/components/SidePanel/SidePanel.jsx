@@ -57,7 +57,7 @@ export const SidePanel = () => {
           <div className="text-wrapper-56">Dashboard</div>
         </Link>
 
-        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
+        {['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) && (
           <Link
             to="/file-management"
             className={`file-management ${currentActiveItem === "file-management" ? "active" : ""
