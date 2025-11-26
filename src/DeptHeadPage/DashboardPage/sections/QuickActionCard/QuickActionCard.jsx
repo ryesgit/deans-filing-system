@@ -14,7 +14,7 @@ export const QuickActionCard = ({ role }) => {
         </p>
       </div>
       <div className="quick-action-buttons">
-        {(role === "ADMIN" || role === "STAFF") && (
+        {(role === "ADMIN" || role === "STAFF" || role === "FACULTY") && (
           <button
             className="action-btn"
             onClick={() => navigate("/file-management")}
