@@ -40,11 +40,13 @@ export const FileManagementPage = () => {
   const [folderDetails, setFolderDetails] = useState(null);
   const [addFolderForm, setAddFolderForm] = useState({
     name: "",
-    category: "",
+    folderNumber: "",
+    description: "",
   });
   const [editFolderForm, setEditFolderForm] = useState({
     name: "",
-    category: "",
+    folderNumber: "",
+    description: "",
   });
   const [fileForm, setFileForm] = useState({
     name: "",
@@ -83,11 +85,12 @@ export const FileManagementPage = () => {
   }, []);
 
   const handleAddFolder = async () => {
-    if (addFolderForm.name) {
+    if (addFolderForm.name && addFolderForm.folderNumber && addFolderForm.description) {
       try {
         const response = await categoriesAPI.create({
           name: addFolderForm.name,
-          description: addFolderForm.category,
+          folderNumber: addFolderForm.folderNumber,
+          description: addFolderForm.description,
         });
         const newFolder = {
           ...response.data.category,
@@ -95,7 +98,7 @@ export const FileManagementPage = () => {
           files: []
         };
         setFolders([...folders, newFolder]);
-        setAddFolderForm({ name: "", category: "" });
+        setAddFolderForm({ name: "", folderNumber: "", description: "" });
         setShowFolderModal(false);
       } catch (error) {
         console.error('Failed to add category:', error);
@@ -104,19 +107,21 @@ export const FileManagementPage = () => {
   };
 
   const handleUpdateFolder = async () => {
-    if (folderToEdit && editFolderForm.name) {
+    if (folderToEdit && editFolderForm.name && editFolderForm.folderNumber && editFolderForm.description) {
       try {
         await categoriesAPI.update(folderToEdit.id, {
           name: editFolderForm.name,
-          description: editFolderForm.category,
+          folderNumber: editFolderForm.folderNumber,
+          description: editFolderForm.description,
         });
         const updatedFolders = folders.map((folder) =>
           folder.id === folderToEdit.id
             ? {
-                ...folder,
-                name: editFolderForm.name,
-                description: editFolderForm.category,
-              }
+              ...folder,
+              name: editFolderForm.name,
+              folderNumber: editFolderForm.folderNumber,
+              description: editFolderForm.description,
+            }
             : folder
         );
         setFolders(updatedFolders);
@@ -195,15 +200,15 @@ export const FileManagementPage = () => {
       if (selectedFolder) {
         formData.append('categoryId', selectedFolder.id);
       } else if (fileForm.category) {
-         // If user selected category from dropdown but not inside a folder view
-         // We might need to find the category ID based on name, but for now let's send the name
-         // and let the backend handle it or update the UI to store ID.
-         // Ideally, the dropdown should store IDs.
-         // For now, let's assume the dropdown values are names and we might need to look them up
-         // or just send it if the backend supports it (it doesn't seem to support name lookup directly in upload).
-         // Let's rely on selectedFolder for now as the primary way.
+        // If user selected category from dropdown but not inside a folder view
+        // We might need to find the category ID based on name, but for now let's send the name
+        // and let the backend handle it or update the UI to store ID.
+        // Ideally, the dropdown should store IDs.
+        // For now, let's assume the dropdown values are names and we might need to look them up
+        // or just send it if the backend supports it (it doesn't seem to support name lookup directly in upload).
+        // Let's rely on selectedFolder for now as the primary way.
       }
-      
+
       // Add default physical location values as they are required by backend schema but missing in UI
       formData.append('rowPosition', '1');
       formData.append('columnPosition', '1');
@@ -225,10 +230,10 @@ export const FileManagementPage = () => {
         const updatedFolders = folders.map((folder) =>
           folder.id === selectedFolder.id
             ? {
-                ...folder,
-                files: [...(folder.files || []), newFile],
-                fileCount: (folder.fileCount || 0) + 1,
-              }
+              ...folder,
+              files: [...(folder.files || []), newFile],
+              fileCount: (folder.fileCount || 0) + 1,
+            }
             : folder
         );
 
@@ -239,7 +244,7 @@ export const FileManagementPage = () => {
           fileCount: (selectedFolder.fileCount || 0) + 1,
         });
       }
-      
+
       setFileForm({ name: "", department: "", category: "", folderName: "", folderNumber: "", folderContents: "", file: null });
       setShowFileModal(false);
     } catch (error) {
@@ -317,11 +322,11 @@ export const FileManagementPage = () => {
         const updatedFolders = folders.map((folder) =>
           folder.id === selectedFolder.id
             ? {
-                ...folder,
-                files: (folder.files || []).map((f) =>
-                  f.id === selectedFile.id ? updatedFile : f
-                ),
-              }
+              ...folder,
+              files: (folder.files || []).map((f) =>
+                f.id === selectedFile.id ? updatedFile : f
+              ),
+            }
             : folder
         );
 
@@ -354,10 +359,10 @@ export const FileManagementPage = () => {
         const updatedFolders = folders.map((folder) =>
           folder.id === selectedFolder.id
             ? {
-                ...folder,
-                files: (folder.files || []).filter((f) => f.id !== fileToDelete.id),
-                fileCount: (folder.fileCount || 0) - 1,
-              }
+              ...folder,
+              files: (folder.files || []).filter((f) => f.id !== fileToDelete.id),
+              fileCount: (folder.fileCount || 0) - 1,
+            }
             : folder
         );
 
@@ -386,7 +391,11 @@ export const FileManagementPage = () => {
   const handleEditFolder = (e, folder) => {
     e.stopPropagation();
     setFolderToEdit(folder);
-    setEditFolderForm({ name: folder.name, category: folder.category });
+    setEditFolderForm({
+      name: folder.name,
+      folderNumber: folder.folderNumber || '',
+      description: folder.description || ''
+    });
     setShowEditFolderModal(true);
     setOpenDropdownFolderId(null);
   };
@@ -548,9 +557,8 @@ export const FileManagementPage = () => {
           {/* Folder Files Section */}
           {selectedFolder && (
             <div
-              className={`folder-files-card ${
-                selectedFolder ? "folder-files-visible" : ""
-              }`}
+              className={`folder-files-card ${selectedFolder ? "folder-files-visible" : ""
+                }`}
             >
               <div className="files-header">
                 <div className="files-title-wrapper">
@@ -632,7 +640,7 @@ export const FileManagementPage = () => {
       >
         <div className="modal-form">
           <div className="form-group">
-            <label>Folder Name</label>
+            <label>Folder Name *</label>
             <input
               type="text"
               value={addFolderForm.name}
@@ -643,20 +651,33 @@ export const FileManagementPage = () => {
             />
           </div>
           <div className="form-group">
-            <label>Folder Category</label>
-            <select
-              value={addFolderForm.category}
+            <label>Folder Number *</label>
+            <input
+              type="text"
+              value={addFolderForm.folderNumber}
               onChange={(e) =>
-                setAddFolderForm({ ...addFolderForm, category: e.target.value })
+                setAddFolderForm({ ...addFolderForm, folderNumber: e.target.value })
               }
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              placeholder="Enter folder number"
+            />
+          </div>
+          <div className="form-group">
+            <label>Description *</label>
+            <textarea
+              value={addFolderForm.description}
+              onChange={(e) =>
+                setAddFolderForm({ ...addFolderForm, description: e.target.value })
+              }
+              placeholder="Enter a detailed description for this folder"
+              rows="4"
+              style={{
+                resize: 'vertical',
+                fontFamily: 'Poppins, Helvetica',
+                border: '1px solid #d0d5dd',
+                borderRadius: '8px',
+                padding: '10px'
+              }}
+            />
           </div>
           <div className="modal-actions">
             <button
@@ -668,7 +689,7 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleAddFolder}
-              disabled={!addFolderForm.name || !addFolderForm.category}
+              disabled={!addFolderForm.name || !addFolderForm.folderNumber || !addFolderForm.description}
             >
               Save
             </button>
@@ -687,7 +708,7 @@ export const FileManagementPage = () => {
       >
         <div className="modal-form">
           <div className="form-group">
-            <label>Folder Name</label>
+            <label>Folder Name *</label>
             <input
               type="text"
               value={editFolderForm.name}
@@ -698,23 +719,36 @@ export const FileManagementPage = () => {
             />
           </div>
           <div className="form-group">
-            <label>Folder Category</label>
-            <select
-              value={editFolderForm.category}
+            <label>Folder Number *</label>
+            <input
+              type="text"
+              value={editFolderForm.folderNumber}
+              onChange={(e) =>
+                setEditFolderForm({ ...editFolderForm, folderNumber: e.target.value })
+              }
+              placeholder="Enter folder number"
+            />
+          </div>
+          <div className="form-group">
+            <label>Description *</label>
+            <textarea
+              value={editFolderForm.description}
               onChange={(e) =>
                 setEditFolderForm({
                   ...editFolderForm,
-                  category: e.target.value,
+                  description: e.target.value,
                 })
               }
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              placeholder="Enter a detailed description for this folder"
+              rows="4"
+              style={{
+                resize: 'vertical',
+                fontFamily: 'Poppins, Helvetica',
+                border: '1px solid #d0d5dd',
+                borderRadius: '8px',
+                padding: '10px'
+              }}
+            />
           </div>
           <div className="modal-actions">
             <button
@@ -726,7 +760,7 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleUpdateFolder}
-              disabled={!editFolderForm.name || !editFolderForm.category}
+              disabled={!editFolderForm.name || !editFolderForm.folderNumber || !editFolderForm.description}
             >
               Update
             </button>
@@ -1071,6 +1105,10 @@ export const FileManagementPage = () => {
               <div className="file-info-row">
                 <span className="file-info-label">Folder Name:</span>
                 <span className="file-info-value">{folderDetails.name || 'N/A'}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Folder Number:</span>
+                <span className="file-info-value">{folderDetails.folderNumber || 'N/A'}</span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Description:</span>
