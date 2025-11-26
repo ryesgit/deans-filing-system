@@ -63,7 +63,7 @@ export const LoginPage = () => {
             <h1 className="login-title">Mabuhay, Iskolar!</h1>
 
             <p className="login-subtitle">
-              Welcome to the College of Engineering Dean's Filing System!
+              Welcome to the College of Engineering Dean's Filing System.
             </p>
 
             <form onSubmit={handleSubmit}>
