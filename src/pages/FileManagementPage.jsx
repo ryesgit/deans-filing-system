@@ -52,9 +52,6 @@ export const FileManagementPage = () => {
     name: "",
     department: "",
     category: "",
-    folderName: "",
-    folderNumber: "",
-    folderContents: "",
     file: null,
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -94,6 +91,9 @@ export const FileManagementPage = () => {
         });
         const newFolder = {
           ...response.data.category,
+          name: addFolderForm.name,
+          folderNumber: addFolderForm.folderNumber,
+          description: addFolderForm.description,
           fileCount: 0,
           files: []
         };
@@ -196,6 +196,7 @@ export const FileManagementPage = () => {
       formData.append('file', fileForm.file);
       formData.append('filename', fileForm.name); // Backend expects 'filename'
       formData.append('department', fileForm.department);
+      formData.append('category', fileForm.category);
       // Backend expects 'categoryId'
       if (selectedFolder) {
         formData.append('categoryId', selectedFolder.id);
@@ -213,11 +214,6 @@ export const FileManagementPage = () => {
       formData.append('rowPosition', '1');
       formData.append('columnPosition', '1');
       formData.append('shelfNumber', '1');
-
-      // Add folder fields
-      if (fileForm.folderName) formData.append('folderName', fileForm.folderName);
-      if (fileForm.folderNumber) formData.append('folderNumber', fileForm.folderNumber);
-      if (fileForm.folderContents) formData.append('folderContents', fileForm.folderContents);
 
       const response = await filesAPI.upload(formData);
       const newFile = response.data.file || response.data;
@@ -300,9 +296,6 @@ export const FileManagementPage = () => {
       name: file.filename || file.name,
       department: file.user?.department || file.department || '',
       category: file.category?.name || file.category || '',
-      folderName: file.folderName || '',
-      folderNumber: file.folderNumber || '',
-      folderContents: file.folderContents || '',
       file: null,
     });
     setShowEditModal(true);
@@ -388,9 +381,10 @@ export const FileManagementPage = () => {
     );
   };
 
-  const handleEditFolder = (e, folder) => {
+  const handleEditFolder = async (e, folder) => {
     e.stopPropagation();
     setFolderToEdit(folder);
+    // Initial population with available data
     setEditFolderForm({
       name: folder.name,
       folderNumber: folder.folderNumber || '',
@@ -398,6 +392,19 @@ export const FileManagementPage = () => {
     });
     setShowEditFolderModal(true);
     setOpenDropdownFolderId(null);
+
+    // Fetch full details to ensure folderNumber is present
+    try {
+      const response = await categoriesAPI.getById(folder.id);
+      const fullFolder = response.data.category;
+      setEditFolderForm(prev => ({
+        ...prev,
+        folderNumber: fullFolder.folderNumber || prev.folderNumber,
+        description: fullFolder.description || prev.description
+      }));
+    } catch (error) {
+      console.error('Failed to fetch folder details for editing:', error);
+    }
   };
 
   const handleDeleteFolder = (e, folder) => {
@@ -421,7 +428,10 @@ export const FileManagementPage = () => {
       const response = await categoriesAPI.getById(folder.id);
       const categoryWithFiles = response.data.category;
       setFolderDetails({
-        ...categoryWithFiles,
+        ...folder, // Use local data as base
+        ...categoryWithFiles, // Override with API data
+        folderNumber: categoryWithFiles.folderNumber || folder.folderNumber, // Fallback to local if missing
+        description: categoryWithFiles.description || folder.description, // Fallback to local if missing
         files: categoryWithFiles.files || []
       });
       setShowDetailsModal(true);
@@ -588,44 +598,46 @@ export const FileManagementPage = () => {
                   <div>Actions</div>
                 </div>
 
-                {(selectedFolder.files || []).map((file) => (
-                  <div key={file.id} className="file-row">
-                    <div data-label="File ID">{file.id}</div>
-                    <div data-label="File Name">
-                      <img
-                        className="file-icon-cell"
-                        alt="File icon"
-                        src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/file-icon-05.svg"
-                      />
-                      {file.filename || file.name || 'N/A'}
+                <div className="files-list-content">
+                  {(selectedFolder.files || []).map((file) => (
+                    <div key={file.id} className="file-row">
+                      <div data-label="File ID">{file.id}</div>
+                      <div data-label="File Name">
+                        <img
+                          className="file-icon-cell"
+                          alt="File icon"
+                          src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/file-icon-05.svg"
+                        />
+                        {file.filename || file.name || 'N/A'}
+                      </div>
+                      <div data-label="Date Added">
+                        {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : (file.dateAdded || 'N/A')}
+                      </div>
+                      <div data-label="Department">{file.user?.department || file.department || 'N/A'}</div>
+                      <div data-label="Category">{file.category?.name || file.category || 'N/A'}</div>
+                      <div data-label="Actions" className="file-actions">
+                        <button
+                          className="file-action-btn view"
+                          onClick={() => handleViewFile(file)}
+                        >
+                          View
+                        </button>
+                        <button
+                          className="file-action-btn edit"
+                          onClick={() => handleEditFile(file)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="file-action-btn delete"
+                          onClick={() => handleDeleteFile(file)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <div data-label="Date Added">
-                      {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : (file.dateAdded || 'N/A')}
-                    </div>
-                    <div data-label="Department">{file.user?.department || file.department || 'N/A'}</div>
-                    <div data-label="Category">{file.category?.name || file.category || 'N/A'}</div>
-                    <div data-label="Actions" className="file-actions">
-                      <button
-                        className="file-action-btn view"
-                        onClick={() => handleViewFile(file)}
-                      >
-                        View
-                      </button>
-                      <button
-                        className="file-action-btn edit"
-                        onClick={() => handleEditFile(file)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="file-action-btn delete"
-                        onClick={() => handleDeleteFile(file)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -799,7 +811,7 @@ export const FileManagementPage = () => {
         isOpen={showFileModal}
         onClose={() => {
           setShowFileModal(false);
-          setFileForm({ name: "", department: "", category: "", folderName: "", folderNumber: "", folderContents: "", file: null });
+          setFileForm({ name: "", department: "", category: "", file: null });
           setFileError("");
         }}
         title="Add New File"
@@ -848,39 +860,7 @@ export const FileManagementPage = () => {
               ))}
             </select>
           </div>
-          <div className="form-group">
-            <label>Folder Name</label>
-            <input
-              type="text"
-              value={fileForm.folderName}
-              onChange={(e) =>
-                setFileForm({ ...fileForm, folderName: e.target.value })
-              }
-              placeholder="Enter folder name"
-            />
-          </div>
-          <div className="form-group">
-            <label>Folder Number</label>
-            <input
-              type="text"
-              value={fileForm.folderNumber}
-              onChange={(e) =>
-                setFileForm({ ...fileForm, folderNumber: e.target.value })
-              }
-              placeholder="Enter folder number"
-            />
-          </div>
-          <div className="form-group">
-            <label>Folder Contents</label>
-            <textarea
-              value={fileForm.folderContents}
-              onChange={(e) =>
-                setFileForm({ ...fileForm, folderContents: e.target.value })
-              }
-              placeholder="Describe folder contents"
-              rows="3"
-            />
-          </div>
+
           <div className="form-group">
             <label>Upload PDF File *</label>
             <input type="file" accept=".pdf" onChange={handleFileChange} />
@@ -895,9 +875,6 @@ export const FileManagementPage = () => {
                   name: "",
                   department: "",
                   category: "",
-                  folderName: "",
-                  folderNumber: "",
-                  folderContents: "",
                   file: null,
                 });
                 setFileError("");
@@ -910,7 +887,7 @@ export const FileManagementPage = () => {
             </button>
           </div>
         </div>
-      </Modal>
+      </Modal >
 
       <Modal
         isOpen={showViewModal}

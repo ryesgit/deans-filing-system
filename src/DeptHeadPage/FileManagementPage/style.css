@@ -143,6 +143,8 @@
   box-shadow: none;
   padding: 30px 0;
   grid-area: folders;
+  min-width: 0;
+  width: 100%;
 }
 
 .group .folder-header {
@@ -209,9 +211,15 @@
 }
 
 .group .folder-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  display: flex;
+  overflow-x: auto;
   gap: 20px;
+  padding-bottom: 15px;
+  /* Space for scrollbar */
+  scroll-behavior: smooth;
+  /* Hide scrollbar for cleaner look but allow scrolling */
+  scrollbar-width: thin;
+  max-width: 100%;
 }
 
 .group .folder-card {
@@ -227,7 +235,11 @@
   text-align: center;
   position: relative;
   min-height: 160px;
-  padding-top: 40px; /* push text/icons down */
+  padding-top: 40px;
+  /* push text/icons down */
+  min-width: 200px;
+  width: 200px;
+  flex-shrink: 0;
 }
 
 .group .folder-card:hover {
@@ -252,6 +264,7 @@
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -308,6 +321,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -320,6 +334,7 @@
   text-align: center;
   margin-bottom: 20px;
 }
+
 /* Folder Files Section */
 .group .folder-files-card {
   background-color: #ffffff;
@@ -337,8 +352,11 @@
 .group .folder-files-card.folder-files-visible {
   opacity: 1;
   max-height: 800px;
-  overflow-y: auto;
   animation: fadeInUp 0.4s ease-out;
+  overflow: hidden;
+  /* Prevent card scroll */
+  display: flex;
+  flex-direction: column;
 }
 
 .group .files-header {
@@ -398,7 +416,17 @@
 
 .group .files-table {
   width: 100%;
-  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.group .files-list-content {
+  overflow-y: auto;
+  height: 260px;
+  /* Optional: Custom scrollbar styling */
+  scrollbar-width: thin;
 }
 
 .group .files-table-header {
@@ -410,7 +438,7 @@
   margin-bottom: 15px;
 }
 
-.group .files-table-header > div {
+.group .files-table-header>div {
   color: #800000;
   font-family: "Poppins", Helvetica;
   font-size: 14px;
@@ -427,7 +455,7 @@
   align-items: center;
 }
 
-.group .file-row > div {
+.group .file-row>div {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 13px;
@@ -488,6 +516,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -503,10 +532,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
@@ -514,6 +545,7 @@
 
 /* Responsive Design */
 @media (max-width: 1400px) {
+
   .group .request-header,
   .group .request-row {
     grid-template-columns: 90px 160px 160px 220px 130px 160px;
@@ -529,8 +561,12 @@
 
 @media (max-width: 1200px) {
   .group .folder-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 15px;
+  }
+
+  .group .folder-card {
+    min-width: 180px;
+    width: 180px;
   }
 
   .group .request-header,
@@ -541,8 +577,9 @@
 }
 
 @media (max-width: 992px) {
-  .group .folder-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  .group .folder-card {
+    min-width: 160px;
+    width: 160px;
   }
 
   .group .request-card,
@@ -554,9 +591,14 @@
 
 @media (max-width: 768px) {
   .group .folder-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
   }
+
+  .group .folder-card {
+    min-width: 140px;
+    width: 140px;
+  }
+
   .filemanagement-header {
     flex-direction: column;
     align-items: flex-start;
@@ -564,7 +606,8 @@
   }
 
   .group .file-row {
-    grid-template-columns: 1fr; /* Single column layout for file rows */
+    grid-template-columns: 1fr;
+    /* Single column layout for file rows */
     padding: 15px;
     border: 1px solid #f0f0f0;
     border-radius: 12px;
@@ -574,10 +617,11 @@
   }
 
   .group .files-table-header {
-    display: none; /* Hide table header on mobile */
+    display: none;
+    /* Hide table header on mobile */
   }
 
-  .group .file-row > div {
+  .group .file-row>div {
     white-space: normal;
     overflow: visible;
     text-overflow: initial;
@@ -587,7 +631,7 @@
     padding: 6px 0;
   }
 
-  .group .file-row > div::before {
+  .group .file-row>div::before {
     content: attr(data-label);
     font-weight: 600;
     color: #800000;
@@ -690,4 +734,39 @@
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background-color: #f5f5f5;
+}
+
+/* File Input Styling */
+.form-group input[type="file"] {
+  padding: 10px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  background-color: #fafafa;
+}
+
+.form-group input[type="file"]:hover {
+  border-color: #800000;
+  background-color: #fff;
+}
+
+.form-group input[type="file"]::file-selector-button {
+  margin-right: 20px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  background-color: #800000;
+  border: none;
+  font-family: "Poppins", Helvetica;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+  background-color: #a00000;
+  transform: translateY(-1px);
 }
