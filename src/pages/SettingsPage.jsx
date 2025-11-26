@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { Camera } from "lucide-react";
-import "../DeptHeadPage/SettingsPage/Settings.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { useAuth } from "../components/Modal/AuthContext";
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
-
+import { UserManual } from "../DeptHeadPage/SettingsPage/UserManual.jsx";
+import "../DeptHeadPage/SettingsPage/UserManual.css";
+import "../DeptHeadPage/SettingsPage/Settings.css";
 // Helper to convert file to base64
 const toBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -49,14 +50,18 @@ export const SettingsPage = () => {
       if (file.type.startsWith("image/")) {
         try {
           const base64 = await toBase64(file);
-          
+
           // Optimistic update
           setProfilePicturePreview(base64);
-          
+
           await usersAPI.update(currentUser.id, { avatar: base64 });
 
           // Update context
-          updateUser({ ...currentUser, profilePicture: base64, avatar: base64 });
+          updateUser({
+            ...currentUser,
+            profilePicture: base64,
+            avatar: base64,
+          });
           alert("Profile picture updated successfully!");
         } catch (error) {
           console.error("Failed to update profile picture:", error);
@@ -218,6 +223,8 @@ export const SettingsPage = () => {
               Reset Password
             </button>
           </section>
+
+          <UserManual role={currentUser?.role} />
         </div>
         {isPasswordModalOpen && (
           <div className="modal-backdrop">
@@ -283,7 +290,6 @@ export const SettingsPage = () => {
           </div>
         )}
         <NotificationDropdown
-
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
         />

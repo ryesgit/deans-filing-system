@@ -1,0 +1,91 @@
+.user-manual-card {
+  grid-column: 1 / -1; /* Span full width */
+  font-family: "Poppins", sans-serif;
+}
+
+.manual-section {
+  padding: 10px;
+  color: #4b5563;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+.manual-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+}
+.manual-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.collapsible-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+  padding: 10px 0;
+  cursor: pointer;
+  list-style: none; /* Remove default marker */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collapsible-title::-webkit-details-marker {
+  display: none; /* Hide default marker for Safari */
+}
+
+.collapsible-title::after {
+  content: "";
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23333'%3e%3cpath fill-rule='evenodd' d='M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.collapsible-section[open] > .collapsible-title::after {
+  transform: rotate(90deg); /* Expanded state indicator */
+}
+
+.collapsible-section {
+  border-bottom: 1px solid #eee;
+}
+
+.collapsible-content {
+  padding: 10px 0 10px 15px; /* Indent content slightly */
+}
+.manual-section p {
+  margin-bottom: 10px;
+}
+
+.manual-section ul,
+.manual-section ol {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.manual-section ul ul,
+.manual-section ol ol {
+  list-style-type: circle;
+  margin-top: 5px;
+}
+.manual-callout {
+  margin: 20px 0;
+  padding: 15px 20px;
+  border-left-width: 5px;
+  border-left-style: solid;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  color: #800008;
+  font-size: 0.95rem;
+}
+.callout-important {
+  border-left-color: #f59e0b; /* Amber */
+  background-color: #fffbeb;
+  color: #b45309;
+}
