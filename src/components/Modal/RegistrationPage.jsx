@@ -32,9 +32,9 @@ export const RegistrationPage = ({ onClose }) => {
     if (!formData.pupId) newErrors.pupId = "PUP ID is required";
     if (!formData.contactNumber) {
       newErrors.contactNumber = "Contact Number is required";
-    } else if (!/^09\d{9}$/.test(formData.contactNumber)) {
+    } else if (!/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))) {
       newErrors.contactNumber =
-        "Please enter a valid 11-digit mobile number (e.g., 09123456789)";
+        "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
     }
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
@@ -59,7 +59,33 @@ export const RegistrationPage = ({ onClose }) => {
     if (error) clearError();
 
     if (name === "contactNumber") {
-      const numericValue = value.replace(/[^0-9]/g, "");
+      let numericValue = value.replace(/[^0-9+]/g, "");
+
+      // Auto-add +63 if user starts typing a number
+      if (numericValue && !numericValue.startsWith("+")) {
+        if (numericValue.startsWith("63")) {
+          numericValue = "+" + numericValue;
+        } else if (numericValue.startsWith("9")) {
+          numericValue = "+63" + numericValue;
+        } else if (numericValue.startsWith("0")) {
+          numericValue = "+63" + numericValue.substring(1);
+        } else {
+          numericValue = "+63" + numericValue;
+        }
+      }
+
+      // Format: +63 9XX XXX XXXX
+      if (numericValue.startsWith("+63")) {
+        const digits = numericValue.substring(3);
+        if (digits.length <= 3) {
+          numericValue = "+63 " + digits;
+        } else if (digits.length <= 6) {
+          numericValue = "+63 " + digits.slice(0, 3) + " " + digits.slice(3);
+        } else {
+          numericValue = "+63 " + digits.slice(0, 3) + " " + digits.slice(3, 6) + " " + digits.slice(6, 10);
+        }
+      }
+
       setFormData((prev) => ({ ...prev, [name]: numericValue }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -174,9 +200,9 @@ export const RegistrationPage = ({ onClose }) => {
               name="contactNumber"
               value={formData.contactNumber}
               onChange={handleChange}
-              inputMode="numeric"
-              maxLength="11"
-              placeholder="09123456789"
+              inputMode="tel"
+              maxLength="17"
+              placeholder="+63 9XX XXX XXXX"
               className={errors.contactNumber ? "invalid" : ""}
             />
             {errors.contactNumber && (
