@@ -1037,6 +1037,10 @@ export const RequestPage = () => {
         const mappedRequests = Array.isArray(requestsData)
           ? requestsData
             .filter((req) => req.status !== "CANCELLED")
+            .filter((req) => {
+              if (!currentUser) return true;
+              return req.userId === currentUser.id || req.user?.id === currentUser.id;
+            })
             .map((req) => ({
               id: req.id,
               fileName: req.title,
@@ -1061,7 +1065,7 @@ export const RequestPage = () => {
     };
 
     fetchRequests();
-  }, []);
+  }, [currentUser]);
 
   const handleSubmitRequest = (newRequest) => {
     const mappedRequest = {
