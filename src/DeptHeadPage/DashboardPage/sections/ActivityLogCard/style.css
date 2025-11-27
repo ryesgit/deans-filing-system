@@ -21,7 +21,7 @@
   flex-direction: column;
   gap: 15px; /* Space between items */
   padding-right: 5px;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .activity-log-card .profile-details,
