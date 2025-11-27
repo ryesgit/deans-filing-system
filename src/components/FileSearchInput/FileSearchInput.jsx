@@ -33,15 +33,15 @@ const customStyles = {
     backgroundColor: state.isDisabled
       ? "#f5f5f5"
       : state.isSelected
-      ? "#4A90E2"
-      : state.isFocused
-      ? "#F0F7FF"
-      : "white",
+        ? "#4A90E2"
+        : state.isFocused
+          ? "#F0F7FF"
+          : "white",
     color: state.isDisabled
       ? "#999"
       : state.isSelected
-      ? "white"
-      : "#333",
+        ? "white"
+        : "#333",
     padding: "12px 16px",
     cursor: state.isDisabled ? "not-allowed" : "pointer",
     opacity: state.isDisabled ? 0.6 : 1,
@@ -74,7 +74,7 @@ const customStyles = {
   }),
 };
 
-const FileSearchInput = ({ value, onChange, onFileSelect }) => {
+const FileSearchInput = ({ value, onChange, onFileSelect, copyType = "soft" }) => {
   const [inputValue, setInputValue] = useState("");
 
   const loadOptions = async (inputValue) => {
@@ -92,7 +92,8 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
         department: file.department,
         category: file.category || "Uncategorized",
         status: file.status || "AVAILABLE",
-        isDisabled: file.status && file.status !== "AVAILABLE",
+        // Only disable files for original copy requests when file is not available
+        isDisabled: copyType === "original" && file.status && file.status !== "AVAILABLE",
         fileData: file,
       }));
     } catch (error) {
@@ -148,7 +149,7 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
         <div>
           <div style={{ fontWeight: 500 }}>
             {option.label}
-            {option.isDisabled && (
+            {option.isDisabled && copyType === "original" && (
               <span
                 style={{
                   marginLeft: "8px",
@@ -166,7 +167,7 @@ const FileSearchInput = ({ value, onChange, onFileSelect }) => {
           </div>
           <div style={{ fontSize: "0.85em", color: "#666", marginTop: "2px" }}>
             {option.department} • {option.category}
-            {option.isDisabled && " • Not available for request"}
+            {option.isDisabled && copyType === "original" && " • Not available for request"}
           </div>
         </div>
       )}
