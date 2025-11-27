@@ -22,20 +22,34 @@ export const RequestCard = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await requestsAPI.getAll();
         const requestsArray = Array.isArray(response.data.requests)
           ? response.data.requests
           : [];
+
+        console.log('All requests:', requestsArray);
+        console.log('Current user ID:', user.id);
+
         const filteredRequests = requestsArray.filter(
           (req) => req.status !== "CANCELLED"
         );
 
         // Filter requests to show only user's own requests
         const roleFilteredRequests = filteredRequests.filter(
-          (req) => req.userId === user.id || req.user?.id === user.id
+          (req) => {
+            const match = req.userId === user.id || req.user?.id === user.id;
+            console.log(`Request ${req.id}: userId=${req.userId}, user.id=${req.user?.id}, currentUser=${user.id}, match=${match}`);
+            return match;
+          }
         );
 
+        console.log('Filtered requests:', roleFilteredRequests);
         setRequests(roleFilteredRequests.slice(0, 5));
       } catch (error) {
         console.error("Failed to fetch requests:", error);
