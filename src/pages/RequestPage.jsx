@@ -260,6 +260,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             value={formData.fileName}
             onChange={(value) => handleChange("fileName", value)}
             onFileSelect={handleFileSelect}
+            copyType={formData.copyType}
           />
         </div>
 
