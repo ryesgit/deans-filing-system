@@ -13,8 +13,6 @@ export const RegistrationPage = ({ onClose }) => {
     gender: "",
     role: "",
     department: "",
-    password: "",
-    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -32,7 +30,9 @@ export const RegistrationPage = ({ onClose }) => {
     if (!formData.pupId) newErrors.pupId = "PUP ID is required";
     if (!formData.contactNumber) {
       newErrors.contactNumber = "Contact Number is required";
-    } else if (!/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))) {
+    } else if (
+      !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
+    ) {
       newErrors.contactNumber =
         "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
     }
@@ -40,16 +40,6 @@ export const RegistrationPage = ({ onClose }) => {
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
 
     return newErrors;
   };
@@ -82,7 +72,13 @@ export const RegistrationPage = ({ onClose }) => {
         } else if (digits.length <= 6) {
           numericValue = "+63 " + digits.slice(0, 3) + " " + digits.slice(3);
         } else {
-          numericValue = "+63 " + digits.slice(0, 3) + " " + digits.slice(3, 6) + " " + digits.slice(6, 10);
+          numericValue =
+            "+63 " +
+            digits.slice(0, 3) +
+            " " +
+            digits.slice(3, 6) +
+            " " +
+            digits.slice(6, 10);
         }
       }
 
@@ -110,7 +106,6 @@ export const RegistrationPage = ({ onClose }) => {
       userId: formData.pupId,
       name: formData.name,
       email: formData.email,
-      password: formData.password,
       contactNumber: formData.contactNumber,
       dateOfBirth: formData.dob,
       gender: formData.gender,
@@ -284,38 +279,6 @@ export const RegistrationPage = ({ onClose }) => {
             </select>
             {errors.department && (
               <span className="error-text">{errors.department}</span>
-            )}
-          </div>
-
-          <div className="form-group full-width">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? "invalid" : ""}
-              placeholder="At least 6 characters"
-            />
-            {errors.password && (
-              <span className="error-text">{errors.password}</span>
-            )}
-          </div>
-
-          <div className="form-group full-width">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={errors.confirmPassword ? "invalid" : ""}
-              placeholder="Re-enter your password"
-            />
-            {errors.confirmPassword && (
-              <span className="error-text">{errors.confirmPassword}</span>
             )}
           </div>
         </div>
