@@ -100,6 +100,10 @@ export const RegistrationPage = ({ onClose }) => {
       return;
     }
 
+    // Generate a strong, random password to satisfy the backend requirement
+    // since the user does not need to create one on registration.
+    const tempPassword = Math.random().toString(36).slice(-12);
+
     setIsSubmitting(true);
 
     const registrationData = {
@@ -107,6 +111,7 @@ export const RegistrationPage = ({ onClose }) => {
       name: formData.name,
       email: formData.email,
       contactNumber: formData.contactNumber,
+      password: tempPassword,
       dateOfBirth: formData.dob,
       gender: formData.gender,
       role: formData.role,
