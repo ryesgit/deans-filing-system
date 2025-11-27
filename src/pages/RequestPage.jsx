@@ -1158,7 +1158,7 @@ export const RequestPage = () => {
   // Fetch requests from API on mount
   useEffect(() => {
     const fetchRequests = async () => {
-      if (!currentUser?.id) {
+      if (!currentUser?.userId && !currentUser?.id) {
         setLoading(false);
         return;
       }
@@ -1168,7 +1168,7 @@ export const RequestPage = () => {
         const requestsData = response.data.requests || response.data;
 
         console.log('Request Page - All requests:', requestsData);
-        console.log('Request Page - Current user ID:', currentUser.id);
+        console.log('Request Page - Current user:', currentUser);
 
         if (!Array.isArray(requestsData)) {
           setRequests([]);
@@ -1178,8 +1178,8 @@ export const RequestPage = () => {
         const filteredRequests = requestsData
           .filter((req) => req.status !== "CANCELLED")
           .filter((req) => {
-            const match = req.userId === currentUser.id || req.user?.id === currentUser.id;
-            console.log(`Request ${req.id}: userId=${req.userId}, user.id=${req.user?.id}, currentUser=${currentUser.id}, match=${match}`);
+            const match = req.userId === currentUser.userId || req.userId === currentUser.id;
+            console.log(`Request ${req.id}: userId=${req.userId}, user.userId=${currentUser.userId}, user.id=${currentUser.id}, match=${match}`);
             return match;
           });
 

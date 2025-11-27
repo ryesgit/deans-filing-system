@@ -22,7 +22,7 @@ export const RequestCard = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
-      if (!user?.id) {
+      if (!user?.userId && !user?.id) {
         setLoading(false);
         return;
       }
@@ -34,20 +34,23 @@ export const RequestCard = () => {
           : [];
 
         console.log('All requests:', requestsArray);
-        console.log('Current user ID:', user.id);
+        console.log('Current user:', user);
 
         const filteredRequests = requestsArray.filter(
           (req) => req.status !== "CANCELLED"
         );
 
-        // Filter requests to show only user's own requests
-        const roleFilteredRequests = filteredRequests.filter(
-          (req) => {
-            const match = req.userId === user.id || req.user?.id === user.id;
-            console.log(`Request ${req.id}: userId=${req.userId}, user.id=${req.user?.id}, currentUser=${user.id}, match=${match}`);
-            return match;
-          }
-        );
+        // Filter requests based on role
+        // ADMIN and STAFF see all requests, others see only their own
+        const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+          ? filteredRequests
+          : filteredRequests.filter(
+              (req) => {
+                const match = req.userId === user.userId || req.userId === user.id;
+                console.log(`Request ${req.id}: userId=${req.userId}, user.userId=${user.userId}, user.id=${user.id}, match=${match}`);
+                return match;
+              }
+            );
 
         console.log('Filtered requests:', roleFilteredRequests);
         setRequests(roleFilteredRequests.slice(0, 5));
@@ -181,7 +184,9 @@ export const RequestCard = () => {
     <>
       <div className="request-card">
         <div className="request-card-header">
-          <h2 className="request-card-title">My Requests</h2>
+          <h2 className="request-card-title">
+            {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
+          </h2>
         </div>
 
         <div className="request-table">
@@ -220,10 +225,26 @@ export const RequestCard = () => {
                     {new Date(request.createdAt).toLocaleDateString()}
                   </div>
                   <div className="table-cell status-col">
-                    {request.status === "APPROVED" &&
-                    isSoftCopy(request.description) &&
-                    user?.role !== "ADMIN" &&
-                    user?.role !== "STAFF" ? (
+                    {request.status === "PENDING" &&
+                    (user?.role === "ADMIN" || user?.role === "STAFF") ? (
+                      <div className="action-buttons">
+                        <button
+                          className="approve-btn"
+                          onClick={() => handleApprove(request.id)}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="decline-btn"
+                          onClick={() => handleDecline(request.id)}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    ) : request.status === "APPROVED" &&
+                      isSoftCopy(request.description) &&
+                      user?.role !== "ADMIN" &&
+                      user?.role !== "STAFF" ? (
                       <span
                         className="status-badge status-view-pdf"
                         onClick={() => handleViewPDF(request)}
