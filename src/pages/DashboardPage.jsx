@@ -94,7 +94,7 @@ export const DashboardPage = () => {
 
         <PersonalInformation />
 
-        {user?.role?.toUpperCase() !== 'STUDENT' && <ActivityLogCard />}
+        {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && <ActivityLogCard />}
         <QuickActionCard
           onAddFile={() => navigate('/file-management')}
           onRequest={() => navigate('/request')}
