@@ -37,7 +37,7 @@ export const RequestCard = () => {
         console.log('Current user:', user);
 
         const filteredRequests = requestsArray.filter(
-          (req) => req.status !== "CANCELLED"
+          (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
         );
 
         // Filter requests based on role
@@ -125,11 +125,18 @@ export const RequestCard = () => {
         }
       }
 
-      setRequests((prevRequests) =>
-        prevRequests.map((req) =>
-          req.id === requestId ? { ...req, status: "APPROVED" } : req
-        )
+      // Refetch requests to ensure UI is in sync with database
+      const response = await requestsAPI.getAll();
+      const requestsArray = Array.isArray(response.data.requests)
+        ? response.data.requests
+        : [];
+      const filteredRequests = requestsArray.filter(
+        (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
+      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+        ? filteredRequests
+        : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
+      setRequests(roleFilteredRequests.slice(0, 5));
     } catch (error) {
       console.error("Failed to approve request:", error);
     }
@@ -156,11 +163,18 @@ export const RequestCard = () => {
         }
       }
 
-      setRequests((prevRequests) =>
-        prevRequests.map((req) =>
-          req.id === requestId ? { ...req, status: "DECLINED" } : req
-        )
+      // Refetch requests to ensure UI is in sync with database
+      const response = await requestsAPI.getAll();
+      const requestsArray = Array.isArray(response.data.requests)
+        ? response.data.requests
+        : [];
+      const filteredRequests = requestsArray.filter(
+        (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
+      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+        ? filteredRequests
+        : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
+      setRequests(roleFilteredRequests.slice(0, 5));
     } catch (error) {
       console.error("Failed to decline request:", error);
     }
