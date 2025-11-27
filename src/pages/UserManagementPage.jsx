@@ -209,7 +209,7 @@ export const UserManagementPage = () => {
   const handleAddUser = async (newUser) => {
     try {
       const userData = {
-        userId: `USER${Date.now()}`,
+        userId: newUser.username,
         name: newUser.name,
         // username: newUser.username, // Removed as backend does not support it
         email: newUser.email || null,
