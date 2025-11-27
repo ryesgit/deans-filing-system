@@ -1270,7 +1270,7 @@ export const RequestPage = () => {
   const approvedOriginalRequest = requests.find(
     (req) =>
       (req.status === "APPROVED" || req.status === "Approved") &&
-      !["BORROWED", "Borrowed", "RETURNED", "Returned"].includes(req.status) &&
+      !["COMPLETED", "Completed"].includes(req.status) &&
       isOriginalCopy(req)
   );
 
@@ -1284,11 +1284,10 @@ export const RequestPage = () => {
     returnDate: approvedOriginalRequest.returnDue || 'N/A',
   } : null;
 
-  // Files Assigned: Count only APPROVED original copy requests (approved but not yet borrowed)
+  // Files Assigned: Count only APPROVED original copy requests (not completed/borrowed/returned)
   const filesAssigned = requests.filter(
     (req) =>
-      (req.status === "APPROVED" || req.status === "Approved") &&
-      !["BORROWED", "Borrowed", "RETURNED", "Returned"].includes(req.status) &&
+      req.status === "APPROVED" &&
       isOriginalCopy(req)
   ).length;
 
