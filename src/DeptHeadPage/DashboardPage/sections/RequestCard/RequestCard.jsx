@@ -22,23 +22,34 @@ export const RequestCard = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await requestsAPI.getAll();
         const requestsArray = Array.isArray(response.data.requests)
           ? response.data.requests
           : [];
+
+        console.log('All requests:', requestsArray);
+        console.log('Current user ID:', user.id);
+
         const filteredRequests = requestsArray.filter(
           (req) => req.status !== "CANCELLED"
         );
 
-        // Filter requests based on user role
-        // USER role should only see their own requests
-        // ADMIN and STAFF can see all requests
-        const roleFilteredRequests =
-          user?.role === "USER"
-            ? filteredRequests.filter((req) => req.userId === user.id)
-            : filteredRequests;
+        // Filter requests to show only user's own requests
+        const roleFilteredRequests = filteredRequests.filter(
+          (req) => {
+            const match = req.userId === user.id || req.user?.id === user.id;
+            console.log(`Request ${req.id}: userId=${req.userId}, user.id=${req.user?.id}, currentUser=${user.id}, match=${match}`);
+            return match;
+          }
+        );
 
+        console.log('Filtered requests:', roleFilteredRequests);
         setRequests(roleFilteredRequests.slice(0, 5));
       } catch (error) {
         console.error("Failed to fetch requests:", error);
@@ -170,9 +181,7 @@ export const RequestCard = () => {
     <>
       <div className="request-card">
         <div className="request-card-header">
-          <h2 className="request-card-title">
-            {user?.role === "USER" ? "My Requests" : "Recent Requests"}
-          </h2>
+          <h2 className="request-card-title">My Requests</h2>
         </div>
 
         <div className="request-table">
@@ -211,26 +220,10 @@ export const RequestCard = () => {
                     {new Date(request.createdAt).toLocaleDateString()}
                   </div>
                   <div className="table-cell status-col">
-                    {request.status === "PENDING" &&
-                    (user?.role === "ADMIN" || user?.role === "STAFF") ? (
-                      <div className="action-buttons">
-                        <button
-                          className="approve-btn"
-                          onClick={() => handleApprove(request.id)}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="decline-btn"
-                          onClick={() => handleDecline(request.id)}
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    ) : request.status === "APPROVED" &&
-                      isSoftCopy(request.description) &&
-                      user?.role !== "ADMIN" &&
-                      user?.role !== "STAFF" ? (
+                    {request.status === "APPROVED" &&
+                    isSoftCopy(request.description) &&
+                    user?.role !== "ADMIN" &&
+                    user?.role !== "STAFF" ? (
                       <span
                         className="status-badge status-view-pdf"
                         onClick={() => handleViewPDF(request)}

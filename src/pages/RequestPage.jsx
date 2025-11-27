@@ -260,6 +260,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             value={formData.fileName}
             onChange={(value) => handleChange("fileName", value)}
             onFileSelect={handleFileSelect}
+            copyType={formData.copyType}
           />
         </div>
 
@@ -1157,9 +1158,17 @@ export const RequestPage = () => {
   // Fetch requests from API on mount
   useEffect(() => {
     const fetchRequests = async () => {
+      if (!currentUser?.id) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await requestsAPI.getAll();
         const requestsData = response.data.requests || response.data;
+
+        console.log('Request Page - All requests:', requestsData);
+        console.log('Request Page - Current user ID:', currentUser.id);
 
         if (!Array.isArray(requestsData)) {
           setRequests([]);
@@ -1169,8 +1178,9 @@ export const RequestPage = () => {
         const filteredRequests = requestsData
           .filter((req) => req.status !== "CANCELLED")
           .filter((req) => {
-            if (!currentUser) return true;
-            return req.userId === currentUser.id || req.user?.id === currentUser.id;
+            const match = req.userId === currentUser.id || req.user?.id === currentUser.id;
+            console.log(`Request ${req.id}: userId=${req.userId}, user.id=${req.user?.id}, currentUser=${currentUser.id}, match=${match}`);
+            return match;
           });
 
         // Map requests and fetch file details for approved original copy requests
