@@ -261,7 +261,7 @@
   background-color: #ffffff;
   border-radius: 20px;
   box-shadow: 3px 3px 13px rgba(0, 0, 0, 0.15);
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -285,11 +285,11 @@
 
 .request-page .qr-code-wrapper {
   background: white;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 12px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   border: 2px solid #f0f0f0;
 }
 
@@ -306,7 +306,7 @@
 .request-page .qr-btn {
   border: none;
   border-radius: 12px;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   font-family: "Poppins", Helvetica;
   font-size: 14px;
   font-weight: 600;
@@ -337,11 +337,11 @@
 .request-page .qr-file-stats {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.4rem;
   width: 100%;
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #fef5f5;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: transparent;
   border-radius: 12px;
 }
 
@@ -353,21 +353,23 @@
 
 .request-page .qr-file-stat-label {
   font-family: "Poppins", Helvetica;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   color: #800000;
 }
 
 .request-page .qr-file-stat-value {
   font-family: "Poppins", Helvetica;
-  font-size: 16px;
+  font-size: 11px;
   font-weight: 600;
   color: #800000;
   background-color: #ffffff;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 8px;
   min-width: 30px;
   text-align: center;
+  word-break: break-word;
+  max-width: 180px;
 }
 
 /* Request Card Styles */

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
+import html2canvas from "html2canvas";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
@@ -42,12 +43,14 @@ const ConfirmModal = ({
               {cancelText}
             </button>
           )}
-          <button
-            className="confirm-modal-btn confirm-modal-confirm"
-            onClick={onConfirm}
-          >
-            {confirmText}
-          </button>
+          {confirmText && (
+            <button
+              className="confirm-modal-btn confirm-modal-confirm"
+              onClick={onConfirm}
+            >
+              {confirmText}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -467,16 +470,15 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
 const QRCard = ({
   userName = "John Doe",
   userId = "USER-001",
-  filesAssigned = 0,
-  filesToReturn = 0,
+  assignedFile = null,
   onQRCodeClick,
   qrCodeUrl = null,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
   const qrValue = userId || "USER-UNKNOWN";
 
-  const handleDownload = () => {
+  const handleDownloadQROnly = () => {
     const svg = document.getElementById("qr-code-svg");
     if (!svg) return;
 
@@ -495,89 +497,213 @@ const QRCard = ({
       downloadLink.download = `QR_${userId}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
+      setShowDownloadModal(false);
     };
 
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
+  const handleDownloadWithDetails = async () => {
+    const qrCardElement = document.getElementById("qr-card-content");
+    const downloadButton = document.getElementById("qr-download-button");
+    if (!qrCardElement) return;
+
+    try {
+      // Hide the download button before capturing
+      if (downloadButton) {
+        downloadButton.style.display = 'none';
+      }
+
+      const canvas = await html2canvas(qrCardElement, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `QR_${userId}_with_details.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+      setShowDownloadModal(false);
+    } catch (error) {
+      console.error("Failed to download QR with details:", error);
+      alert("Failed to download. Please try again.");
+    } finally {
+      // Show the download button again
+      if (downloadButton) {
+        downloadButton.style.display = 'flex';
+      }
+    }
+  };
+
   return (
     <div className="qr-card">
-      <h3 className="qr-card-title">Your QR Code</h3>
-      <div
-        className="qr-code-wrapper"
-        onClick={onQRCodeClick}
-        title="Click to enlarge"
-        style={{
-          background: "white",
-          padding: "1rem",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          transition: "all 0.3s ease",
-          border: "2px solid #f0f0f0",
-          minHeight: "220px",
-          minWidth: "220px",
-        }}
-      >
-        {/* Always render QRCodeSVG, ignore qrCodeUrl from backend */}
+      <div id="qr-card-content" style={{ width: '100%' }}>
         <div
+          className="qr-code-wrapper"
+          onClick={onQRCodeClick}
+          title="Click to enlarge"
           style={{
-            width: "180px",
-            height: "180px",
+            background: "white",
+            padding: "0.75rem",
+            borderRadius: "12px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            border: "2px solid #f0f0f0",
+            minHeight: "220px",
+            minWidth: "220px",
           }}
         >
-          <QRCodeSVG
-            id="qr-code-svg"
-            value={qrValue}
-            size={180}
-            level="H"
-            className="qr-code-svg"
-            style={{ display: "block" }}
-          />
+          {/* Always render QRCodeSVG, ignore qrCodeUrl from backend */}
+          <div
+            style={{
+              width: "180px",
+              height: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <QRCodeSVG
+              id="qr-code-svg"
+              value={qrValue}
+              size={180}
+              level="H"
+              className="qr-code-svg"
+              style={{ display: "block" }}
+            />
+          </div>
         </div>
-      </div>
-      <button className="qr-btn qr-btn-download" onClick={handleDownload}>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M4.66669 6.66669L8.00002 10L11.3334 6.66669"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M8 10V2"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        Download
-      </button>
+        <button
+          id="qr-download-button"
+          className="qr-btn qr-btn-download"
+          onClick={() => setShowDownloadModal(true)}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4.66669 6.66669L8.00002 10L11.3334 6.66669"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8 10V2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Download
+        </button>
 
-      <div className="qr-file-stats">
-        <div className="qr-file-stat-item">
-          <span className="qr-file-stat-label">Files Assigned:</span>
-          <span className="qr-file-stat-value">{filesAssigned}</span>
-        </div>
-        <div className="qr-file-stat-item">
-          <span className="qr-file-stat-label">Files to be Returned:</span>
-          <span className="qr-file-stat-value">{filesToReturn}</span>
-        </div>
+        {assignedFile ? (
+          <div className="qr-file-stats">
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Assigned File:</span>
+              <span className="qr-file-stat-value">{assignedFile.fileName || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Folder Number:</span>
+              <span className="qr-file-stat-value">{assignedFile.folderNumber || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Folder Name:</span>
+              <span className="qr-file-stat-value">{assignedFile.folderName || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Return Date:</span>
+              <span className="qr-file-stat-value">{assignedFile.returnDate || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Location:</span>
+              <span className="qr-file-stat-value">
+                Row {assignedFile.row || 'N/A'} - Column {assignedFile.column || 'N/A'}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="qr-file-stats">
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">No file assigned</span>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Download Options Modal */}
+      <ConfirmModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        onConfirm={() => setShowDownloadModal(false)}
+        title="Download QR Code"
+        confirmText=""
+        cancelText="Cancel"
+      >
+        <p style={{
+          fontFamily: 'Poppins, Helvetica',
+          fontSize: '14px',
+          marginBottom: '1rem',
+          textAlign: 'center'
+        }}>
+          Choose download option:
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <button
+            onClick={handleDownloadQROnly}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#800000',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontFamily: 'Poppins, Helvetica',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
+          >
+            Download QR Code Only
+          </button>
+          {assignedFile && (
+            <button
+              onClick={handleDownloadWithDetails}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#800000',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontFamily: 'Poppins, Helvetica',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
+            >
+              Download with File Details
+            </button>
+          )}
+        </div>
+      </ConfirmModal>
     </div>
   );
 };
@@ -1034,14 +1160,23 @@ export const RequestPage = () => {
       try {
         const response = await requestsAPI.getAll();
         const requestsData = response.data.requests || response.data;
-        const mappedRequests = Array.isArray(requestsData)
-          ? requestsData
-            .filter((req) => req.status !== "CANCELLED")
-            .filter((req) => {
-              if (!currentUser) return true;
-              return req.userId === currentUser.id || req.user?.id === currentUser.id;
-            })
-            .map((req) => ({
+
+        if (!Array.isArray(requestsData)) {
+          setRequests([]);
+          return;
+        }
+
+        const filteredRequests = requestsData
+          .filter((req) => req.status !== "CANCELLED")
+          .filter((req) => {
+            if (!currentUser) return true;
+            return req.userId === currentUser.id || req.user?.id === currentUser.id;
+          });
+
+        // Map requests and fetch file details for approved original copy requests
+        const mappedRequests = await Promise.all(
+          filteredRequests.map(async (req) => {
+            const baseRequest = {
               id: req.id,
               fileName: req.title,
               dateRequested: req.createdAt
@@ -1054,8 +1189,34 @@ export const RequestPage = () => {
               copyType: req.type,
               fileId: req.fileId,
               description: req.description,
-            }))
-          : [];
+              file: req.file, // Include file object from response
+            };
+
+            // If this is an approved original copy request and we have a fileId, fetch full file details
+            const isApprovedOriginal =
+              (req.status === "APPROVED" || req.status === "Approved") &&
+              req.description?.includes("Original Copy") &&
+              req.fileId;
+
+            if (isApprovedOriginal) {
+              try {
+                // Fetch full file details including category information
+                const fileResponse = await filesAPI.getAll();
+                const allFiles = fileResponse.data.files || fileResponse.data || [];
+                const fileDetails = allFiles.find(f => f.id === req.fileId);
+
+                if (fileDetails) {
+                  baseRequest.file = fileDetails;
+                }
+              } catch (error) {
+                console.error(`Failed to fetch file details for request ${req.id}:`, error);
+              }
+            }
+
+            return baseRequest;
+          })
+        );
+
         setRequests(mappedRequests);
       } catch (error) {
         console.error("Failed to fetch requests:", error);
@@ -1081,6 +1242,7 @@ export const RequestPage = () => {
       copyType: newRequest.type,
       fileId: newRequest.fileId,
       description: newRequest.description,
+      file: newRequest.file,
     };
     setRequests((prev) => [mappedRequest, ...prev]);
   };
@@ -1093,6 +1255,24 @@ export const RequestPage = () => {
   const isOriginalCopy = (req) => {
     return req.description?.includes("Original Copy");
   };
+
+  // Get the first approved original copy request with file details
+  const approvedOriginalRequest = requests.find(
+    (req) =>
+      (req.status === "APPROVED" || req.status === "Approved") &&
+      !["BORROWED", "Borrowed", "RETURNED", "Returned"].includes(req.status) &&
+      isOriginalCopy(req)
+  );
+
+  // Extract assigned file details
+  const assignedFile = approvedOriginalRequest?.file ? {
+    fileName: approvedOriginalRequest.file.filename || approvedOriginalRequest.fileName,
+    folderNumber: approvedOriginalRequest.file.category?.folderNumber || 'N/A',
+    folderName: approvedOriginalRequest.file.category?.name || 'N/A',
+    column: approvedOriginalRequest.file.columnPosition || 'N/A',
+    row: approvedOriginalRequest.file.rowPosition || 'N/A',
+    returnDate: approvedOriginalRequest.returnDue || 'N/A',
+  } : null;
 
   // Files Assigned: Count only APPROVED original copy requests (approved but not yet borrowed)
   const filesAssigned = requests.filter(
@@ -1144,8 +1324,7 @@ export const RequestPage = () => {
             <QRCard
               userName={currentUser?.name || "User"}
               userId={currentUser?.userId || "ID"}
-              filesAssigned={Math.min(filesAssigned, 1)}
-              filesToReturn={filesToReturn}
+              assignedFile={assignedFile}
               onQRCodeClick={() => setIsQRModalOpen(true)}
             />
             <RequestCard requests={requests} onRequestCancelled={handleRequestCancelled} />
