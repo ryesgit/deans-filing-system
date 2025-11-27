@@ -22,7 +22,7 @@ export const RequestCard = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
-      if (!user?.id) {
+      if (!user?.userId && !user?.id) {
         setLoading(false);
         return;
       }
@@ -34,17 +34,18 @@ export const RequestCard = () => {
           : [];
 
         console.log('All requests:', requestsArray);
-        console.log('Current user ID:', user.id);
+        console.log('Current user:', user);
 
         const filteredRequests = requestsArray.filter(
           (req) => req.status !== "CANCELLED"
         );
 
         // Filter requests to show only user's own requests
+        // Match against user.userId (custom ID like ADMIN001, PUP001) instead of user.id (database ID)
         const roleFilteredRequests = filteredRequests.filter(
           (req) => {
-            const match = req.userId === user.id || req.user?.id === user.id;
-            console.log(`Request ${req.id}: userId=${req.userId}, user.id=${req.user?.id}, currentUser=${user.id}, match=${match}`);
+            const match = req.userId === user.userId || req.userId === user.id;
+            console.log(`Request ${req.id}: userId=${req.userId}, user.userId=${user.userId}, user.id=${user.id}, match=${match}`);
             return match;
           }
         );
