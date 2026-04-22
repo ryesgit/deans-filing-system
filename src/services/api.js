@@ -3,11 +3,14 @@ import axios from 'axios';
 // Get base URL from environment variable
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 const CATEGORY_CACHE_TTL_MS = 60 * 1000;
+const CATEGORY_RATE_LIMIT_COOLDOWN_MS = 5 * 60 * 1000;
 
 let categoriesCache = {
   data: null,
   expiresAt: 0,
   inflight: null,
+  rateLimitedUntil: 0,
+  lastError: null,
 };
 
 const invalidateCategoriesCache = () => {
@@ -15,6 +18,8 @@ const invalidateCategoriesCache = () => {
     data: null,
     expiresAt: 0,
     inflight: null,
+    rateLimitedUntil: 0,
+    lastError: null,
   };
 };
 
@@ -116,11 +121,33 @@ export const categoriesAPI = {
       return categoriesCache.inflight;
     }
 
+    if (categoriesCache.rateLimitedUntil > now) {
+      if (categoriesCache.data) {
+        return Promise.resolve({ data: categoriesCache.data });
+      }
+
+      return Promise.reject(
+        categoriesCache.lastError || {
+          status: 429,
+          message: 'Too many requests from this IP, please try again later.',
+        }
+      );
+    }
+
     categoriesCache.inflight = api.get('/api/categories')
       .then((response) => {
         categoriesCache.data = response.data;
         categoriesCache.expiresAt = Date.now() + CATEGORY_CACHE_TTL_MS;
+        categoriesCache.rateLimitedUntil = 0;
+        categoriesCache.lastError = null;
         return response;
+      })
+      .catch((error) => {
+        if (error?.status === 429) {
+          categoriesCache.rateLimitedUntil = Date.now() + CATEGORY_RATE_LIMIT_COOLDOWN_MS;
+          categoriesCache.lastError = error;
+        }
+        throw error;
       })
       .finally(() => {
         categoriesCache.inflight = null;
