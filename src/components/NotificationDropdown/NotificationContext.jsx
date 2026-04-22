@@ -1,6 +1,10 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useRef } from "react";
 import { notificationsAPI } from "../../services/api";
 import { useAuth } from "../Modal/AuthContext";
+
+const DEFAULT_POLL_INTERVAL_MS = 30000;
+const RATE_LIMIT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const MAX_POLL_INTERVAL_MS = 15 * 60 * 1000;
 
 // Create the context
 const NotificationContext = createContext();
@@ -15,37 +19,73 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const pollTimeoutRef = useRef(null);
+  const isRefreshingRef = useRef(false);
+  const pollIntervalRef = useRef(DEFAULT_POLL_INTERVAL_MS);
+
+  const mapNotifications = (response) => {
+    const notificationsData = response.data.notifications || response.data;
+
+    return Array.isArray(notificationsData)
+      ? notificationsData.map((n) => ({
+          ...n,
+          read: n.isRead || n.read || false,
+        }))
+      : [];
+  };
+
+  const clearPollTimeout = () => {
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleNextPoll = () => {
+    clearPollTimeout();
+
+    if (!user) {
+      return;
+    }
+
+    pollTimeoutRef.current = setTimeout(() => {
+      refreshNotifications({ background: true });
+    }, pollIntervalRef.current);
+  };
+
+  const handleRefreshError = (error, action) => {
+    if (error?.status === 429) {
+      pollIntervalRef.current = Math.min(
+        Math.max(pollIntervalRef.current * 2, RATE_LIMIT_POLL_INTERVAL_MS),
+        MAX_POLL_INTERVAL_MS
+      );
+      console.warn(
+        `Notification refresh rate-limited during ${action}. Backing off to ${Math.round(
+          pollIntervalRef.current / 1000
+        )}s.`
+      );
+      return;
+    }
+
+    pollIntervalRef.current = DEFAULT_POLL_INTERVAL_MS;
+    console.error(`Failed to ${action}:`, error);
+  };
 
   // Fetch notifications from backend
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await notificationsAPI.getAll();
-        const notificationsData = response.data.notifications || response.data;
-        const mappedNotifications = Array.isArray(notificationsData)
-          ? notificationsData.map(n => ({
-            ...n,
-            read: n.isRead || n.read || false
-          }))
-          : [];
-
-        // Filter notifications for the current user if user is logged in
-        // Assuming notifications have a userId field matching the user's ID
-        setNotifications(mappedNotifications);
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-        setNotifications([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Only fetch if user is authenticated
     if (user) {
-      fetchNotifications();
+      pollIntervalRef.current = DEFAULT_POLL_INTERVAL_MS;
+      setLoading(true);
+      refreshNotifications({ initial: true });
     } else {
+      clearPollTimeout();
+      setNotifications([]);
       setLoading(false);
     }
+
+    return () => {
+      clearPollTimeout();
+    };
   }, [user]);
 
   const markAsRead = async (id) => {
@@ -70,31 +110,32 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  const refreshNotifications = async () => {
+  const refreshNotifications = async ({ initial = false, background = false } = {}) => {
+    if (!user || isRefreshingRef.current) {
+      return;
+    }
+
+    isRefreshingRef.current = true;
+
     try {
       const response = await notificationsAPI.getAll();
-      const notificationsData = response.data.notifications || response.data;
-      const mappedNotifications = Array.isArray(notificationsData)
-        ? notificationsData.map(n => ({
-          ...n,
-          read: n.isRead || n.read || false
-        }))
-        : [];
-      setNotifications(mappedNotifications);
+      setNotifications(mapNotifications(response));
+      pollIntervalRef.current = DEFAULT_POLL_INTERVAL_MS;
     } catch (error) {
-      console.error('Failed to refresh notifications:', error);
+      handleRefreshError(error, initial ? "fetch notifications" : "refresh notifications");
+      if (initial) {
+        setNotifications([]);
+      }
+    } finally {
+      isRefreshingRef.current = false;
+      if (initial) {
+        setLoading(false);
+      }
+      if (background || initial) {
+        scheduleNextPoll();
+      }
     }
   };
-
-  useEffect(() => {
-    if (!user) return;
-
-    const interval = setInterval(() => {
-      refreshNotifications();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [user]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

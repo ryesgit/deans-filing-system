@@ -2,6 +2,21 @@ import axios from 'axios';
 
 // Get base URL from environment variable
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const CATEGORY_CACHE_TTL_MS = 60 * 1000;
+
+let categoriesCache = {
+  data: null,
+  expiresAt: 0,
+  inflight: null,
+};
+
+const invalidateCategoriesCache = () => {
+  categoriesCache = {
+    data: null,
+    expiresAt: 0,
+    inflight: null,
+  };
+};
 
 // Create axios instance
 const api = axios.create({
@@ -90,11 +105,42 @@ export const filesAPI = {
 
 // Categories API (used as "folders" in UI)
 export const categoriesAPI = {
-  getAll: () => api.get('/api/categories'),
+  getAll: () => {
+    const now = Date.now();
+
+    if (categoriesCache.data && categoriesCache.expiresAt > now) {
+      return Promise.resolve({ data: categoriesCache.data });
+    }
+
+    if (categoriesCache.inflight) {
+      return categoriesCache.inflight;
+    }
+
+    categoriesCache.inflight = api.get('/api/categories')
+      .then((response) => {
+        categoriesCache.data = response.data;
+        categoriesCache.expiresAt = Date.now() + CATEGORY_CACHE_TTL_MS;
+        return response;
+      })
+      .finally(() => {
+        categoriesCache.inflight = null;
+      });
+
+    return categoriesCache.inflight;
+  },
   getById: (id) => api.get(`/api/categories/${id}`),
-  create: (data) => api.post('/api/categories', data),
-  update: (id, data) => api.put(`/api/categories/${id}`, data),
-  delete: (id) => api.delete(`/api/categories/${id}`),
+  create: (data) => api.post('/api/categories', data).then((response) => {
+    invalidateCategoriesCache();
+    return response;
+  }),
+  update: (id, data) => api.put(`/api/categories/${id}`, data).then((response) => {
+    invalidateCategoriesCache();
+    return response;
+  }),
+  delete: (id) => api.delete(`/api/categories/${id}`).then((response) => {
+    invalidateCategoriesCache();
+    return response;
+  }),
 };
 
 // Requests API

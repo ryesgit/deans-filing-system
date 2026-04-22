@@ -5,15 +5,55 @@ import { authAPI } from '../../services/api';
 const AuthContext = createContext(null);
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
+const hasUserIdentity = (userData) => Boolean(userData?.id || userData?.userId);
+const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
+
 const processUserData = (userData) => {
   if (!userData) return null;
 
+  const resolvedAvatar =
+    userData.avatar && userData.avatar.startsWith('/')
+      ? `${API_BASE_URL}${userData.avatar}`
+      : userData.avatar;
+
   return {
     ...userData,
-    avatar: userData.avatar && userData.avatar.startsWith('/')
-      ? `${API_BASE_URL}${userData.avatar}`
-      : userData.avatar
+    avatar: resolvedAvatar,
+    profilePicture: userData.profilePicture || resolvedAvatar,
   };
+};
+
+const getPersistedUserData = (userData) => {
+  if (!userData) return null;
+
+  const persistedUser = { ...userData };
+
+  // Avoid blowing the storage quota by persisting large base64-encoded images.
+  if (isDataUrl(persistedUser.avatar)) {
+    delete persistedUser.avatar;
+  }
+
+  if (isDataUrl(persistedUser.profilePicture) || persistedUser.profilePicture === persistedUser.avatar) {
+    delete persistedUser.profilePicture;
+  }
+
+  return persistedUser;
+};
+
+const persistUser = (userData) => {
+  const persistedUser = getPersistedUserData(userData);
+
+  if (!persistedUser) {
+    localStorage.removeItem('user');
+    return;
+  }
+
+  try {
+    localStorage.setItem('user', JSON.stringify(persistedUser));
+  } catch (error) {
+    console.warn('Failed to persist user in localStorage', error);
+    localStorage.removeItem('user');
+  }
 };
 
 export const AuthProvider = ({ children }) => {
@@ -37,10 +77,14 @@ export const AuthProvider = ({ children }) => {
       authAPI.getMe()
         .then(response => {
           const userData = processUserData(response.data.user || response.data);
-          if (userData && userData.id) {
+          if (hasUserIdentity(userData)) {
             setIsAuthenticated(true);
             setUser(userData);
-            localStorage.setItem('user', JSON.stringify(userData));
+            persistUser(userData);
+          } else {
+            setIsAuthenticated(false);
+            setUser(null);
+            localStorage.removeItem('user');
           }
           setLoading(false);
         })
@@ -66,7 +110,7 @@ export const AuthProvider = ({ children }) => {
       const userData = processUserData(rawUserData);
 
       localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      persistUser(userData);
 
       setIsAuthenticated(true);
       setUser(userData);
@@ -128,7 +172,7 @@ export const AuthProvider = ({ children }) => {
     updateUser: (userData) => {
       const processedData = processUserData(userData);
       setUser(processedData);
-      localStorage.setItem('user', JSON.stringify(processedData));
+      persistUser(processedData);
     },
     clearError,
   };

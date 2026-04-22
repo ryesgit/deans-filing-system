@@ -23,6 +23,7 @@ export const SettingsPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
   const { notifications, unreadCount } = useNotifications();
   const [passwords, setPasswords] = useState({
     oldPassword: "",
@@ -50,23 +51,34 @@ export const SettingsPage = () => {
       if (file.type.startsWith("image/")) {
         try {
           const base64 = await toBase64(file);
+          const userIdentifier = currentUser?.id || currentUser?.userId;
+
+          if (!userIdentifier) {
+            throw new Error("Current user is missing an identifier.");
+          }
 
           // Optimistic update
           setProfilePicturePreview(base64);
+          setIsSavingProfilePicture(true);
 
-          await usersAPI.update(currentUser.id, { avatar: base64 });
+          const response = await usersAPI.update(userIdentifier, { avatar: base64 });
+          const updatedUser = response.data.user || response.data;
 
           // Update context
           updateUser({
             ...currentUser,
-            profilePicture: base64,
-            avatar: base64,
+            ...updatedUser,
+            profilePicture: updatedUser?.profilePicture || updatedUser?.avatar || base64,
+            avatar: updatedUser?.avatar || base64,
           });
+          setProfilePicturePreview(null);
           alert("Profile picture updated successfully!");
         } catch (error) {
           console.error("Failed to update profile picture:", error);
           alert("Failed to update profile picture. Please try again.");
           setProfilePicturePreview(null); // Revert on failure
+        } finally {
+          setIsSavingProfilePicture(false);
         }
       } else {
         alert("Please select an image file.");
@@ -137,6 +149,7 @@ export const SettingsPage = () => {
                 name="profilePicture"
                 accept="image/*"
                 onChange={handleProfilePictureChange}
+                disabled={isSavingProfilePicture}
                 style={{ display: "none" }}
               />
 

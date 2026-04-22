@@ -67,7 +67,11 @@ export const FileManagementPage = () => {
     const fetchCategories = async () => {
       try {
         const response = await categoriesAPI.getAll();
-        const categoriesData = Array.isArray(response.data.categories) ? response.data.categories : [];
+        const categoriesData = Array.isArray(response.data?.categories)
+          ? response.data.categories
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
         console.log('Fetched categories:', categoriesData);
         setFolders(categoriesData);
       } catch (error) {
