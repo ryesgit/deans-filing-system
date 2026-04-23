@@ -5,6 +5,7 @@ import { NotificationDropdown } from "../components/NotificationDropdown";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
+import { sendApprovalEmail } from "../utils/email";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
@@ -33,6 +34,9 @@ export const UserManagementPage = () => {
   const [pendingUsersList, setPendingUsersList] = useState([]);
 
   const handleApprove = async (userId) => {
+    // Find the pending user before removing from list so we have their email
+    const approvedUser = pendingUsersList.find((u) => u.userId === userId);
+
     try {
       await usersAPI.approve(userId);
       setPendingUsersList(
@@ -72,7 +76,16 @@ export const UserManagementPage = () => {
         }))
         : [];
       setUsers(mappedUsers);
-      alert("User approved successfully!");
+
+      // Send approval confirmation email to the user
+      if (approvedUser?.email) {
+        await sendApprovalEmail({
+          toEmail: approvedUser.email,
+          toName: approvedUser.name,
+        });
+      }
+
+      alert("User approved successfully! A confirmation email has been sent.");
     } catch (error) {
       console.error("Failed to approve user:", error);
       alert(error.message || "Failed to approve user");
@@ -141,6 +154,7 @@ export const UserManagementPage = () => {
             id: user.id,
             userId: user.userId,
             name: user.name,
+            email: user.email || "",
             dateOfBirth: user.dateOfBirth
               ? new Date(user.dateOfBirth).toLocaleDateString()
               : "N/A",
