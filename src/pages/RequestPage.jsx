@@ -105,11 +105,13 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
   const [showFileLimitModal, setShowFileLimitModal] = useState(false);
 
   const departments = [
-    "Computer Science",
-    "Engineering",
-    "Business Administration",
-    "Arts and Sciences",
-    "Medical",
+    "Civil Engineering",
+    "Industrial Engineering",
+    "Electronics and Communications Engineering",
+    "Mechanical Engineering",
+    "Computer Engineering",
+    "Electrical Engineering",
+    "Railway Engineering",
   ];
 
   const categories = [

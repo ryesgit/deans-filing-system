@@ -130,11 +130,13 @@ export const RegistrationPage = ({ onClose }) => {
   };
 
   const departments = [
-    "IT",
-    "Engineering",
-    "Business",
-    "Education",
-    "Arts and Sciences",
+    "Civil Engineering",
+    "Industrial Engineering",
+    "Electronics and Communications Engineering",
+    "Mechanical Engineering",
+    "Computer Engineering",
+    "Electrical Engineering",
+    "Railway Engineering",
   ];
 
   return (

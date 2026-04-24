@@ -15,10 +15,13 @@ const categories = [
   "Student Records",
 ];
 const departments = [
+  "Civil Engineering",
+  "Industrial Engineering",
+  "Electronics and Communications Engineering",
+  "Mechanical Engineering",
   "Computer Engineering",
   "Electrical Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
+  "Railway Engineering",
 ];
 
 export const FileManagementPage = () => {
@@ -42,11 +45,15 @@ export const FileManagementPage = () => {
     name: "",
     folderNumber: "",
     description: "",
+    row: "",
+    column: "",
   });
   const [editFolderForm, setEditFolderForm] = useState({
     name: "",
     folderNumber: "",
     description: "",
+    row: "",
+    column: "",
   });
   const [fileForm, setFileForm] = useState({
     name: "",
@@ -86,23 +93,27 @@ export const FileManagementPage = () => {
   }, []);
 
   const handleAddFolder = async () => {
-    if (addFolderForm.name && addFolderForm.folderNumber && addFolderForm.description) {
+    if (addFolderForm.name && addFolderForm.folderNumber && addFolderForm.description && addFolderForm.row && addFolderForm.column) {
       try {
         const response = await categoriesAPI.create({
           name: addFolderForm.name,
           folderNumber: addFolderForm.folderNumber,
           description: addFolderForm.description,
+          row: addFolderForm.row,
+          column: addFolderForm.column,
         });
         const newFolder = {
           ...response.data.category,
           name: addFolderForm.name,
           folderNumber: addFolderForm.folderNumber,
           description: addFolderForm.description,
+          row: addFolderForm.row,
+          column: addFolderForm.column,
           fileCount: 0,
           files: []
         };
         setFolders([...folders, newFolder]);
-        setAddFolderForm({ name: "", folderNumber: "", description: "" });
+        setAddFolderForm({ name: "", folderNumber: "", description: "", row: "", column: "" });
         setShowFolderModal(false);
       } catch (error) {
         console.error('Failed to add category:', error);
@@ -111,12 +122,14 @@ export const FileManagementPage = () => {
   };
 
   const handleUpdateFolder = async () => {
-    if (folderToEdit && editFolderForm.name && editFolderForm.folderNumber && editFolderForm.description) {
+    if (folderToEdit && editFolderForm.name && editFolderForm.folderNumber && editFolderForm.description && editFolderForm.row && editFolderForm.column) {
       try {
         await categoriesAPI.update(folderToEdit.id, {
           name: editFolderForm.name,
           folderNumber: editFolderForm.folderNumber,
           description: editFolderForm.description,
+          row: editFolderForm.row,
+          column: editFolderForm.column,
         });
         const updatedFolders = folders.map((folder) =>
           folder.id === folderToEdit.id
@@ -125,6 +138,8 @@ export const FileManagementPage = () => {
               name: editFolderForm.name,
               folderNumber: editFolderForm.folderNumber,
               description: editFolderForm.description,
+              row: editFolderForm.row,
+              column: editFolderForm.column,
             }
             : folder
         );
@@ -392,7 +407,9 @@ export const FileManagementPage = () => {
     setEditFolderForm({
       name: folder.name,
       folderNumber: folder.folderNumber || '',
-      description: folder.description || ''
+      description: folder.description || '',
+      row: folder.row || '',
+      column: folder.column || '',
     });
     setShowEditFolderModal(true);
     setOpenDropdownFolderId(null);
@@ -404,7 +421,9 @@ export const FileManagementPage = () => {
       setEditFolderForm(prev => ({
         ...prev,
         folderNumber: fullFolder.folderNumber || prev.folderNumber,
-        description: fullFolder.description || prev.description
+        description: fullFolder.description || prev.description,
+        row: fullFolder.row || prev.row,
+        column: fullFolder.column || prev.column,
       }));
     } catch (error) {
       console.error('Failed to fetch folder details for editing:', error);
@@ -695,6 +714,37 @@ export const FileManagementPage = () => {
               }}
             />
           </div>
+          <div className="form-row-inline" style={{ display: 'flex', gap: '1rem' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Row *</label>
+              <select
+                value={addFolderForm.row}
+                onChange={(e) =>
+                  setAddFolderForm({ ...addFolderForm, row: e.target.value })
+                }
+              >
+                <option value="">Select row</option>
+                <option value="1">Row 1</option>
+                <option value="2">Row 2</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Column *</label>
+              <select
+                value={addFolderForm.column}
+                onChange={(e) =>
+                  setAddFolderForm({ ...addFolderForm, column: e.target.value })
+                }
+              >
+                <option value="">Select column</option>
+                <option value="1">Column 1</option>
+                <option value="2">Column 2</option>
+                <option value="3">Column 3</option>
+                <option value="4">Column 4</option>
+                <option value="5">Column 5</option>
+              </select>
+            </div>
+          </div>
           <div className="modal-actions">
             <button
               className="btn btn-secondary"
@@ -705,7 +755,7 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleAddFolder}
-              disabled={!addFolderForm.name || !addFolderForm.folderNumber || !addFolderForm.description}
+              disabled={!addFolderForm.name || !addFolderForm.folderNumber || !addFolderForm.description || !addFolderForm.row || !addFolderForm.column}
             >
               Save
             </button>
@@ -766,6 +816,37 @@ export const FileManagementPage = () => {
               }}
             />
           </div>
+          <div className="form-row-inline" style={{ display: 'flex', gap: '1rem' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Row *</label>
+              <select
+                value={editFolderForm.row}
+                onChange={(e) =>
+                  setEditFolderForm({ ...editFolderForm, row: e.target.value })
+                }
+              >
+                <option value="">Select row</option>
+                <option value="1">Row 1</option>
+                <option value="2">Row 2</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Column *</label>
+              <select
+                value={editFolderForm.column}
+                onChange={(e) =>
+                  setEditFolderForm({ ...editFolderForm, column: e.target.value })
+                }
+              >
+                <option value="">Select column</option>
+                <option value="1">Column 1</option>
+                <option value="2">Column 2</option>
+                <option value="3">Column 3</option>
+                <option value="4">Column 4</option>
+                <option value="5">Column 5</option>
+              </select>
+            </div>
+          </div>
           <div className="modal-actions">
             <button
               className="btn btn-secondary"
@@ -776,7 +857,7 @@ export const FileManagementPage = () => {
             <button
               className="btn btn-primary"
               onClick={handleUpdateFolder}
-              disabled={!editFolderForm.name || !editFolderForm.folderNumber || !editFolderForm.description}
+              disabled={!editFolderForm.name || !editFolderForm.folderNumber || !editFolderForm.description || !editFolderForm.row || !editFolderForm.column}
             >
               Update
             </button>
@@ -1094,6 +1175,14 @@ export const FileManagementPage = () => {
               <div className="file-info-row">
                 <span className="file-info-label">Description:</span>
                 <span className="file-info-value">{folderDetails.description || 'N/A'}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Row:</span>
+                <span className="file-info-value">{folderDetails.row || 'N/A'}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Column:</span>
+                <span className="file-info-value">{folderDetails.column || 'N/A'}</span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Total Files:</span>
