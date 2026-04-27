@@ -818,8 +818,86 @@
 }
 
 @media (max-width: 768px) {
+  .request-page {
+    padding-top: 70px;
+  }
+
+  .request-page > .request-page-container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "form"
+      "qr"
+      "status";
+    gap: 1.5rem;
+  }
+
+  .request-page .page-title {
+    font-size: 28px;
+    letter-spacing: -1.5px;
+    top: 0;
+  }
+
+  .request-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .request-page .qr-card {
+    min-width: auto;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+  }
+
+  .request-page .request-card {
+    min-width: auto;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+  }
+
+  .request-page .form-title {
+    font-size: 24px;
+  }
+
+  .request-page .form-card {
+    padding: 1.5rem;
+  }
+
+  .request-page .form-actions {
+    flex-direction: column;
+  }
+
+  .request-page .btn-clear,
+  .request-page .btn-submit {
+    width: 100%;
+    text-align: center;
+  }
+
+  .request-page .copy-type-buttons {
+    flex-direction: column;
+  }
+
   .request-page .table-container {
     max-height: 300px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .request-page .request-table {
+    min-width: 500px;
   }
 
   .request-page .request-table th,
@@ -830,5 +908,36 @@
 
   .request-page .file-name-cell {
     max-width: 150px;
+  }
+
+  .request-page .confirm-modal-content {
+    padding: 1.5rem;
+  }
+
+  .request-page .confirm-detail-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .request-page .confirm-detail-label {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .request-page .page-title {
+    font-size: 24px;
+  }
+
+  .request-page .form-title {
+    font-size: 20px;
+  }
+
+  .request-page .request-card-title {
+    font-size: 20px;
+  }
+
+  .request-page .qr-card-title {
+    font-size: 18px;
   }
 }

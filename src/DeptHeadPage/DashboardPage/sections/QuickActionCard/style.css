@@ -76,3 +76,32 @@
   transform: translateY(0);
   box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .quick-action-card {
+    height: auto;
+    min-height: 140px;
+    padding: 16px;
+  }
+
+  .quick-action-title {
+    font-size: 22px;
+  }
+
+  .quick-action-instruction {
+    font-size: 13px;
+  }
+
+  .quick-action-buttons {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .action-btn {
+    font-size: 13px;
+    padding: 10px 18px;
+    max-width: none;
+    flex: 1 1 auto;
+  }
+}

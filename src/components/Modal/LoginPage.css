@@ -321,3 +321,94 @@
   position: relative; /* Add this */
   z-index: 3; /* Add this - highest z-index */
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-page-image {
+    display: none;
+  }
+
+  .login-page-right {
+    width: 100%;
+  }
+
+  .login-panel {
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .login-panel-content {
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 2rem;
+  }
+
+  .login-logo {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 80%;
+    height: auto;
+    margin-top: 2rem;
+  }
+
+  .login-title {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-top: 2rem;
+    font-size: 2rem;
+  }
+
+  .login-subtitle {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .login-field {
+    position: relative;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+
+  .login-field.username,
+  .login-field.password {
+    bottom: auto;
+    left: auto;
+  }
+
+  .login-button-wrapper {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 1.5rem;
+  }
+
+  .reset-password-button {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+}

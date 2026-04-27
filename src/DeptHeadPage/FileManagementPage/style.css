@@ -590,6 +590,12 @@
 }
 
 @media (max-width: 768px) {
+  .file-management-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 70px;
+  }
+
   .group .folder-grid {
     gap: 12px;
   }
@@ -605,49 +611,60 @@
     gap: 1rem;
   }
 
-  .group .file-row {
-    grid-template-columns: 1fr;
-    /* Single column layout for file rows */
-    padding: 15px;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    background-color: #fafafa;
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-form {
+    height: 45px;
+  }
+
+  .group .files-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .group .files-table-header {
-    display: none;
-    /* Hide table header on mobile */
+    min-width: 700px;
   }
 
-  .group .file-row>div {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: initial;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
+  .group .file-row {
+    min-width: 700px;
   }
 
-  .group .file-row>div::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #800000;
-    margin-right: 10px;
+  .group .folder-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
-  .group .file-actions {
-    justify-content: center;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
+  .group .files-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .group .text-wrapper-31,
   .group .text-wrapper-32 {
     font-size: 22px;
+  }
+
+  /* Request table horizontal scroll */
+  .group .request-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .group .request-header,
+  .group .request-row {
+    min-width: 700px;
   }
 }
 

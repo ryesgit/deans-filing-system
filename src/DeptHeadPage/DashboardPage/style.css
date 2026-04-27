@@ -440,24 +440,7 @@
 @media (max-width: 1024px) {
   .department-head-page {
     min-width: 100%;
-  }
-
-  .side-panel {
-    width: 80px;
-  }
-
-  .side-panel .text-wrapper-51,
-  .side-panel .text-wrapper-52,
-  .side-panel .text-wrapper-53,
-  .side-panel .text-wrapper-54,
-  .side-panel .text-wrapper-55,
-  .side-panel .text-wrapper-56,
-  .side-panel .text-wrapper-57 {
-    display: none;
-  }
-
-  .department-head-page {
-    padding-left: calc(80px + 1rem);
+    padding-left: calc(271px + 1rem);
     padding-right: 1rem;
   }
 }
@@ -465,8 +448,8 @@
 @media (max-width: 768px) {
   .department-head-page {
     padding-left: 1rem;
-    padding-top: calc(80px + 1rem);
-    /* Space for a potential top bar */
+    padding-right: 1rem;
+    padding-top: 70px;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
     grid-template-areas:
@@ -482,10 +465,78 @@
       "requests";
   }
 
+  .department-head-page.user-dashboard {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    grid-template-areas:
+      "header"
+      "personal-info"
+      "files-stat"
+      "approvals-stat"
+      "borrowing-stat"
+      "overdue-stat"
+      "quick-actions"
+      "notifications"
+      "requests" !important;
+    padding-top: 70px;
+  }
+
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .department-head-page .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .department-head-page .text-wrapper-70 {
+    font-size: 32px;
+    letter-spacing: -2px;
+  }
+
+  .department-head-page .text-wrapper-71 {
+    font-size: 22px;
+    letter-spacing: -1px;
+  }
+
+  .department-head-page .files-card,
+  .department-head-page .borrowing-card,
+  .department-head-page .approval-card,
+  .department-head-page .overdue-files-card {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .department-head-page {
+    padding: 60px 0.75rem 0.75rem;
+    gap: 16px;
+  }
+
+  .department-head-page .text-wrapper-70 {
+    font-size: 26px;
+    letter-spacing: -1.5px;
+  }
+
+  .department-head-page .text-wrapper-71 {
+    font-size: 18px;
+  }
+
+  .department-head-page .search-form {
+    height: 45px;
+  }
+
+  .department-head-page .search-input {
+    font-size: 14px;
   }
 }
 

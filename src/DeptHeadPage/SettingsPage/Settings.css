@@ -342,3 +342,46 @@ input:checked + .slider:before {
 .modal-btn-secondary:hover {
   background-color: #d1d5db;
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .profile-avatar-container {
+    width: 100px;
+    height: 100px;
+  }
+
+  .user-profile-card {
+    justify-content: center;
+  }
+
+  .profile-left {
+    align-items: center;
+  }
+
+  .profile-right {
+    grid-template-columns: 1fr 1fr;
+    text-align: center;
+  }
+
+  .profile-detail-group {
+    align-items: center;
+  }
+
+  .profile-name {
+    font-size: 1rem;
+  }
+
+  .password-modal-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -166,3 +166,47 @@
 .personal-information .User-last-login {
   position: static;
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .personal-information {
+    height: auto;
+    min-height: 200px;
+  }
+
+  .pi-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+  }
+
+  .personal-information .profile-section {
+    grid-column: 1;
+  }
+
+  .personal-information .profile-2 {
+    width: 100px;
+    height: 100px;
+  }
+
+  .personal-information .linev {
+    grid-column: 1;
+    grid-row: 2;
+    width: 80%;
+    height: 2px;
+    justify-self: center;
+  }
+
+  .personal-information .details-section {
+    grid-column: 1;
+    grid-row: 3;
+    grid-template-columns: 1fr 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .info-group, .personal-information .group {
+    text-align: center;
+    align-items: center;
+  }
+}

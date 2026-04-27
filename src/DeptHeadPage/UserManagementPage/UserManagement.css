@@ -1219,3 +1219,123 @@
   font-family: "Poppins", Helvetica;
   font-size: 16px;
 }
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 768px) {
+  .user-management-container {
+    padding: 70px 1rem 1rem;
+  }
+
+  .usermanagement-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-form {
+    height: 45px;
+  }
+
+  .user-summary-card .stats-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .user-summary-card .stat-divider {
+    width: 80%;
+    height: 1px;
+  }
+
+  .user-summary-card .instruction {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .users-section {
+    padding: 20px;
+  }
+
+  .users-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .users-section .header-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .users-section .filter-button,
+  .users-section .view-button,
+  .users-section .add-user-button {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .users-section .button-text {
+    font-size: 14px;
+  }
+
+  .users-section .cards-container {
+    grid-template-columns: 1fr;
+  }
+
+  .users-section .text-wrapper-9 {
+    font-size: 24px;
+  }
+
+  /* Pending users responsive */
+  .pending-user-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pending-user-row .action-buttons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-management-container {
+    padding: 60px 0.75rem 0.75rem;
+    gap: 1rem;
+  }
+
+  .users-section .header-right {
+    gap: 8px;
+  }
+
+  .users-section .filter-button,
+  .users-section .view-button,
+  .users-section .add-user-button {
+    padding: 0 14px;
+    height: 36px;
+  }
+
+  .users-section .button-text {
+    font-size: 12px;
+  }
+
+  .user-summary-card .stat-number {
+    font-size: 24px;
+  }
+
+  .user-summary-card .stat-label {
+    font-size: 14px;
+  }
+}

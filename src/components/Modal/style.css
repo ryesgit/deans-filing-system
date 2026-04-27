@@ -79,3 +79,33 @@
     opacity: 1;
   }
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-body .form-group input,
+  .modal-body .form-group select,
+  .modal-body .form-group textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

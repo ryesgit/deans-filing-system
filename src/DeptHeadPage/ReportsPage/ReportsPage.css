@@ -365,6 +365,38 @@
 }
 
 @media (max-width: 768px) {
+  .page-content-wrapper {
+    padding-left: 0;
+    padding-top: 60px;
+  }
+
+  .reports-main-content {
+    padding: 1rem;
+  }
+
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .welcome-message .text-wrapper-77 {
+    font-size: 28px;
+    letter-spacing: -1.5px;
+    top: 0;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .main-content {
     padding: 70px 16px 16px;
   }
@@ -393,7 +425,7 @@
   }
 
   .tab {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .table-container {
@@ -406,7 +438,7 @@
   }
 
   .data-table {
-    min-width: 800px;
+    min-width: 600px;
   }
 }
 
