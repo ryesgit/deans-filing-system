@@ -8,6 +8,44 @@ import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { filesAPI, categoriesAPI } from "../services/api";
 
+// Helper functions for file details localStorage persistence
+const getFileDetailsMap = () => {
+  try {
+    return JSON.parse(localStorage.getItem('fileDetailsMap') || '{}');
+  } catch {
+    return {};
+  }
+};
+
+const setFileDetails = (fileId, details) => {
+  const map = getFileDetailsMap();
+  if (details) {
+    map[fileId] = { ...map[fileId], ...details };
+  } else {
+    delete map[fileId];
+  }
+  localStorage.setItem('fileDetailsMap', JSON.stringify(map));
+};
+
+// Backward compat: also read old validity-only map
+const getFileValidityMap = () => {
+  try {
+    return JSON.parse(localStorage.getItem('fileValidityMap') || '{}');
+  } catch {
+    return {};
+  }
+};
+
+const setFileValidity = (fileId, validUntil) => {
+  const map = getFileValidityMap();
+  if (validUntil) {
+    map[fileId] = validUntil;
+  } else {
+    delete map[fileId];
+  }
+  localStorage.setItem('fileValidityMap', JSON.stringify(map));
+};
+
 const categories = [
   "Research",
   "Academics",
@@ -59,6 +97,7 @@ export const FileManagementPage = () => {
     name: "",
     department: "",
     category: "",
+    validUntil: "",
     file: null,
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -216,6 +255,9 @@ export const FileManagementPage = () => {
       formData.append('filename', fileForm.name); // Backend expects 'filename'
       formData.append('department', fileForm.department);
       formData.append('category', fileForm.category);
+      if (fileForm.validUntil) {
+        formData.append('validUntil', fileForm.validUntil);
+      }
       // Backend expects 'categoryId'
       if (selectedFolder) {
         formData.append('categoryId', selectedFolder.id);
@@ -260,7 +302,20 @@ export const FileManagementPage = () => {
         });
       }
 
-      setFileForm({ name: "", department: "", category: "", folderName: "", folderNumber: "", folderContents: "", file: null });
+      // Save file details to localStorage since backend may not return them in dropdown-friendly format
+      if (newFile.id) {
+        setFileDetails(newFile.id, {
+          department: fileForm.department,
+          category: fileForm.category,
+          validUntil: fileForm.validUntil || '',
+        });
+      }
+      // Also save to old validity map for reports page compatibility
+      if (fileForm.validUntil && newFile.id) {
+        setFileValidity(newFile.id, fileForm.validUntil);
+      }
+
+      setFileForm({ name: "", department: "", category: "", validUntil: "", folderName: "", folderNumber: "", folderContents: "", file: null });
       setShowFileModal(false);
     } catch (error) {
       console.error('Failed to upload file:', error);
@@ -311,10 +366,14 @@ export const FileManagementPage = () => {
 
   const handleEditFile = (file) => {
     setSelectedFile(file);
+    const detailsMap = getFileDetailsMap();
+    const savedDetails = detailsMap[file.id] || {};
+    const validityMap = getFileValidityMap();
     setFileForm({
-      name: file.filename || file.name,
-      department: file.user?.department || file.department || '',
-      category: file.category?.name || file.category || '',
+      name: file.filename || file.name || '',
+      department: savedDetails.department || file.user?.department || file.department || '',
+      category: savedDetails.category || (typeof file.category === 'string' ? file.category : '') || '',
+      validUntil: savedDetails.validUntil || validityMap[file.id] || '',
       file: null,
     });
     setShowEditModal(true);
@@ -350,7 +409,15 @@ export const FileManagementPage = () => {
           ),
         });
         setShowEditModal(false);
-        setFileForm({ name: "", department: "", category: "", folderName: "", folderNumber: "", folderContents: "", file: null });
+        // Save file details to localStorage
+        setFileDetails(selectedFile.id, {
+          department: fileForm.department,
+          category: fileForm.category,
+          validUntil: fileForm.validUntil || '',
+        });
+        // Also save to old validity map for reports page compatibility
+        setFileValidity(selectedFile.id, fileForm.validUntil);
+        setFileForm({ name: "", department: "", category: "", validUntil: "", folderName: "", folderNumber: "", folderContents: "", file: null });
       } catch (error) {
         console.error('Failed to update file:', error);
         setFileError(error.message || 'Failed to update file');
@@ -726,6 +793,9 @@ export const FileManagementPage = () => {
                 <option value="">Select row</option>
                 <option value="1">Row 1</option>
                 <option value="2">Row 2</option>
+                <option value="3">Row 3</option>
+                <option value="4">Row 4</option>
+                <option value="5">Row 5</option>
               </select>
             </div>
             <div className="form-group" style={{ flex: 1 }}>
@@ -739,9 +809,6 @@ export const FileManagementPage = () => {
                 <option value="">Select column</option>
                 <option value="1">Column 1</option>
                 <option value="2">Column 2</option>
-                <option value="3">Column 3</option>
-                <option value="4">Column 4</option>
-                <option value="5">Column 5</option>
               </select>
             </div>
           </div>
@@ -828,6 +895,9 @@ export const FileManagementPage = () => {
                 <option value="">Select row</option>
                 <option value="1">Row 1</option>
                 <option value="2">Row 2</option>
+                <option value="3">Row 3</option>
+                <option value="4">Row 4</option>
+                <option value="5">Row 5</option>
               </select>
             </div>
             <div className="form-group" style={{ flex: 1 }}>
@@ -841,9 +911,6 @@ export const FileManagementPage = () => {
                 <option value="">Select column</option>
                 <option value="1">Column 1</option>
                 <option value="2">Column 2</option>
-                <option value="3">Column 3</option>
-                <option value="4">Column 4</option>
-                <option value="5">Column 5</option>
               </select>
             </div>
           </div>
@@ -896,7 +963,7 @@ export const FileManagementPage = () => {
         isOpen={showFileModal}
         onClose={() => {
           setShowFileModal(false);
-          setFileForm({ name: "", department: "", category: "", file: null });
+          setFileForm({ name: "", department: "", category: "", validUntil: "", file: null });
           setFileError("");
         }}
         title="Add New File"
@@ -946,6 +1013,18 @@ export const FileManagementPage = () => {
             </select>
           </div>
 
+          <div className="form-group">
+            <label>File Validity</label>
+            <input
+              type="date"
+              value={fileForm.validUntil}
+              onChange={(e) =>
+                setFileForm({ ...fileForm, validUntil: e.target.value })
+              }
+              min={new Date().toISOString().split('T')[0]}
+              placeholder="Select validity date"
+            />
+          </div>
           <div className="form-group">
             <label>Upload PDF File *</label>
             <input type="file" accept=".pdf" onChange={handleFileChange} />
@@ -1052,7 +1131,7 @@ export const FileManagementPage = () => {
         isOpen={showEditModal}
         onClose={() => {
           setShowEditModal(false);
-          setFileForm({ name: "", department: "", category: "", folderName: "", folderNumber: "", folderContents: "", file: null });
+          setFileForm({ name: "", department: "", category: "", validUntil: "", folderName: "", folderNumber: "", folderContents: "", file: null });
         }}
         title="Edit File"
       >
@@ -1099,6 +1178,17 @@ export const FileManagementPage = () => {
               ))}
             </select>
           </div>
+          <div className="form-group">
+            <label>File Validity</label>
+            <input
+              type="date"
+              value={fileForm.validUntil}
+              onChange={(e) =>
+                setFileForm({ ...fileForm, validUntil: e.target.value })
+              }
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
           <div className="modal-actions">
             <button
               className="btn btn-secondary"
@@ -1108,6 +1198,7 @@ export const FileManagementPage = () => {
                   name: "",
                   department: "",
                   category: "",
+                  validUntil: "",
                   folderName: "",
                   folderNumber: "",
                   folderContents: "",
