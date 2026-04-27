@@ -281,6 +281,21 @@
   display: none;
 }
 
+.status-expired {
+  background-color: #de0400;
+  color: #ffffff;
+}
+
+.status-due-soon {
+  background-color: #e6a817;
+  color: #ffffff;
+}
+
+.status-valid {
+  background-color: #4bd046;
+  color: #ffffff;
+}
+
 @media (max-width: 1200px) {
   .page-title {
     font-size: 42px;
