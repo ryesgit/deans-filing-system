@@ -122,7 +122,9 @@ export const FileManagementPage = () => {
         setFolders(categoriesData);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
-        setFolders([]);
+        if (error?.status !== 429) {
+          setFolders([]);
+        }
       } finally {
         setLoading(false);
       }

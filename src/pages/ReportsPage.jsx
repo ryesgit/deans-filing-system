@@ -8,6 +8,49 @@ import { useAuth } from "../components/Modal/AuthContext";
 import { reportsAPI, filesAPI, categoriesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 
+const normalizeId = (value) =>
+  value === null || value === undefined ? null : String(value);
+
+const belongsToUser = (request, currentUser) => {
+  const requestUserIds = [request?.userId, request?.user?.userId, request?.user?.id]
+    .map(normalizeId)
+    .filter(Boolean);
+  const currentUserIds = [currentUser?.userId, currentUser?.id]
+    .map(normalizeId)
+    .filter(Boolean);
+
+  return currentUserIds.some((userId) => requestUserIds.includes(userId));
+};
+
+const isReturnedRequest = (request) =>
+  ["RETURNED", "COMPLETED"].includes(request?.status) || Boolean(request?.returnedAt);
+
+const isBorrowedRequest = (request) =>
+  !isReturnedRequest(request) && request?.status === "BORROWED";
+
+const getRequestDate = (activeTab, row) => {
+  if (activeTab === "returned") {
+    return row.returnedAt || row.updatedAt || row.createdAt;
+  }
+
+  if (activeTab === "borrowed") {
+    return row.borrowedAt || row.approvedAt || row.updatedAt || row.createdAt;
+  }
+
+  return row.createdAt || row.updatedAt;
+};
+
+const getFileName = (row) =>
+  row.file?.filename || row.file?.name || row.title || "N/A";
+
+const getCopyType = (row) =>
+  row.description?.includes("Soft Copy Only") ? "Soft Copy" : "Hard Copy";
+
+const getStatusClass = (status) =>
+  status ? `status-${status.toLowerCase()}` : "status-pending";
+
+const getStatusLabel = (status) => status || "Unknown";
+
 export const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState("request");
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,25 +75,28 @@ export const ReportsPage = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        if (!user?.userId) {
+        if (!user?.userId && !user?.id) {
           setLoading(false);
           return;
         }
 
-        const response = await reportsAPI.getUserActivity(user.userId, 365);
-        const transactions = Array.isArray(response.data.report.recentTransactions)
-          ? response.data.report.recentTransactions
-          : [];
+        const response = await requestsAPI.getAll();
+        const requests = Array.isArray(response.data.requests)
+          ? response.data.requests
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+
+        const userRequests = requests
+          .filter((request) => request?.status !== "CANCELLED")
+          .filter((request) => belongsToUser(request, user));
 
         setReportsData({
-          request: transactions.filter((t) => t.type === "CHECKOUT"),
-          borrowed: transactions.filter(
-            (t) => t.type === "CHECKOUT" && !t.returnedAt
+          request: userRequests.filter(
+            (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
           ),
-          returned: transactions.filter(
-            (t) => t.type === "RETURN" || t.returnedAt
-          ),
-          validityDue: [],
+          borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
+          returned: userRequests.filter((request) => isReturnedRequest(request)),
         });
       } catch (error) {
         console.error("Failed to fetch reports:", error);
@@ -156,27 +202,21 @@ export const ReportsPage = () => {
       : [];
     const headers =
       activeTab === "request"
-        ? [
-            "Transaction ID",
-            "File Name",
-            "Date",
-            "Type",
-          ]
+        ? ["Request ID", "File Name", "Date Submitted", "Status"]
         : [
-            "Transaction ID",
+            "Request ID",
             "File Name",
             `Date ${activeTab === "borrowed" ? "Borrowed" : "Returned"}`,
           ];
 
     let csv = headers.join(",") + "\n";
     data.forEach((row) => {
-      const dateField =
-        activeTab === "returned" ? row.returnedAt || row.timestamp : row.timestamp;
+      const dateField = getRequestDate(activeTab, row);
       const values = [
         row.id,
-        row.file?.filename || "N/A",
-        new Date(dateField).toLocaleDateString(),
-        ...(activeTab === "request" ? [row.type] : []),
+        getFileName(row),
+        dateField ? new Date(dateField).toLocaleDateString() : "N/A",
+        ...(activeTab === "request" ? [row.status || "N/A"] : []),
       ];
       csv += values.join(",") + "\n";
     });
@@ -191,7 +231,7 @@ export const ReportsPage = () => {
     a.click();
   };
 
-  const handleShowDetails = (transaction, e) => {
+  const handleShowDetails = (transaction) => {
     setSelectedTransactionForDetails(transaction);
     setShowDetailsModal(true);
   };
@@ -335,7 +375,7 @@ export const ReportsPage = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Transaction ID</th>
+                <th>Request ID</th>
                 <th>File Name</th>
                 <th>
                   Date{" "}
@@ -343,40 +383,37 @@ export const ReportsPage = () => {
                     ? "Borrowed"
                     : activeTab === "returned"
                     ? "Returned"
-                    : "Transaction"}
+                    : "Submitted"}
                 </th>
-                {activeTab === "request" && <th>Type</th>}
+                {activeTab === "request" && <th>Status</th>}
               </tr>
             </thead>
             <tbody>
-              {data.map((row, index) => {
-                const dateField =
-                  activeTab === "returned"
-                    ? row.returnedAt || row.timestamp
-                    : row.timestamp;
+              {data.map((row) => {
+                const dateField = getRequestDate(activeTab, row);
                 return (
                   <tr
-                    key={index}
-                    onClick={(e) => handleShowDetails(row, e)}
+                    key={row.id}
+                    onClick={() => handleShowDetails(row)}
                     style={{ cursor: "pointer" }}
                   >
-                    <td data-label="Transaction ID">{row.id}</td>
-                    <td data-label="File Name">{row.file?.filename || "N/A"}</td>
+                    <td data-label="Request ID">{row.id}</td>
+                    <td data-label="File Name">{getFileName(row)}</td>
                     <td
                       data-label={`Date ${
                         activeTab === "borrowed"
                           ? "Borrowed"
                           : activeTab === "returned"
                           ? "Returned"
-                          : "Transaction"
+                          : "Submitted"
                       }`}
                     >
-                      {new Date(dateField).toLocaleDateString()}
+                      {dateField ? new Date(dateField).toLocaleDateString() : "N/A"}
                     </td>
                     {activeTab === "request" && (
-                      <td data-label="Type">
-                        <span className={`status-badge status-${row.type?.toLowerCase()}`}>
-                          {row.type}
+                      <td data-label="Status">
+                        <span className={`status-badge ${getStatusClass(row.status)}`}>
+                          {getStatusLabel(row.status)}
                         </span>
                       </td>
                     )}
@@ -484,16 +521,15 @@ export const ReportsPage = () => {
         </div>
       </div>
 
-      {/* Transaction Details Modal */}
       <Modal
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
-        title="Transaction Details"
+        title="Request Details"
       >
         {selectedTransactionForDetails && (
           <div className="request-details-modal-content">
             <div className="details-row">
-              <span className="file-info-label">Transaction ID:</span>
+              <span className="file-info-label">Request ID:</span>
               <span className="file-info-value">
                 {selectedTransactionForDetails.id}
               </span>
@@ -501,21 +537,27 @@ export const ReportsPage = () => {
             <div className="details-row">
               <span className="file-info-label">File Name:</span>
               <span className="file-info-value">
-                {selectedTransactionForDetails.file?.filename || "N/A"}
+                {getFileName(selectedTransactionForDetails)}
               </span>
             </div>
             <div className="details-row">
-              <span className="file-info-label">Transaction Type:</span>
+              <span className="file-info-label">Request Status:</span>
               <span className="file-info-value">
-                {selectedTransactionForDetails.type}
+                {getStatusLabel(selectedTransactionForDetails.status)}
               </span>
             </div>
             <div className="details-row">
-              <span className="file-info-label">Date:</span>
+              <span className="file-info-label">Copy Type:</span>
               <span className="file-info-value">
-                {new Date(
-                  selectedTransactionForDetails.timestamp
-                ).toLocaleDateString()}
+                {getCopyType(selectedTransactionForDetails)}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Date Submitted:</span>
+              <span className="file-info-value">
+                {selectedTransactionForDetails.createdAt
+                  ? new Date(selectedTransactionForDetails.createdAt).toLocaleDateString()
+                  : "N/A"}
               </span>
             </div>
             {selectedTransactionForDetails.returnedAt && (

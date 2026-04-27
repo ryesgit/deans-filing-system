@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
+import { sendRegistrationConfirmationEmail } from "../../utils/email";
 import "./RegistrationPage.css";
 
 export const RegistrationPage = ({ onClose }) => {
@@ -123,6 +124,13 @@ export const RegistrationPage = ({ onClose }) => {
 
     if (result.success) {
       setSuccessMessage(result.message);
+
+      // Send a registration confirmation email to the new user
+      sendRegistrationConfirmationEmail({
+        toEmail: formData.email,
+        toName: formData.name,
+      });
+
       setTimeout(() => {
         onClose();
       }, 3000);

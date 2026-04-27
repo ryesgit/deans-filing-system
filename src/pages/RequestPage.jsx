@@ -9,9 +9,23 @@ import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-import { requestsAPI, authAPI, filesAPI } from "../services/api";
+import { requestsAPI, filesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 import { useAuth } from "../components/Modal/AuthContext";
+
+const normalizeId = (value) =>
+  value === null || value === undefined ? null : String(value);
+
+const belongsToUser = (request, currentUser) => {
+  const requestUserIds = [request?.userId, request?.user?.userId, request?.user?.id]
+    .map(normalizeId)
+    .filter(Boolean);
+  const currentUserIds = [currentUser?.userId, currentUser?.id]
+    .map(normalizeId)
+    .filter(Boolean);
+
+  return currentUserIds.some((userId) => requestUserIds.includes(userId));
+};
 const ConfirmModal = ({
   isOpen,
   onClose,
@@ -1126,36 +1140,9 @@ export const RequestPage = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
 
   const { notifications, unreadCount } = useNotifications();
-
-  // Fetch user data on mount
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await authAPI.getMe();
-        const userData = response.data.user || response.data;
-
-        if (userData && userData.avatar) {
-          if (userData.avatar.startsWith("data:")) {
-            setCurrentUser(userData);
-          } else if (userData.avatar.startsWith("http")) {
-            setCurrentUser(userData);
-          } else {
-            userData.avatar = null;
-            setCurrentUser(userData);
-          }
-        } else {
-          setCurrentUser(userData);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
 
   // Fetch requests from API on mount
   useEffect(() => {
@@ -1169,9 +1156,6 @@ export const RequestPage = () => {
         const response = await requestsAPI.getAll();
         const requestsData = response.data.requests || response.data;
 
-        console.log('Request Page - All requests:', requestsData);
-        console.log('Request Page - Current user:', currentUser);
-
         if (!Array.isArray(requestsData)) {
           setRequests([]);
           return;
@@ -1179,13 +1163,27 @@ export const RequestPage = () => {
 
         const filteredRequests = requestsData
           .filter((req) => req.status !== "CANCELLED")
-          .filter((req) => {
-            const match = req.userId === currentUser.userId || req.userId === currentUser.id;
-            console.log(`Request ${req.id}: userId=${req.userId}, user.userId=${currentUser.userId}, user.id=${currentUser.id}, match=${match}`);
-            return match;
-          });
+          .filter((req) => belongsToUser(req, currentUser));
 
-        // Map requests and fetch file details for approved original copy requests
+        const needsFileLookup = filteredRequests.some(
+          (req) =>
+            (req.status === "APPROVED" || req.status === "Approved") &&
+            req.description?.includes("Original Copy") &&
+            req.fileId &&
+            !req.file
+        );
+
+        let filesById = new Map();
+        if (needsFileLookup) {
+          try {
+            const fileResponse = await filesAPI.getAll();
+            const allFiles = fileResponse.data.files || fileResponse.data || [];
+            filesById = new Map(allFiles.map((file) => [file.id, file]));
+          } catch (error) {
+            console.error("Failed to fetch file details for requests:", error);
+          }
+        }
+
         const mappedRequests = await Promise.all(
           filteredRequests.map(async (req) => {
             const baseRequest = {
@@ -1201,27 +1199,21 @@ export const RequestPage = () => {
               copyType: req.type,
               fileId: req.fileId,
               description: req.description,
-              file: req.file, // Include file object from response
+              file: req.file,
+              createdAt: req.createdAt,
+              approvedAt: req.approvedAt,
+              returnedAt: req.returnedAt,
             };
 
-            // If this is an approved original copy request and we have a fileId, fetch full file details
             const isApprovedOriginal =
               (req.status === "APPROVED" || req.status === "Approved") &&
               req.description?.includes("Original Copy") &&
               req.fileId;
 
-            if (isApprovedOriginal) {
-              try {
-                // Fetch full file details including category information
-                const fileResponse = await filesAPI.getAll();
-                const allFiles = fileResponse.data.files || fileResponse.data || [];
-                const fileDetails = allFiles.find(f => f.id === req.fileId);
-
-                if (fileDetails) {
-                  baseRequest.file = fileDetails;
-                }
-              } catch (error) {
-                console.error(`Failed to fetch file details for request ${req.id}:`, error);
+            if (isApprovedOriginal && !baseRequest.file) {
+              const fileDetails = filesById.get(req.fileId);
+              if (fileDetails) {
+                baseRequest.file = fileDetails;
               }
             }
 
