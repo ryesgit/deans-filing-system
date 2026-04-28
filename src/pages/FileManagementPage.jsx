@@ -407,10 +407,24 @@ export const FileManagementPage = () => {
     const detailsMap = getFileDetailsMap();
     const savedDetails = detailsMap[file.id] || {};
     const validityMap = getFileValidityMap();
+
+    // Resolve category: try localStorage first, then file object
+    let resolvedCategory = savedDetails.category || '';
+    if (!resolvedCategory) {
+      if (typeof file.category === 'string') {
+        resolvedCategory = file.category;
+      } else if (file.category?.name) {
+        resolvedCategory = file.category.name;
+      }
+    }
+
+    // Resolve department: try localStorage first, then file object
+    const resolvedDepartment = savedDetails.department || file.user?.department || file.department || '';
+
     setFileForm({
       name: file.filename || file.name || '',
-      department: savedDetails.department || file.user?.department || file.department || '',
-      category: savedDetails.category || (typeof file.category === 'string' ? file.category : '') || '',
+      department: resolvedDepartment,
+      category: resolvedCategory,
       validUntil: savedDetails.validUntil || validityMap[file.id] || '',
       file: null,
     });
@@ -418,48 +432,61 @@ export const FileManagementPage = () => {
   };
 
   const handleUpdateFile = async () => {
-    if (selectedFolder && selectedFile) {
-      try {
-        const updateData = {
-          name: fileForm.name,
-          category: fileForm.category,
-        };
+    if (!selectedFolder || !selectedFile) return;
 
-        const response = await filesAPI.update(selectedFile.id, updateData);
-        const updatedFile = response.data.file;
+    // Build the merged updated file object immediately from form data
+    const updatedFile = {
+      ...selectedFile,
+      filename: fileForm.name || selectedFile.filename,
+      name: fileForm.name || selectedFile.name,
+      department: fileForm.department,
+      category: fileForm.category,
+      validUntil: fileForm.validUntil || selectedFile.validUntil || '',
+    };
 
-        const updatedFolders = folders.map((folder) =>
-          folder.id === selectedFolder.id
-            ? {
-              ...folder,
-              files: (folder.files || []).map((f) =>
-                f.id === selectedFile.id ? updatedFile : f
-              ),
-            }
-            : folder
-        );
+    // Save to localStorage immediately — this is the source of truth for dept/category/validity
+    setFileDetails(selectedFile.id, {
+      department: fileForm.department,
+      category: fileForm.category,
+      validUntil: fileForm.validUntil || '',
+    });
+    setFileValidity(selectedFile.id, fileForm.validUntil);
 
-        setFolders(updatedFolders);
-        setSelectedFolder({
-          ...selectedFolder,
-          files: (selectedFolder.files || []).map((f) =>
+    // Update local state immediately so UI reflects changes
+    setFolders((prev) => prev.map((folder) =>
+      folder.id === selectedFolder.id
+        ? {
+          ...folder,
+          files: (folder.files || []).map((f) =>
             f.id === selectedFile.id ? updatedFile : f
           ),
-        });
-        setShowEditModal(false);
-        // Save file details to localStorage
-        setFileDetails(selectedFile.id, {
-          department: fileForm.department,
-          category: fileForm.category,
-          validUntil: fileForm.validUntil || '',
-        });
-        // Also save to old validity map for reports page compatibility
-        setFileValidity(selectedFile.id, fileForm.validUntil);
-        setFileForm({ name: "", department: "", category: "", validUntil: "", folderName: "", folderNumber: "", folderContents: "", file: null });
-      } catch (error) {
-        console.error('Failed to update file:', error);
-        setFileError(error.message || 'Failed to update file');
+        }
+        : folder
+    ));
+    setSelectedFolder((prev) => ({
+      ...prev,
+      files: (prev?.files || []).map((f) =>
+        f.id === selectedFile.id ? updatedFile : f
+      ),
+    }));
+
+    setShowEditModal(false);
+    setFileForm({ name: "", department: "", category: "", validUntil: "", folderName: "", folderNumber: "", folderContents: "", file: null });
+
+    // Attempt API update in background (non-blocking)
+    try {
+      const updateData = {
+        name: fileForm.name,
+        category: fileForm.category,
+        department: fileForm.department,
+      };
+      if (fileForm.validUntil) {
+        updateData.validUntil = fileForm.validUntil;
       }
+      await filesAPI.update(selectedFile.id, updateData);
+    } catch (error) {
+      console.error('API update failed (local changes saved):', error);
+      // Don't show error to user — local state and localStorage are already updated
     }
   };
 
@@ -1193,6 +1220,11 @@ export const FileManagementPage = () => {
               }
             >
               <option value="">Select department</option>
+              {fileForm.department && !departments.includes(fileForm.department) && (
+                <option key={fileForm.department} value={fileForm.department}>
+                  {fileForm.department}
+                </option>
+              )}
               {departments.map((dept) => (
                 <option key={dept} value={dept}>
                   {dept}
@@ -1209,6 +1241,11 @@ export const FileManagementPage = () => {
               }
             >
               <option value="">Select category</option>
+              {fileForm.category && !categories.includes(fileForm.category) && (
+                <option key={fileForm.category} value={fileForm.category}>
+                  {fileForm.category}
+                </option>
+              )}
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}

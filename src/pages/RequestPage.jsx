@@ -9,9 +9,10 @@ import FileSearchInput from "../components/FileSearchInput";
 import "../DeptHeadPage/RequestPage/RequestPage.css";
 import "../DeptHeadPage/DashboardPage/style.css";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
-import { requestsAPI, filesAPI } from "../services/api";
+import { requestsAPI, filesAPI, categoriesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 import { useAuth } from "../components/Modal/AuthContext";
+import { sendReturnDateReminderEmail } from "../utils/email";
 
 const normalizeId = (value) =>
   value === null || value === undefined ? null : String(value);
@@ -103,12 +104,15 @@ const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
 };
 
 const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
+  const { user } = useAuth();
+  const isRestrictedRole = ["ADMIN", "STAFF", "STUDENT"].includes(user?.role);
+
   const [formData, setFormData] = useState({
     fileName: "",
     department: "",
     fileCategory: "",
     purpose: "",
-    copyType: "soft",
+    copyType: isRestrictedRole ? "original" : "soft",
     returnDate: "",
     priority: "",
     fileId: null,
@@ -150,12 +154,19 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
   };
 
   const handleFileSelect = (fileInfo) => {
+    // category may come as an object {name:...} or a plain string
+    const rawCategory = fileInfo.fileCategory;
+    const resolvedCategory =
+      rawCategory && typeof rawCategory === "object"
+        ? rawCategory.name || ""
+        : rawCategory || "";
+
     setFormData((prev) => ({
       ...prev,
       fileName: fileInfo.fileName,
-      fileId: fileInfo.fileData?.id, // Store file ID
-      department: fileInfo.department || "",
-      fileCategory: fileInfo.fileCategory || "",
+      fileId: fileInfo.fileData?.id,
+      department: fileInfo.department || prev.department,
+      fileCategory: resolvedCategory || prev.fileCategory,
     }));
   };
 
@@ -245,7 +256,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
       department: "",
       fileCategory: "",
       purpose: "",
-      copyType: "soft",
+      copyType: isRestrictedRole ? "original" : "soft",
       returnDate: "",
       priority: "",
       fileId: null,
@@ -259,7 +270,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
       department: "",
       fileCategory: "",
       purpose: "",
-      copyType: "soft",
+      copyType: isRestrictedRole ? "original" : "soft",
       returnDate: "",
       priority: "",
       fileId: null,
@@ -287,6 +298,12 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             onChange={(e) => handleChange("department", e.target.value)}
           >
             <option value="">Department</option>
+            {/* Include auto-filled value if not in the hardcoded list */}
+            {formData.department && !departments.includes(formData.department) && (
+              <option key={formData.department} value={formData.department}>
+                {formData.department}
+              </option>
+            )}
             {departments.map((dept) => (
               <option key={dept} value={dept}>
                 {dept}
@@ -302,6 +319,12 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             onChange={(e) => handleChange("fileCategory", e.target.value)}
           >
             <option value="">File Category</option>
+            {/* Include auto-filled value if not in the hardcoded list */}
+            {formData.fileCategory && !categories.includes(formData.fileCategory) && (
+              <option key={formData.fileCategory} value={formData.fileCategory}>
+                {formData.fileCategory}
+              </option>
+            )}
             {categories.map((category) => (
               <option key={category} value={category}>
                 {category}
@@ -315,19 +338,21 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
         <div className="copy-type-section">
           <label className="copy-type-label">Copy Type</label>
           <div className="copy-type-buttons">
-            <label
-              className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
-                }`}
-            >
-              <input
-                type="radio"
-                name="copyType"
-                className="copy-type-btn"
-                checked={formData.copyType === "soft"}
-                onChange={() => handleCopyTypeChange("soft")}
-              />
-              Soft Copy Only
-            </label>
+            {!isRestrictedRole && (
+              <label
+                className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="copyType"
+                  className="copy-type-btn"
+                  checked={formData.copyType === "soft"}
+                  onChange={() => handleCopyTypeChange("soft")}
+                />
+                Soft Copy Only
+              </label>
+            )}
             <label
               className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
                 }`}
@@ -1165,22 +1190,41 @@ export const RequestPage = () => {
           .filter((req) => req.status !== "CANCELLED")
           .filter((req) => belongsToUser(req, currentUser));
 
-        const needsFileLookup = filteredRequests.some(
+        // Check if any approved original requests need enrichment
+        const hasApprovedOriginal = filteredRequests.some(
           (req) =>
             (req.status === "APPROVED" || req.status === "Approved") &&
             req.description?.includes("Original Copy") &&
-            req.fileId &&
-            !req.file
+            req.fileId
         );
 
         let filesById = new Map();
-        if (needsFileLookup) {
+        let allCategories = [];
+        if (hasApprovedOriginal) {
+          // Always fetch categories for folder details
           try {
-            const fileResponse = await filesAPI.getAll();
-            const allFiles = fileResponse.data.files || fileResponse.data || [];
-            filesById = new Map(allFiles.map((file) => [file.id, file]));
+            const catResponse = await categoriesAPI.getAll();
+            allCategories = catResponse.data?.categories || catResponse.data || [];
           } catch (error) {
-            console.error("Failed to fetch file details for requests:", error);
+            console.error("Failed to fetch categories for file details:", error);
+          }
+
+          // Fetch all files for lookup when some requests don't have file data
+          const needsFileLookup = filteredRequests.some(
+            (req) =>
+              (req.status === "APPROVED" || req.status === "Approved") &&
+              req.description?.includes("Original Copy") &&
+              req.fileId &&
+              !req.file
+          );
+          if (needsFileLookup) {
+            try {
+              const fileResponse = await filesAPI.getAll();
+              const allFiles = fileResponse.data.files || fileResponse.data || [];
+              filesById = new Map(allFiles.map((file) => [file.id, file]));
+            } catch (error) {
+              console.error("Failed to fetch file details for requests:", error);
+            }
           }
         }
 
@@ -1199,7 +1243,7 @@ export const RequestPage = () => {
               copyType: req.type,
               fileId: req.fileId,
               description: req.description,
-              file: req.file,
+              file: req.file ? { ...req.file } : null,
               createdAt: req.createdAt,
               approvedAt: req.approvedAt,
               returnedAt: req.returnedAt,
@@ -1210,10 +1254,37 @@ export const RequestPage = () => {
               req.description?.includes("Original Copy") &&
               req.fileId;
 
-            if (isApprovedOriginal && !baseRequest.file) {
-              const fileDetails = filesById.get(req.fileId);
-              if (fileDetails) {
-                baseRequest.file = fileDetails;
+            if (isApprovedOriginal) {
+              // If file is missing, look it up
+              if (!baseRequest.file) {
+                const fileDetails = filesById.get(req.fileId);
+                if (fileDetails) {
+                  baseRequest.file = { ...fileDetails };
+                }
+              }
+
+              // Enrich file with folder/category details
+              if (baseRequest.file && allCategories.length > 0) {
+                const catId = baseRequest.file.categoryId || baseRequest.file.category?.id;
+                const catName = typeof baseRequest.file.category === 'string'
+                  ? baseRequest.file.category
+                  : baseRequest.file.category?.name;
+
+                let matchedCategory = null;
+                if (catId) {
+                  matchedCategory = allCategories.find((c) => c.id === catId);
+                }
+                if (!matchedCategory && catName) {
+                  matchedCategory = allCategories.find((c) => c.name === catName);
+                }
+
+                if (matchedCategory) {
+                  baseRequest.file.category = matchedCategory;
+                  baseRequest.file.folderName = matchedCategory.name;
+                  baseRequest.file.folderNumber = matchedCategory.folderNumber;
+                  baseRequest.file.rowPosition = baseRequest.file.rowPosition || matchedCategory.row;
+                  baseRequest.file.columnPosition = baseRequest.file.columnPosition || matchedCategory.column;
+                }
               }
             }
 
@@ -1231,6 +1302,62 @@ export const RequestPage = () => {
 
     fetchRequests();
   }, [currentUser]);
+
+  // Check return dates and send reminder emails when requests load
+  useEffect(() => {
+    if (!requests.length || !currentUser) return;
+
+    const REMINDER_DAYS = 1; // Send reminder if due within this many days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    requests.forEach((req) => {
+      // Only check approved original copy requests
+      if (
+        (req.status !== "APPROVED" && req.status !== "Approved") ||
+        !req.description?.includes("Original Copy")
+      ) return;
+
+      // Extract return date from description
+      const returnDateMatch = req.description?.match(/Return Date:\s*(.+)/);
+      if (!returnDateMatch) return;
+
+      const returnDate = new Date(returnDateMatch[1].trim());
+      if (isNaN(returnDate.getTime())) return;
+      returnDate.setHours(0, 0, 0, 0);
+
+      const daysLeft = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
+
+      // Only send if within reminder window and not already overdue
+      if (daysLeft < 0 || daysLeft > REMINDER_DAYS) return;
+
+      // Check localStorage to avoid sending duplicate reminders (once per day per request)
+      const reminderKey = `return_reminder_${req.id}_${returnDate.toISOString().split('T')[0]}_day${daysLeft}`;
+      if (localStorage.getItem(reminderKey)) return;
+
+      // Get user email — try multiple possible fields
+      const userEmail = currentUser?.email || currentUser?.emailAddress || "";
+      const userName = currentUser?.name || currentUser?.fullName || "User";
+      const fileName = req.fileName || "your borrowed file";
+      const returnDateStr = returnDate.toLocaleDateString("en-US", {
+        year: "numeric", month: "long", day: "numeric"
+      });
+
+      if (!userEmail) return;
+
+      // Send reminder and mark as sent
+      sendReturnDateReminderEmail({
+        toEmail: userEmail,
+        toName: userName,
+        fileName,
+        returnDate: returnDateStr,
+        daysLeft,
+      }).then(() => {
+        localStorage.setItem(reminderKey, "sent");
+        console.log(`Return reminder sent for request ${req.id}, ${daysLeft} day(s) left`);
+      });
+    });
+  }, [requests, currentUser]);
 
   const handleSubmitRequest = (newRequest) => {
     const mappedRequest = {
@@ -1269,14 +1396,34 @@ export const RequestPage = () => {
   );
 
   // Extract assigned file details
-  const assignedFile = approvedOriginalRequest?.file ? {
-    fileName: approvedOriginalRequest.file.filename || approvedOriginalRequest.fileName,
-    folderNumber: approvedOriginalRequest.file.category?.folderNumber || 'N/A',
-    folderName: approvedOriginalRequest.file.category?.name || 'N/A',
-    column: approvedOriginalRequest.file.columnPosition || 'N/A',
-    row: approvedOriginalRequest.file.rowPosition || 'N/A',
-    returnDate: approvedOriginalRequest.returnDue || 'N/A',
-  } : null;
+  const buildAssignedFile = () => {
+    if (!approvedOriginalRequest?.file && !approvedOriginalRequest?.fileId) return null;
+
+    const file = approvedOriginalRequest.file || {};
+    const desc = approvedOriginalRequest.description || "";
+
+    // Extract return date from description (format: "Return Date: YYYY-MM-DD" or "Return Date: MM/DD/YYYY")
+    const returnDateMatch = desc.match(/Return Date:\s*(.+)/);
+    const returnDate = returnDateMatch ? returnDateMatch[1].trim() : approvedOriginalRequest.returnDue || "N/A";
+
+    // Try multiple property names for folder details
+    const folderName = file.folderName || file.category?.name || file.categoryName || "N/A";
+    const folderNumber = file.folderNumber || file.category?.folderNumber || "N/A";
+    const row = file.rowPosition || file.row || file.category?.row || "N/A";
+    const column = file.columnPosition || file.column || file.category?.column || "N/A";
+    const fileName = file.filename || file.name || approvedOriginalRequest.fileName || "N/A";
+
+    return {
+      fileName,
+      folderNumber,
+      folderName,
+      column,
+      row,
+      returnDate,
+    };
+  };
+
+  const assignedFile = buildAssignedFile();
 
   // Files Assigned: Count only APPROVED original copy requests (not completed/borrowed/returned)
   const filesAssigned = requests.filter(

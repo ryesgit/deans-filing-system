@@ -54,8 +54,8 @@
   top: 5.5%;
   left: -2%;
   width: 63%;
-  height: 7%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
 }
 
 .login-title {
@@ -320,4 +320,94 @@
   line-height: normal;
   position: relative; /* Add this */
   z-index: 3; /* Add this - highest z-index */
+}
+
+/* ── Mobile Responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Hide the left image entirely */
+  .login-page-image {
+    display: none;
+  }
+
+  /* Make the right panel fill the whole screen */
+  .login-page-right {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Remove the curved overhang — it was designed to overlap the image */
+  .login-panel {
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  /* Re-center all content now that there's no image offset */
+  .login-panel-content {
+    left: 0;
+  }
+
+  /* Logo: shrink and center */
+  .login-logo {
+    position: absolute;
+    top: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 55%;
+    max-width: 280px;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .login-title {
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    top: 23%;
+    white-space: normal;
+    text-align: center;
+    width: 90%;
+  }
+
+  .login-subtitle {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 32%;
+    width: 80%;
+    font-size: clamp(0.8rem, 3vw, 1rem);
+    text-align: center;
+  }
+
+  .login-field {
+    width: 85%;
+    max-width: 400px;
+  }
+
+  .login-field.username {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 46%;
+  }
+
+  .login-field.password {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 35%;
+  }
+
+  .login-button-wrapper {
+    left: 50%;
+    top: 68%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 400px;
+  }
+
+  .reset-password-button {
+    left: 50%;
+    top: 82%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 400px;
+  }
 }

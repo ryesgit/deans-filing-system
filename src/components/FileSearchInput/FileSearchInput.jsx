@@ -90,20 +90,47 @@ const FileSearchInput = ({ value, onChange, onFileSelect, copyType = "soft" }) =
       let archivedIds = [];
       try {
         archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
-      } catch {}
+      } catch { }
+
+      // Read saved file details from localStorage as fallback
+      let fileDetailsMap = {};
+      try {
+        fileDetailsMap = JSON.parse(localStorage.getItem('fileDetailsMap') || '{}');
+      } catch { }
 
       return files
         .filter((file) => !archivedIds.includes(String(file.id)))
-        .map((file) => ({
-        value: file.id,
-        label: file.filename || file.name,
-        department: file.department,
-        category: file.category || "Uncategorized",
-        status: file.status || "AVAILABLE",
-        // Only disable files for original copy requests when file is not available
-        isDisabled: copyType === "original" && file.status && file.status !== "AVAILABLE",
-        fileData: file,
-      }));
+        .map((file) => {
+          const savedDetails = fileDetailsMap[file.id] || {};
+
+          // Resolve category: localStorage has the actual file category (Thesis, Capstone, etc.)
+          // file.category from API is the folder/category object, NOT the file type
+          let resolvedCategory = "";
+          if (savedDetails.category) {
+            resolvedCategory = savedDetails.category;
+          } else if (file.category && typeof file.category === 'object') {
+            resolvedCategory = file.category.name || "";
+          } else if (file.category && typeof file.category === 'string') {
+            resolvedCategory = file.category;
+          }
+          if (!resolvedCategory) {
+            resolvedCategory = "Uncategorized";
+          }
+
+          // Resolve department: try localStorage first, then API sources
+          const resolvedDepartment = savedDetails.department || file.user?.department || file.department || "";
+
+          return {
+            value: file.id,
+            label: file.filename || file.name,
+            department: resolvedDepartment,
+            category: resolvedCategory,
+            status: file.status || "AVAILABLE",
+            // Only disable files for original copy requests when file is not available
+            isDisabled: copyType === "original" && file.status && file.status !== "AVAILABLE",
+            fileData: file,
+          };
+        });
     } catch (error) {
       console.error("Error searching files:", error);
       return [];
