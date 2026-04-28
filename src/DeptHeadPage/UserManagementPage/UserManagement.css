@@ -10,6 +10,7 @@
     "summary"
     "pending"
     "users";
+  min-width: 0;
 }
 
 /* Header Section */
@@ -40,6 +41,7 @@
   position: relative;
   width: 38vw;
   max-width: 450px;
+  min-width: 0;
 }
 
 .search-form {
@@ -1013,6 +1015,10 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+  .user-management-container {
+    padding-left: calc(80px + 1.5rem);
+  }
+
   .usermanagement-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1044,17 +1050,44 @@
     padding: 1rem;
     padding-left: 1rem;
   }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: none;
+  }
+
+  .notification-button-wrapper {
+    margin-left: auto;
+  }
+
+  .users-section {
+    padding: 20px 16px;
+  }
+
+  .users-section .section-header,
+  .users-section .header-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .users-section .filter-button,
   .users-section .view-button,
   .users-section .add-user-button {
     height: 36px;
     padding: 0 16px;
+    width: 100%;
   }
   .users-section .button-text {
     font-size: 14px;
   }
   .users-section .user-card {
-    min-width: 280px;
+    min-width: 0;
   }
   .user-summary-card .instruction {
     font-size: 12px;
@@ -1084,6 +1117,10 @@
   }
   .user-details-actions {
     flex-direction: column;
+  }
+
+  .users-section .cards-container {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -45,3 +45,37 @@
 :root {
   --animate-spin: spin 1s linear infinite;
 }
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+iframe {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  body.has-side-panel {
+    padding-top: 84px;
+  }
+
+  body.side-panel-open {
+    overflow: hidden;
+  }
+}

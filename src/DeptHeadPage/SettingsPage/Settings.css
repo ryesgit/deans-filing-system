@@ -151,6 +151,34 @@
   }
 }
 
+@media (max-width: 768px) {
+  .settings-card {
+    padding: 1rem;
+  }
+
+  .user-profile-card {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .profile-right {
+    grid-template-columns: 1fr;
+  }
+
+  .password-modal-content {
+    width: calc(100vw - 2rem);
+    padding: 1.25rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-btn {
+    width: 100%;
+  }
+}
+
 .settings-card-title {
   font-size: 1.25rem;
   font-weight: 600;

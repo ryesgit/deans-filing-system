@@ -1,6 +1,7 @@
 .file-management-page {
   padding: 2rem;
   padding-left: calc(271px + 2rem);
+  min-width: 0;
 }
 
 .group {
@@ -45,6 +46,7 @@
   position: relative;
   width: 38vw;
   max-width: 450px;
+  min-width: 0;
 }
 
 .search-form {
@@ -560,6 +562,10 @@
 }
 
 @media (max-width: 1200px) {
+  .file-management-page {
+    padding-left: calc(80px + 1.5rem);
+  }
+
   .group .folder-grid {
     gap: 15px;
   }
@@ -590,6 +596,10 @@
 }
 
 @media (max-width: 768px) {
+  .file-management-page {
+    padding: 1rem;
+  }
+
   .group .folder-grid {
     gap: 12px;
   }
@@ -603,6 +613,22 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+    gap: 12px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: none;
+  }
+
+  .notification-button-wrapper {
+    margin-left: auto;
   }
 
   .group .file-row {
@@ -648,6 +674,16 @@
   .group .text-wrapper-31,
   .group .text-wrapper-32 {
     font-size: 22px;
+  }
+
+  .group .folder-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .group .add-folder-button {
+    width: 100%;
   }
 }
 

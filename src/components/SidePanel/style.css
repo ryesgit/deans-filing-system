@@ -9,6 +9,11 @@
   flex-direction: column;
 }
 
+.side-panel-backdrop,
+.mobile-nav-toggle {
+  display: none;
+}
+
 .side-panel .rectangle-6 {
   background-color: #800000;
   border-radius: 0px 60px 60px 0px;
@@ -188,4 +193,108 @@
 .modal-actions .btn-primary {
   background-color: #800000;
   color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-toggle {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 230;
+    width: 52px;
+    height: 52px;
+    border: none;
+    border-radius: 16px;
+    background: #800000;
+    box-shadow: 0 12px 30px rgba(128, 0, 0, 0.25);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+
+  .mobile-nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: #ffffff;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .mobile-nav-toggle.is-open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .mobile-nav-toggle.is-open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-nav-toggle.is-open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .side-panel-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 190;
+  }
+
+  .side-panel-backdrop.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .side-panel {
+    width: min(82vw, 320px);
+    transform: translateX(-110%);
+    transition: transform 0.25s ease;
+    z-index: 220;
+  }
+
+  .side-panel.mobile-open {
+    transform: translateX(0);
+  }
+
+  .side-panel .rectangle-6 {
+    width: 100%;
+    border-radius: 0 32px 32px 0;
+  }
+
+  .side-panel .side-panel-logo {
+    margin-top: 88px;
+    margin-left: 24px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .side-panel .text-wrapper-57 {
+    margin: 32px 0 12px 24px;
+    font-size: 18px;
+  }
+
+  .side-panel-nav {
+    padding: 0 16px;
+    gap: 14px;
+  }
+
+  .side-panel-nav a {
+    min-height: 48px;
+    padding: 10px 16px;
+  }
+
+  .side-panel-nav a:hover {
+    transform: none;
+  }
+
+  .side-panel .logout {
+    margin: auto 24px 32px;
+  }
 }

@@ -219,7 +219,11 @@ export const FileManagementPage = () => {
       const response = await categoriesAPI.getById(folder.id);
       const categoryWithFiles = response.data.category;
       setSelectedFolder({
+        ...folder,
         ...categoryWithFiles,
+        folderNumber: categoryWithFiles.folderNumber ?? folder.folderNumber ?? "",
+        row: categoryWithFiles.row ?? folder.row ?? "",
+        column: categoryWithFiles.column ?? folder.column ?? "",
         files: categoryWithFiles.files || []
       });
       setOpenDropdownFolderId(null);
@@ -252,30 +256,32 @@ export const FileManagementPage = () => {
     }
 
     try {
+      if (!selectedFolder?.id) {
+        throw new Error("Please open the parent folder before adding a file");
+      }
+
       const formData = new FormData();
       formData.append('file', fileForm.file);
       formData.append('filename', fileForm.name); // Backend expects 'filename'
       formData.append('department', fileForm.department);
-      formData.append('category', fileForm.category);
+      formData.append('category', selectedFolder.name);
+      formData.append('categoryId', selectedFolder.id);
       if (fileForm.validUntil) {
         formData.append('validUntil', fileForm.validUntil);
       }
-      // Backend expects 'categoryId'
-      if (selectedFolder) {
-        formData.append('categoryId', selectedFolder.id);
-      } else if (fileForm.category) {
-        // If user selected category from dropdown but not inside a folder view
-        // We might need to find the category ID based on name, but for now let's send the name
-        // and let the backend handle it or update the UI to store ID.
-        // Ideally, the dropdown should store IDs.
-        // For now, let's assume the dropdown values are names and we might need to look them up
-        // or just send it if the backend supports it (it doesn't seem to support name lookup directly in upload).
-        // Let's rely on selectedFolder for now as the primary way.
-      }
 
-      // Add default physical location values as they are required by backend schema but missing in UI
-      formData.append('rowPosition', '1');
-      formData.append('columnPosition', '1');
+      if (selectedFolder.row !== undefined && selectedFolder.row !== null && selectedFolder.row !== "") {
+        formData.append('rowPosition', String(selectedFolder.row));
+      }
+      if (selectedFolder.column !== undefined && selectedFolder.column !== null && selectedFolder.column !== "") {
+        formData.append('columnPosition', String(selectedFolder.column));
+      }
+      if (selectedFolder.name) {
+        formData.append('folderName', selectedFolder.name);
+      }
+      if (selectedFolder.folderNumber) {
+        formData.append('folderNumber', selectedFolder.folderNumber);
+      }
       formData.append('shelfNumber', '1');
 
       const response = await filesAPI.upload(formData);
