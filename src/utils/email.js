@@ -64,3 +64,20 @@ export const sendApprovalEmail = ({ toEmail, toName, pupId }) =>
     message:
       `Congratulations! Your account registration has been approved by the administrator. You can now log in to the Dean's Filing System.\n\nHere are your login credentials:\n\nUsername (PUP ID): ${pupId || toEmail}\nDefault Password: password123\n\nIMPORTANT: For your security, please change your password immediately after logging in. You can update your password by going to Settings > Change Password.\n\nIf you have any issues logging in, please contact the administrator.`,
   });
+
+/**
+ * Sends a return date reminder email to the user.
+ * @param {object} params
+ * @param {string} params.toEmail - Recipient email address
+ * @param {string} params.toName - Recipient name
+ * @param {string} params.fileName - Name of the borrowed file
+ * @param {string} params.returnDate - Return date string (e.g., "April 30, 2026")
+ * @param {number} params.daysLeft - Number of days remaining before return date
+ */
+export const sendReturnDateReminderEmail = ({ toEmail, toName, fileName, returnDate, daysLeft }) =>
+  sendEmail({
+    toEmail,
+    toName,
+    message:
+      `This is a friendly reminder that your borrowed file is due for return ${daysLeft === 0 ? 'TODAY' : `in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`}.\n\nFile: ${fileName}\nReturn Date: ${returnDate}\n\nPlease return the file to the Dean's Office ${daysLeft === 0 ? 'today' : 'before the due date'} to avoid any issues.\n\nIf you have already returned the file, please disregard this message.\n\nThank you,\nDean's Filing System`,
+  });
