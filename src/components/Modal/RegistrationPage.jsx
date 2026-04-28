@@ -269,7 +269,6 @@ export const RegistrationPage = ({ onClose }) => {
               <option value="STUDENT">Student</option>
               <option value="FACULTY">Faculty</option>
               <option value="STAFF">Staff</option>
-              <option value="ADMIN">Admin</option>
             </select>
             {errors.role && <span className="error-text">{errors.role}</span>}
           </div>
