@@ -59,6 +59,13 @@ export const GlobalSearch = ({ onSearchChange }) => {
         ? (filesResponse.value.data.files || filesResponse.value.data || [])
         : [];
 
+      // Filter out archived files
+      let archivedIds = [];
+      try {
+        archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+      } catch {}
+      const filteredFiles = files.filter((f) => !archivedIds.includes(String(f.id)));
+
       const allRequests = requestsResponse.status === "fulfilled"
         ? (requestsResponse.value.data.requests || requestsResponse.value.data || [])
         : [];
@@ -79,7 +86,7 @@ export const GlobalSearch = ({ onSearchChange }) => {
           u.userId?.toLowerCase().includes(query.toLowerCase())
       );
 
-      setSearchResults({ files, requests, users });
+      setSearchResults({ files: filteredFiles, requests, users });
     } catch (error) {
       console.error("Search error:", error);
       setSearchResults({ files: [], requests: [], users: [] });

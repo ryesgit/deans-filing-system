@@ -86,7 +86,15 @@ const FileSearchInput = ({ value, onChange, onFileSelect, copyType = "soft" }) =
       const response = await filesAPI.search(inputValue);
       const files = response.data.files || response.data;
 
-      return files.map((file) => ({
+      // Filter out archived files
+      let archivedIds = [];
+      try {
+        archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+      } catch {}
+
+      return files
+        .filter((file) => !archivedIds.includes(String(file.id)))
+        .map((file) => ({
         value: file.id,
         label: file.filename || file.name,
         department: file.department,

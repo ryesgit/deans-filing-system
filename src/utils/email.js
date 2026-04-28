@@ -57,10 +57,10 @@ export const sendRegistrationConfirmationEmail = ({ toEmail, toName }) =>
 /**
  * Sends an account-approval confirmation email to the user.
  */
-export const sendApprovalEmail = ({ toEmail, toName }) =>
+export const sendApprovalEmail = ({ toEmail, toName, pupId }) =>
   sendEmail({
     toEmail,
     toName,
     message:
-      `Your account registration has been approved by the administrator. You can now log in to the Dean's Filing System using your registered credentials.\n\nYour login email: ${toEmail}\n\nIf you have any issues logging in, please contact the administrator.`,
+      `Congratulations! Your account registration has been approved by the administrator. You can now log in to the Dean's Filing System.\n\nHere are your login credentials:\n\nUsername (PUP ID): ${pupId || toEmail}\nDefault Password: password123\n\nIMPORTANT: For your security, please change your password immediately after logging in. You can update your password by going to Settings > Change Password.\n\nIf you have any issues logging in, please contact the administrator.`,
   });

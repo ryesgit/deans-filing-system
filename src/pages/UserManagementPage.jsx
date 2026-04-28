@@ -33,14 +33,14 @@ export const UserManagementPage = () => {
   const { notifications, unreadCount } = useNotifications();
   const [pendingUsersList, setPendingUsersList] = useState([]);
 
-  const handleApprove = async (userId) => {
+  const handleApprove = async (id) => {
     // Find the pending user before removing from list so we have their email
-    const approvedUser = pendingUsersList.find((u) => u.userId === userId);
+    const approvedUser = pendingUsersList.find((u) => u.id === id);
 
     try {
-      await usersAPI.approve(userId);
+      await usersAPI.approve(id);
       setPendingUsersList(
-        pendingUsersList.filter((user) => user.userId !== userId)
+        pendingUsersList.filter((user) => user.id !== id)
       );
       const response = await usersAPI.getAll();
       const usersData = response.data.users || response.data;
@@ -82,6 +82,7 @@ export const UserManagementPage = () => {
         await sendApprovalEmail({
           toEmail: approvedUser.email,
           toName: approvedUser.name,
+          pupId: approvedUser.userId,
         });
       }
 
@@ -92,14 +93,14 @@ export const UserManagementPage = () => {
     }
   };
 
-  const handleDecline = async (userId) => {
+  const handleDecline = async (id) => {
     const reason = prompt("Please provide a reason for declining this user:");
     if (reason === null) return;
 
     try {
-      await usersAPI.reject(userId, reason);
+      await usersAPI.reject(id, reason);
       setPendingUsersList(
-        pendingUsersList.filter((user) => user.userId !== userId)
+        pendingUsersList.filter((user) => user.id !== id)
       );
       alert("User registration declined successfully!");
     } catch (error) {
@@ -155,6 +156,7 @@ export const UserManagementPage = () => {
             userId: user.userId,
             name: user.name,
             email: user.email || "",
+            idNumber: user.idNumber || "",
             dateOfBirth: user.dateOfBirth
               ? new Date(user.dateOfBirth).toLocaleDateString()
               : "N/A",
@@ -439,13 +441,13 @@ export const UserManagementPage = () => {
                       <div className="action-buttons">
                         <button
                           className="approve-btn"
-                          onClick={() => handleApprove(user.userId)}
+                          onClick={() => handleApprove(user.id)}
                         >
                           Approve
                         </button>
                         <button
                           className="decline-btn"
-                          onClick={() => handleDecline(user.userId)}
+                          onClick={() => handleDecline(user.id)}
                         >
                           Decline
                         </button>

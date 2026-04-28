@@ -65,10 +65,11 @@ export const ReportsPage = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedTransactionForDetails, setSelectedTransactionForDetails] =
     useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [fileToArchive, setFileToArchive] = useState(null);
   const [showCabinetReminder, setShowCabinetReminder] = useState(false);
-  const [deletedFileName, setDeletedFileName] = useState("");
+  const [archivedFileName, setArchivedFileName] = useState("");
+  const [archivedFiles, setArchivedFiles] = useState([]);
   const { notifications, unreadCount } = useNotifications();
   const { user } = useAuth();
 
@@ -145,16 +146,30 @@ export const ReportsPage = () => {
           validityMap = {};
         }
 
+        // Load archived file IDs from localStorage
+        let archivedIds = [];
+        try {
+          archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+        } catch {
+          archivedIds = [];
+        }
+
         // Merge localStorage validity dates and resolve folder names
-        const filesWithValidity = allFiles
-          .map((f) => ({
-            ...f,
-            validUntil: f.validUntil || validityMap[f.id] || null,
-            folderName: folderMap[f.categoryId] || folderMap[f.category_id] || null,
-          }))
-          .filter((f) => f.validUntil)
+        const allFilesWithDetails = allFiles.map((f) => ({
+          ...f,
+          validUntil: f.validUntil || validityMap[f.id] || null,
+          folderName: folderMap[f.categoryId] || folderMap[f.category_id] || null,
+        }));
+
+        const filesWithValidity = allFilesWithDetails
+          .filter((f) => f.validUntil && !archivedIds.includes(String(f.id)))
           .sort((a, b) => new Date(a.validUntil) - new Date(b.validUntil));
 
+        const archivedFilesList = allFilesWithDetails
+          .filter((f) => archivedIds.includes(String(f.id)))
+          .sort((a, b) => new Date(b.validUntil || 0) - new Date(a.validUntil || 0));
+
+        setArchivedFiles(archivedFilesList);
         setReportsData((prev) => ({
           ...prev,
           validityDue: filesWithValidity,
@@ -236,31 +251,52 @@ export const ReportsPage = () => {
     setShowDetailsModal(true);
   };
 
-  const handleDeleteValidityFile = async () => {
-    if (!fileToDelete) return;
-    const fileName = fileToDelete.filename || fileToDelete.name || 'the file';
-    const folderName = fileToDelete.category?.name || '';
+  const handleArchiveFile = () => {
+    if (!fileToArchive) return;
+    const fileName = fileToArchive.filename || fileToArchive.name || 'the file';
+    const folderName = fileToArchive.folderName || '';
+    const fileId = String(fileToArchive.id);
+
+    // Save to localStorage archived list
     try {
-      await filesAPI.delete(fileToDelete.id);
-      // Remove from localStorage validity map
-      try {
-        const map = JSON.parse(localStorage.getItem('fileValidityMap') || '{}');
-        delete map[fileToDelete.id];
-        localStorage.setItem('fileValidityMap', JSON.stringify(map));
-      } catch {}
-      // Remove from local state
+      const archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+      if (!archivedIds.includes(fileId)) {
+        archivedIds.push(fileId);
+        localStorage.setItem('archivedFileIds', JSON.stringify(archivedIds));
+      }
+    } catch {}
+
+    // Move from validityDue to archivedFiles in local state
+    setArchivedFiles((prev) => [fileToArchive, ...prev]);
+    setReportsData((prev) => ({
+      ...prev,
+      validityDue: prev.validityDue.filter((f) => f.id !== fileToArchive.id),
+    }));
+    setShowArchiveModal(false);
+    setFileToArchive(null);
+    // Show cabinet reminder
+    setArchivedFileName(folderName ? `"${fileName}" from folder "${folderName}"` : `"${fileName}"`);
+    setShowCabinetReminder(true);
+  };
+
+  const handleUnarchiveFile = (file) => {
+    const fileId = String(file.id);
+    // Remove from localStorage archived list
+    try {
+      let archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+      archivedIds = archivedIds.filter((id) => id !== fileId);
+      localStorage.setItem('archivedFileIds', JSON.stringify(archivedIds));
+    } catch {}
+
+    // Move from archivedFiles back to validityDue
+    setArchivedFiles((prev) => prev.filter((f) => f.id !== file.id));
+    if (file.validUntil) {
       setReportsData((prev) => ({
         ...prev,
-        validityDue: prev.validityDue.filter((f) => f.id !== fileToDelete.id),
+        validityDue: [...prev.validityDue, file].sort(
+          (a, b) => new Date(a.validUntil) - new Date(b.validUntil)
+        ),
       }));
-      setShowDeleteModal(false);
-      setFileToDelete(null);
-      // Show cabinet reminder
-      setDeletedFileName(folderName ? `"${fileName}" from folder "${folderName}"` : `"${fileName}"`);
-      setShowCabinetReminder(true);
-    } catch (error) {
-      console.error("Failed to delete file:", error);
-      alert(error.message || "Failed to delete file");
     }
   };
 
@@ -327,20 +363,90 @@ export const ReportsPage = () => {
                     </td>
                     <td data-label="Action">
                       <button
-                        className="status-badge status-expired"
-                        style={{ cursor: 'pointer', border: 'none' }}
+                        className="status-badge"
+                        style={{
+                          cursor: 'pointer',
+                          border: 'none',
+                          backgroundColor: '#f59e0b',
+                          color: '#fff',
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setFileToDelete(file);
-                          setShowDeleteModal(true);
+                          setFileToArchive(file);
+                          setShowArchiveModal(true);
                         }}
                       >
-                        Delete
+                        Archive
                       </button>
                     </td>
                   </tr>
                 );
               })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderArchivesTable = () => {
+    if (loading) {
+      return (
+        <div className="table-container">
+          <p>Loading...</p>
+        </div>
+      );
+    }
+
+    if (archivedFiles.length === 0) {
+      return (
+        <div className="table-container">
+          <p>No archived files found.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="table-container">
+        <div className="table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>File ID</th>
+                <th>File Name</th>
+                <th>Folder</th>
+                <th>Department</th>
+                <th>Valid Until</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {archivedFiles.map((file, index) => (
+                <tr key={index}>
+                  <td data-label="File ID">{file.id}</td>
+                  <td data-label="File Name">{file.filename || file.name || "N/A"}</td>
+                  <td data-label="Folder">{file.folderName || "N/A"}</td>
+                  <td data-label="Department">{file.user?.department || file.department || "N/A"}</td>
+                  <td data-label="Valid Until">{file.validUntil ? new Date(file.validUntil).toLocaleDateString() : "N/A"}</td>
+                  <td data-label="Action">
+                    <button
+                      className="status-badge"
+                      style={{
+                        cursor: 'pointer',
+                        border: 'none',
+                        backgroundColor: '#4ccf47',
+                        color: '#fff',
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUnarchiveFile(file);
+                      }}
+                    >
+                      Unarchive
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -477,12 +583,22 @@ export const ReportsPage = () => {
                 >
                   Returned
                 </button>
+                {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
                 <button
                   className={`tab ${activeTab === "validityDue" ? "active" : ""}`}
                   onClick={() => setActiveTab("validityDue")}
                 >
                   Validity Due
                 </button>
+                )}
+                {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) && (
+                <button
+                  className={`tab ${activeTab === "archives" ? "active" : ""}`}
+                  onClick={() => setActiveTab("archives")}
+                >
+                  Archives
+                </button>
+                )}
               </div>
               <button className="export-button" onClick={handleExport}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -512,7 +628,7 @@ export const ReportsPage = () => {
               </button>
             </div>
 
-            {activeTab === "validityDue" ? renderValidityTable() : renderTable()}
+            {activeTab === "validityDue" ? renderValidityTable() : activeTab === "archives" ? renderArchivesTable() : renderTable()}
           </div>
           <NotificationDropdown
             isOpen={isNotificationOpen}
@@ -582,28 +698,28 @@ export const ReportsPage = () => {
         )}
       </Modal>
 
-      {/* Delete File Confirmation Modal */}
+      {/* Archive File Confirmation Modal */}
       <Modal
-        isOpen={showDeleteModal}
+        isOpen={showArchiveModal}
         onClose={() => {
-          setShowDeleteModal(false);
-          setFileToDelete(null);
+          setShowArchiveModal(false);
+          setFileToArchive(null);
         }}
-        title="Confirm Delete"
+        title="Confirm File Archive"
       >
         <p style={{
           fontFamily: 'Poppins, Helvetica',
-          fontSize: '14px',
-          marginBottom: '1rem',
+          fontSize: '15px',
+          marginBottom: '1.5rem',
           textAlign: 'center'
         }}>
-          Are you sure you want to delete the file <strong>{fileToDelete?.filename || fileToDelete?.name || 'this file'}</strong>? This action cannot be undone.
+          Are you sure you want to archive the file <strong>{fileToArchive?.filename || fileToArchive?.name || 'this file'}</strong>? Archived files will no longer appear in search results or file management.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
           <button
             onClick={() => {
-              setShowDeleteModal(false);
-              setFileToDelete(null);
+              setShowArchiveModal(false);
+              setFileToArchive(null);
             }}
             style={{
               padding: '0.6rem 1.5rem',
@@ -620,10 +736,10 @@ export const ReportsPage = () => {
             Cancel
           </button>
           <button
-            onClick={handleDeleteValidityFile}
+            onClick={handleArchiveFile}
             style={{
               padding: '0.6rem 1.5rem',
-              backgroundColor: '#dd0303',
+              backgroundColor: '#f59e0b',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
@@ -633,7 +749,7 @@ export const ReportsPage = () => {
               cursor: 'pointer',
             }}
           >
-            Delete
+            Archive
           </button>
         </div>
       </Modal>
@@ -642,7 +758,7 @@ export const ReportsPage = () => {
       <Modal
         isOpen={showCabinetReminder}
         onClose={() => setShowCabinetReminder(false)}
-        title="File Deleted Successfully"
+        title="File Archived Successfully"
       >
         <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
           <div style={{
@@ -656,7 +772,7 @@ export const ReportsPage = () => {
             margin: '0 auto 1rem',
             fontSize: '28px',
           }}>
-            ⚠️
+            📦
           </div>
           <p style={{
             fontFamily: 'Poppins, Helvetica',
@@ -664,7 +780,7 @@ export const ReportsPage = () => {
             marginBottom: '0.5rem',
             color: '#333',
           }}>
-            The file {deletedFileName} has been deleted from the system.
+            The file {archivedFileName} has been archived.
           </p>
           <p style={{
             fontFamily: 'Poppins, Helvetica',

@@ -62,6 +62,20 @@ const departments = [
   "Railway Engineering",
 ];
 
+// Helper to get archived file IDs from localStorage
+const getArchivedIds = () => {
+  try {
+    return JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const filterArchivedFiles = (files) => {
+  const archivedIds = getArchivedIds();
+  return (files || []).filter((f) => !archivedIds.includes(String(f.id)));
+};
+
 export const FileManagementPage = () => {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +133,23 @@ export const FileManagementPage = () => {
             ? response.data
             : [];
         console.log('Fetched categories:', categoriesData);
-        setFolders(categoriesData);
+
+        // Fetch files for each category so we can filter archived ones from counts
+        const categoriesWithFiles = await Promise.all(
+          categoriesData.map(async (cat) => {
+            try {
+              const catResponse = await categoriesAPI.getById(cat.id);
+              return {
+                ...cat,
+                files: catResponse.data.category?.files || [],
+              };
+            } catch {
+              return { ...cat, files: [] };
+            }
+          })
+        );
+
+        setFolders(categoriesWithFiles);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
         if (error?.status !== 429) {
@@ -655,7 +685,7 @@ export const FileManagementPage = () => {
                   />
                   <div className="text-wrapper-27">{folder.name}</div>
                   <div className="text-wrapper-28">
-                    {folder.fileCount} files
+                    {folder.files ? filterArchivedFiles(folder.files).length : (folder.fileCount || 0)} files
                   </div>
                 </div>
               ))}
@@ -673,7 +703,7 @@ export const FileManagementPage = () => {
                   <h2 className="text-wrapper-32">{selectedFolder.name}</h2>
                   <div className="file-count-2">
                     <span className="text-wrapper-30">
-                      {(selectedFolder.files || []).length}
+                      {filterArchivedFiles(selectedFolder.files).length}
                     </span>
                   </div>
                 </div>
@@ -697,7 +727,7 @@ export const FileManagementPage = () => {
                 </div>
 
                 <div className="files-list-content">
-                  {(selectedFolder.files || []).map((file) => (
+                  {filterArchivedFiles(selectedFolder.files).map((file) => (
                     <div key={file.id} className="file-row">
                       <div data-label="File ID">{file.id}</div>
                       <div data-label="File Name">
@@ -1285,7 +1315,7 @@ export const FileManagementPage = () => {
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Total Files:</span>
-                <span className="file-info-value">{(folderDetails.files || []).length}</span>
+                <span className="file-info-value">{filterArchivedFiles(folderDetails.files).length}</span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Created:</span>
@@ -1302,11 +1332,11 @@ export const FileManagementPage = () => {
                 </div>
               )}
             </div>
-            {(folderDetails.files || []).length > 0 && (
+            {filterArchivedFiles(folderDetails.files).length > 0 && (
               <>
                 <h3 style={{ marginTop: '20px', marginBottom: '10px', fontFamily: 'Poppins, Helvetica', fontSize: '16px', fontWeight: '600' }}>Files in this folder:</h3>
                 <div className="files-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  {folderDetails.files.map((file) => (
+                  {filterArchivedFiles(folderDetails.files).map((file) => (
                     <div key={file.id} style={{
                       padding: '10px',
                       borderBottom: '1px solid #e0e0e0',
