@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import "./style.css";
 
 export const Modal = ({
@@ -10,7 +11,7 @@ export const Modal = ({
 }) => {
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {(title || showCloseButton) && (
@@ -39,4 +40,6 @@ export const Modal = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
