@@ -5,7 +5,7 @@ import { NotificationDropdown } from "../components/NotificationDropdown";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { useAuth } from "../components/Modal/AuthContext";
-import { reportsAPI, filesAPI, categoriesAPI } from "../services/api";
+import { requestsAPI, filesAPI, categoriesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 
 const normalizeId = (value) =>
@@ -23,10 +23,10 @@ const belongsToUser = (request, currentUser) => {
 };
 
 const isReturnedRequest = (request) =>
-  ["RETURNED", "COMPLETED"].includes(request?.status) || Boolean(request?.returnedAt);
+  request?.status === "COMPLETED" || Boolean(request?.returnedAt);
 
 const isBorrowedRequest = (request) =>
-  !isReturnedRequest(request) && request?.status === "BORROWED";
+  request?.status === "APPROVED" && request?.file?.status === "RETRIEVED";
 
 const getRequestDate = (activeTab, row) => {
   if (activeTab === "returned") {
@@ -34,7 +34,7 @@ const getRequestDate = (activeTab, row) => {
   }
 
   if (activeTab === "borrowed") {
-    return row.borrowedAt || row.approvedAt || row.updatedAt || row.createdAt;
+    return row.borrowedAt || row.file?.updatedAt || row.approvedAt || row.updatedAt || row.createdAt;
   }
 
   return row.createdAt || row.updatedAt;
@@ -92,21 +92,22 @@ export const ReportsPage = () => {
           .filter((request) => request?.status !== "CANCELLED")
           .filter((request) => belongsToUser(request, user));
 
-        setReportsData({
+        setReportsData((prev) => ({
+          ...prev,
           request: userRequests.filter(
             (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
           ),
           borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
           returned: userRequests.filter((request) => isReturnedRequest(request)),
-        });
+        }));
       } catch (error) {
         console.error("Failed to fetch reports:", error);
-        setReportsData({
+        setReportsData((prev) => ({
+          ...prev,
           request: [],
           borrowed: [],
           returned: [],
-          validityDue: [],
-        });
+        }));
       } finally {
         setLoading(false);
       }
