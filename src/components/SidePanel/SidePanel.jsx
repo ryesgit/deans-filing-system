@@ -184,28 +184,28 @@ export const SidePanel = () => {
           />
           <div className="text-wrapper-51">Log out</div>
         </div>
-
-        <Modal
-          isOpen={showLogoutModal}
-          onClose={() => setShowLogoutModal(false)}
-          showCloseButton={false}
-        >
-          <p className="confirmation-text-02">
-            Are you sure you want to log out?
-          </p>
-          <div className="modal-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={() => setShowLogoutModal(false)}
-            >
-              Cancel
-            </button>
-            <button className="btn btn-primary" onClick={confirmLogout}>
-              Log Out
-            </button>
-          </div>
-        </Modal>
       </div>
+
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        showCloseButton={false}
+      >
+        <p className="confirmation-text-02">
+          Are you sure you want to log out?
+        </p>
+        <div className="modal-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowLogoutModal(false)}
+          >
+            Cancel
+          </button>
+          <button className="btn btn-primary" onClick={confirmLogout}>
+            Log Out
+          </button>
+        </div>
+      </Modal>
     </>
   );
 };
