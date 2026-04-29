@@ -74,14 +74,14 @@ export const LoginPage = () => {
                 />
 
                 <label
-                  htmlFor="username"
+                  htmlFor="userId"
                   className="login-field-label username-label"
                 >
                   <span
                     className={`login-field-label-text ${usernameFocused ? "focused" : "default"
                       }`}
                   >
-                    Username
+                    User ID
                   </span>
                 </label>
 
@@ -93,15 +93,15 @@ export const LoginPage = () => {
 
                 <input
                   type="text"
-                  id="username"
-                  name="username"
+                  id="userId"
+                  name="userId"
                   value={username}
                   onChange={handleUsernameChange}
                   onFocus={() => setUsernameFocused(true)}
                   onBlur={() => setUsernameFocused(false)}
                   placeholder=""
                   className="login-field-input username-input"
-                  aria-label="Username"
+                  aria-label="User ID"
                   required
                 />
               </div>
