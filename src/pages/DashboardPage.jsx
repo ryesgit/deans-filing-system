@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { SidePanel } from "../components/SidePanel";
 import { ActivityLogCard } from "../DeptHeadPage/DashboardPage/sections/ActivityLogCard";
 import { PersonalInformation } from "../DeptHeadPage/DashboardPage/sections/PersonalInformation";
@@ -15,6 +15,7 @@ import { useNotifications } from "../components/NotificationDropdown/Notificatio
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 
 export const DashboardPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [statsData, setStatsData] = useState({
@@ -102,7 +103,6 @@ export const DashboardPage = () => {
           role={user?.role}
         />
         <NotificationCard />
-
         <div className="files-card">
           <div className="rectangle-7" />
           <div className="text-wrapper-62">Files</div>
@@ -237,7 +237,10 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        <RequestCard />
+        <RequestCard
+          selectedRequestId={location.state?.selectedRequestId ?? null}
+          requestFocusNonce={location.state?.requestFocusNonce ?? null}
+        />
 
         <NotificationDropdown
 

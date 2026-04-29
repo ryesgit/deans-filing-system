@@ -8,7 +8,10 @@ import {
 import { Modal } from "../../../../components/Modal/Modal";
 import "./style.css";
 
-export const RequestCard = () => {
+export const RequestCard = ({
+  selectedRequestId = null,
+  requestFocusNonce = null,
+}) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPDFModal, setShowPDFModal] = useState(false);
@@ -42,7 +45,7 @@ export const RequestCard = () => {
 
         // Filter requests based on role
         // ADMIN and STAFF see all requests, others see only their own
-        const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+        const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
           ? filteredRequests
           : filteredRequests.filter(
               (req) => {
@@ -133,7 +136,7 @@ export const RequestCard = () => {
       const filteredRequests = requestsArray.filter(
         (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
-      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+      const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
         ? filteredRequests
         : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
       setRequests(roleFilteredRequests.slice(0, 5));
@@ -171,7 +174,7 @@ export const RequestCard = () => {
       const filteredRequests = requestsArray.filter(
         (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
-      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+      const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
         ? filteredRequests
         : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
       setRequests(roleFilteredRequests.slice(0, 5));
@@ -190,6 +193,21 @@ export const RequestCard = () => {
     setShowDetailsModal(true);
   };
 
+  useEffect(() => {
+    if (selectedRequestId === null || selectedRequestId === undefined) {
+      return;
+    }
+
+    const matchedRequest = requests.find(
+      (request) => String(request.id) === String(selectedRequestId)
+    );
+
+    if (matchedRequest) {
+      setSelectedRequestForDetails(matchedRequest);
+      setShowDetailsModal(true);
+    }
+  }, [requests, selectedRequestId, requestFocusNonce]);
+
   if (loading) {
     return <div className="request-card">Loading...</div>;
   }
@@ -199,7 +217,7 @@ export const RequestCard = () => {
       <div className="request-card">
         <div className="request-card-header">
           <h2 className="request-card-title">
-            {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
+            {['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
           </h2>
         </div>
 
@@ -240,7 +258,7 @@ export const RequestCard = () => {
                   </div>
                   <div className="table-cell status-col">
                     {request.status === "PENDING" &&
-                    (user?.role === "ADMIN" || user?.role === "STAFF") ? (
+                    ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) ? (
                       <div className="action-buttons">
                         <button
                           className="approve-btn"
