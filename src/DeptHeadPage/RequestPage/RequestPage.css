@@ -28,7 +28,7 @@
 }
 
 /* Request Page Container */
-.request-page > .request-page-container {
+.request-page>.request-page-container {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-areas: "form form" "qr status";
@@ -829,7 +829,7 @@
     padding: 1.5rem;
   }
 
-  .request-page > .request-page-container {
+  .request-page>.request-page-container {
     grid-template-columns: 1fr;
     grid-template-areas:
       "form"
@@ -846,13 +846,20 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — Request Page
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .page-content-wrapper {
     padding-left: 0;
+    padding-top: 80px;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   .request-page {
     padding: 1rem;
+    min-width: 0;
   }
 
   .request-header {
@@ -872,6 +879,7 @@
   .request-page .search-wrapper {
     width: 100%;
     max-width: none;
+    min-width: 0;
   }
 
   .request-page .notification-button-wrapper {
@@ -884,6 +892,7 @@
   .request-page .confirm-modal-content,
   .request-page .qr-modal-content {
     padding: 1rem;
+    min-width: 0;
   }
 
   .request-page .copy-type-buttons,
@@ -905,10 +914,12 @@
     min-height: 0;
   }
 
+  /* ── Table horizontal scroll ───────────────────────────────────────── */
   .request-page .table-container {
     max-height: 300px;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    min-width: 0;
   }
 
   .request-page .request-table {
@@ -941,6 +952,7 @@
   .request-page .file-name-cell {
     max-width: 150px;
   }
+
   .request-page .confirm-detail-row {
     flex-direction: column;
     gap: 0.5rem;

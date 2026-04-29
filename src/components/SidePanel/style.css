@@ -42,7 +42,7 @@
   letter-spacing: -1.2px;
   position: relative;
   z-index: 1;
-  margin: 45px 0 15px 25px;
+  margin: 120px 0 15px 25px;
 }
 
 .side-panel-nav {
@@ -157,8 +157,7 @@
 .side-panel-nav a.active .vector-5,
 .side-panel-nav a.active .vector-6,
 .side-panel-nav a.active .vector-7 {
-  filter: brightness(0) saturate(100%) invert(4%) sepia(94%) saturate(7498%)
-    hue-rotate(359deg) brightness(95%) contrast(108%);
+  filter: brightness(0) saturate(100%) invert(4%) sepia(94%) saturate(7498%) hue-rotate(359deg) brightness(95%) contrast(108%);
 }
 
 /* Logout Modal Styles */
@@ -195,47 +194,59 @@
   color: #ffffff;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
+  /* ── Logo Toggle Button ────────────────────────────────────────────────
+     Single logo on mobile. Shows PUP logo image, hides hamburger spans.
+     44px minimum touch target (WCAG 2.5.5).
+  ─────────────────────────────────────────────────────────────────────── */
   .mobile-nav-toggle {
     position: fixed;
-    top: 16px;
-    left: 16px;
+    top: 12px;
+    left: 12px;
     z-index: 230;
+    min-width: 44px;
+    min-height: 44px;
     width: 52px;
     height: 52px;
     border: none;
-    border-radius: 16px;
-    background: #800000;
-    box-shadow: 0 12px 30px rgba(128, 0, 0, 0.25);
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(128, 0, 0, 0.18);
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
     cursor: pointer;
+    padding: 4px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
 
+  .mobile-nav-toggle:hover,
+  .mobile-nav-toggle:focus-visible {
+    box-shadow: 0 6px 20px rgba(128, 0, 0, 0.28);
+    transform: scale(1.05);
+    outline: 2px solid #800000;
+    outline-offset: 2px;
+  }
+
+  /* Hide hamburger spans — only logo is visible */
   .mobile-nav-toggle span {
+    display: none;
+  }
+
+  /* Logo image inside toggle */
+  .mobile-nav-toggle .nav-toggle-logo {
     display: block;
-    width: 22px;
-    height: 2px;
-    border-radius: 999px;
-    background: #ffffff;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    width: 40px;
+    height: 40px;
+    max-height: 40px;
+    object-fit: contain;
+    border-radius: 50%;
   }
 
-  .mobile-nav-toggle.is-open span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-  }
-
-  .mobile-nav-toggle.is-open span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .mobile-nav-toggle.is-open span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-  }
-
+  /* ── Backdrop ──────────────────────────────────────────────────────── */
   .side-panel-backdrop {
     display: block;
     position: fixed;
@@ -252,6 +263,7 @@
     pointer-events: auto;
   }
 
+  /* ── Slide-in Panel ────────────────────────────────────────────────── */
   .side-panel {
     width: min(82vw, 320px);
     transform: translateX(-110%);
@@ -268,15 +280,25 @@
     border-radius: 0 32px 32px 0;
   }
 
+  /* Side panel logo — visible inside the panel (original look) */
   .side-panel .side-panel-logo {
-    margin-top: 88px;
+    display: block;
+    margin-top: 40px;
     margin-left: 24px;
     width: 72px;
     height: 72px;
   }
 
+  /* Hide toggle button when panel is open so logos don't overlap */
+  .mobile-nav-toggle.is-open {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  /* MAIN MENU label — original spacing below the logo */
   .side-panel .text-wrapper-57 {
-    margin: 32px 0 12px 24px;
+    margin: 24px 0 12px 24px;
     font-size: 18px;
   }
 

@@ -595,9 +595,14 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — File Management Page
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .file-management-page {
-    padding: 1rem;
+    padding: 80px 1rem 1rem;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   .group .folder-grid {
@@ -625,6 +630,7 @@
   .search-wrapper {
     width: 100%;
     max-width: none;
+    min-width: 0;
   }
 
   .notification-button-wrapper {

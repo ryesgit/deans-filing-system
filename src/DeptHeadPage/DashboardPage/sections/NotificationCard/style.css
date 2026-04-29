@@ -10,3 +10,14 @@
 .notification-card:hover {
   transform: translateY(-3px);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — Notification Card
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .notification-card {
+    height: auto;
+    min-height: unset;
+    min-width: 0;
+  }
+}

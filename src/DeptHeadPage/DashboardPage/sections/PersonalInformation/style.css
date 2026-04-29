@@ -3,7 +3,8 @@
   position: relative;
   grid-area: personal-info;
   width: 100%;
-  height: 280px; /* Increased height to fit content */
+  height: 280px;
+  /* Increased height to fit content */
   overflow: hidden;
   padding: 20px;
   background-color: #ffffff;
@@ -20,8 +21,10 @@
   width: 100%;
   max-width: 700px;
   display: grid;
-  grid-template-columns: 160px 2px 1fr; /* 3 columns: Profile, Line, Details */
-  grid-template-rows: 1fr; /* Single row */
+  grid-template-columns: 160px 2px 1fr;
+  /* 3 columns: Profile, Line, Details */
+  grid-template-rows: 1fr;
+  /* Single row */
   gap: 30px;
   align-items: center;
   justify-items: center;
@@ -92,7 +95,8 @@
 .personal-information .linev {
   grid-column: 2;
   grid-row: 1;
-  height: 45%; /* Not full height, looks better */
+  height: 45%;
+  /* Not full height, looks better */
   width: 2px;
   background-color: #e0e0e0;
   align-self: center;
@@ -105,13 +109,15 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto auto auto;
-  gap: 15px 20px; /* Tighter vertical gap */
+  gap: 15px 20px;
+  /* Tighter vertical gap */
   width: 100%;
   justify-content: center;
 }
 
 /* Right Side Content Groups */
-.info-group, .personal-information .group {
+.info-group,
+.personal-information .group {
   display: flex;
   flex-direction: column;
   text-align: left;
@@ -120,7 +126,8 @@
 }
 
 /* RESTORED TEXT STYLES */
-.label, .personal-information .text-wrapper-43 {
+.label,
+.personal-information .text-wrapper-43 {
   color: #800000;
   font-family: "Poppins", Helvetica;
   font-size: 14px;
@@ -129,7 +136,8 @@
   margin-bottom: 0px;
 }
 
-.value, .personal-information .User-id {
+.value,
+.personal-information .User-id {
   color: #1e1e1e;
   font-family: "Poppins", Helvetica;
   font-size: 10px;
@@ -138,16 +146,47 @@
 
 /* Positioning specific fields using grid within details-section */
 /* Left Column */
-.personal-information .group { grid-column: 1; grid-row: 1; } /* ID Number */
-.field-gender { grid-column: 1; grid-row: 2; }
-.field-contact { grid-column: 1; grid-row: 3; }
-.field-status { grid-column: 1; grid-row: 4; }
+.personal-information .group {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* ID Number */
+.field-gender {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.field-contact {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.field-status {
+  grid-column: 1;
+  grid-row: 4;
+}
 
 /* Right Column */
-.field-role { grid-column: 2; grid-row: 1; }
-.field-dept { grid-column: 2; grid-row: 2; }
-.field-dob { grid-column: 2; grid-row: 3; }
-.field-login { grid-column: 2; grid-row: 4; }
+.field-role {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.field-dept {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.field-dob {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.field-login {
+  grid-column: 2;
+  grid-row: 4;
+}
 
 /* Reset old absolute positioning classes */
 .personal-information .text-wrapper-44,
@@ -165,4 +204,121 @@
 .personal-information .User-account-status,
 .personal-information .User-last-login {
   position: static;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — Personal Information Card
+   Rules:
+   • height: auto (no cut-off)
+   • Single-column vertical stack: avatar → name/email → details
+   • Divider hidden
+   • Details in single-column list with label-left / value-right
+   • All text visible, no overflow clipping
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .personal-information {
+    height: auto;
+    min-height: unset;
+    overflow: visible;
+    padding: 24px 16px;
+    align-items: flex-start;
+  }
+
+  /* Single column: profile on top, details below */
+  .pi-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    justify-items: center;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Profile section centers */
+  .personal-information .profile-section {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    align-items: center;
+  }
+
+  /* Smaller avatar on mobile */
+  .personal-information .profile-2 {
+    width: 100px;
+    height: 100px;
+  }
+
+  .personal-information .User-name {
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .personal-information .User-email {
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Hide the vertical divider */
+  .personal-information .linev {
+    display: none;
+  }
+
+  /* Details — single column stacked list */
+  .personal-information .details-section {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: 0;
+  }
+
+  /* Override all field grid placements to stack */
+  .personal-information .group,
+  .field-gender,
+  .field-contact,
+  .field-status,
+  .field-role,
+  .field-dept,
+  .field-dob,
+  .field-login {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  /* Each detail row: label left, value right */
+  .info-group,
+  .personal-information .group {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+  }
+
+  .info-group:last-child,
+  .personal-information .group:last-child {
+    border-bottom: none;
+  }
+
+  /* Labels stay on the left, don't wrap */
+  .label,
+  .personal-information .text-wrapper-43 {
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Values on the right, allow wrapping for long strings */
+  .value,
+  .personal-information .User-id {
+    font-size: 13px;
+    text-align: right;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 60%;
+  }
 }

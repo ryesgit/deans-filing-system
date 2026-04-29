@@ -3,7 +3,8 @@
   position: relative;
   grid-area: activity-log;
   width: 100%;
-  height: 280px; /* Fixed height to match Personal Information */
+  height: 280px;
+  /* Fixed height to match Personal Information */
   overflow: hidden;
   padding: 20px;
   background-color: #ffffff;
@@ -16,25 +17,26 @@
 .al-content {
   width: 100%;
   height: 100%;
-  overflow-y: auto; /* Enable scrolling */
+  overflow-y: auto;
+  /* Enable scrolling */
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Space between items */
+  gap: 15px;
+  /* Space between items */
   padding-right: 5px;
   justify-content: flex-start;
 }
 
-.activity-log-card .profile-details,
-.activity-log-card .profile-details-2,
-.activity-log-card .profile-details-3,
-.activity-log-card .profile-details-4 {
+/* Target ALL activity items — not just 1-4 */
+.activity-log-card .al-content > div {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
-  width: 95%;
-  min-height: 50px; /* Ensure minimum height */
-  margin: -5px; /* Remove margins */
-  position: relative; /* Remove absolute if possible, but keeping relative for children if needed */
+  width: 100%;
+  min-height: 50px;
+  margin: 0;
+  position: relative;
 }
 
 .activity-log-card .profile {
@@ -43,8 +45,8 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  position: static; 
-  margin-left: 5%;
+  position: static;
+  margin-left: 0;
 }
 
 .activity-log-card .profile-placeholder {
@@ -53,7 +55,7 @@
   height: 41px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-left: 3%;
+  margin-left: 0;
 }
 
 .activity-log-card .profile-initials {
@@ -70,23 +72,28 @@
   font-size: 16px;
   font-weight: 600;
   text-transform: uppercase;
+  margin-left: 0;
 }
 
 .activity-log-card .text-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .activity-log-card .p {
-  color: #1e1e1e; /* Fix transparent color */
+  color: #1e1e1e;
+  /* Fix transparent color */
   font-family: "Poppins", Helvetica;
   font-size: 15px;
   font-weight: 400;
   letter-spacing: -0.1px;
   line-height: 1.2;
   margin: 0;
-  position: static; /* Reset absolute */
+  position: static;
+  /* Reset absolute */
 }
 
 .activity-log-card .span {
@@ -109,7 +116,8 @@
   letter-spacing: -0.6px;
   line-height: normal;
   margin: 0;
-  position: static; /* Reset absolute */
+  position: static;
+  /* Reset absolute */
 }
 
 .activity-log-card .text-wrapper-28 {
@@ -120,4 +128,66 @@
 
 .activity-log-card .text-wrapper-29 {
   letter-spacing: -0.06px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — Activity Log Card
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .activity-log-card {
+    height: auto;
+    max-height: 320px;
+    min-height: 120px;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .activity-log-card .al-content {
+    max-height: 260px;
+    overflow-y: auto;
+    gap: 12px;
+  }
+
+  /* ── Activity items: avatar LEFT, text RIGHT (all items) ──────────── */
+  .activity-log-card .al-content > div {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* Avatar stays fixed size on left */
+  .activity-log-card .profile,
+  .activity-log-card .profile-placeholder,
+  .activity-log-card .profile-initials {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    margin-left: 0;
+  }
+
+  /* Text fills remaining space, wraps long filenames */
+  .activity-log-card .text-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .activity-log-card .p {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .activity-log-card .due-oct {
+    font-size: 10px;
+  }
+
+  .activity-log-card .text-wrapper-27 {
+    margin-left: 0;
+  }
 }
