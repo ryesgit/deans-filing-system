@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import html2canvas from "html2canvas";
+import { useLocation } from "react-router-dom";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
@@ -750,7 +751,12 @@ const QRCard = ({
   );
 };
 
-const RequestCard = ({ requests = [], onRequestCancelled }) => {
+const RequestCard = ({
+  requests = [],
+  onRequestCancelled,
+  selectedRequestId = null,
+  requestFocusNonce = null,
+}) => {
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -812,6 +818,21 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [openMenuId]);
+
+  useEffect(() => {
+    if (selectedRequestId === null || selectedRequestId === undefined) {
+      return;
+    }
+
+    const matchedRequest = requests.find(
+      (request) => String(request.id) === String(selectedRequestId)
+    );
+
+    if (matchedRequest) {
+      setSelectedRequestForDetails(matchedRequest);
+      setShowDetailsModal(true);
+    }
+  }, [requests, selectedRequestId, requestFocusNonce]);
 
   const handleShowDetails = (request, e) => {
     if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
@@ -1160,6 +1181,7 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
 };
 
 export const RequestPage = () => {
+  const location = useLocation();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -1440,6 +1462,8 @@ export const RequestPage = () => {
 
   // Check if user has any active original file (either assigned or borrowed)
   const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
+  const selectedRequestId = location.state?.selectedRequestId ?? null;
+  const requestFocusNonce = location.state?.requestFocusNonce ?? null;
 
   return (
     <>
@@ -1477,7 +1501,12 @@ export const RequestPage = () => {
               assignedFile={assignedFile}
               onQRCodeClick={() => setIsQRModalOpen(true)}
             />
-            <RequestCard requests={requests} onRequestCancelled={handleRequestCancelled} />
+            <RequestCard
+              requests={requests}
+              onRequestCancelled={handleRequestCancelled}
+              selectedRequestId={selectedRequestId}
+              requestFocusNonce={requestFocusNonce}
+            />
           </div>
           <QRModal
             isOpen={isQRModalOpen}
