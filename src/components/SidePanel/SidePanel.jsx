@@ -67,9 +67,15 @@ export const SidePanel = () => {
         aria-expanded={isMobileMenuOpen}
         onClick={() => setIsMobileMenuOpen((prev) => !prev)}
       >
-        <span />
-        <span />
-        <span />
+        {/* Logo replaces hamburger on mobile — spans hidden via CSS */}
+        <img
+          className="nav-toggle-logo"
+          src="/pup_logo.png"
+          alt="PUP Logo — open navigation"
+        />
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
       </button>
 
       <div

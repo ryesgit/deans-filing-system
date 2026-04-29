@@ -5,18 +5,24 @@
   grid-area: quick-actions;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center content vertically */
-  align-items: center; /* Center content horizontally */
-  height: 164px; /* Adjust height as needed */
-  width: 100%; /* Ensure it takes full width of the grid area */
+  justify-content: center;
+  /* Center content vertically */
+  align-items: center;
+  /* Center content horizontally */
+  height: 164px;
+  /* Adjust height as needed */
+  width: 100%;
+  /* Ensure it takes full width of the grid area */
   position: relative;
-  overflow: hidden; /* Ensures pseudo-element stays within border-radius */
+  overflow: hidden;
+  /* Ensures pseudo-element stays within border-radius */
 
   /* Add your background image here */
   background-image: url("/rectangle_24.png");
   background-size: 120%;
   background-position: center;
-  color: #ffffff; /* Change default text color to white for better contrast */
+  color: #ffffff;
+  /* Change default text color to white for better contrast */
 }
 
 .quick-action-header {
@@ -51,7 +57,8 @@
 
 .action-btn {
   flex: 1;
-  max-width: 150px; /* Max width for buttons */
+  max-width: 150px;
+  /* Max width for buttons */
   padding: 15px 25px;
   border: none;
   border-radius: 30px;
@@ -75,4 +82,29 @@
 .action-btn:active {
   transform: translateY(0);
   box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — Quick Action Card
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .quick-action-card {
+    height: auto;
+    min-height: unset;
+    padding: 20px 16px;
+    min-width: 0;
+  }
+
+  /* Buttons wrap to new row if they don't fit */
+  .quick-action-buttons {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .action-btn {
+    flex: 1 1 130px;
+    max-width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
 }

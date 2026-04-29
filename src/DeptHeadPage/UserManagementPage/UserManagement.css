@@ -1,6 +1,7 @@
 .user-management-container {
   padding: 2rem;
-  padding-left: calc(271px + 2rem); /* 271px is SidePanel width */
+  padding-left: calc(271px + 2rem);
+  /* 271px is SidePanel width */
   display: grid;
   gap: 1.5rem;
   grid-template-columns: 1fr;
@@ -399,7 +400,8 @@
   border-radius: 39.5px;
   height: 79px;
   left: 16px;
-  overflow: hidden; /* This is crucial to crop the image to the circle's shape */
+  overflow: hidden;
+  /* This is crucial to crop the image to the circle's shape */
   position: absolute;
   top: 28px;
   width: 79px;
@@ -408,7 +410,8 @@
 .users-section .user-photo img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* This scales the image to fill the container while preserving aspect ratio */
+  object-fit: cover;
+  /* This scales the image to fill the container while preserving aspect ratio */
 }
 
 .users-section .user-initials {
@@ -432,10 +435,12 @@
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
   height: 23px;
   left: 13px;
-  left: 72px; /* Positioned relative to the card's left edge */
+  left: 72px;
+  /* Positioned relative to the card's left edge */
   position: absolute;
   top: 29px;
-  top: 84px; /* Positioned relative to the card's top edge */
+  top: 84px;
+  /* Positioned relative to the card's top edge */
   width: 23px;
 }
 
@@ -1024,22 +1029,27 @@
     align-items: flex-start;
     gap: 1rem;
   }
+
   .users-section .section-header {
     flex-wrap: wrap;
     height: auto;
     gap: 15px;
   }
+
   .users-section .header-right {
     width: 100%;
     justify-content: flex-end;
   }
+
   .user-summary-card .instruction {
     font-size: 13px;
     width: 85%;
   }
+
   .user-summary-card .stat-number {
     font-size: 26px;
   }
+
   .user-summary-card .stat-label {
     font-size: 15px;
   }
@@ -1083,38 +1093,49 @@
     padding: 0 16px;
     width: 100%;
   }
+
   .users-section .button-text {
     font-size: 14px;
   }
+
   .users-section .user-card {
     min-width: 0;
   }
+
   .user-summary-card .instruction {
     font-size: 12px;
   }
+
   .user-summary-card .stats-container {
     flex-wrap: wrap;
     height: auto;
   }
+
   .user-summary-card .stat-item {
     min-width: 45%;
     margin-bottom: 10px;
   }
+
   .user-summary-card .stat-divider {
     display: none;
   }
+
   .user-summary-card .stat-number {
     font-size: 22px;
   }
+
   .user-summary-card .stat-label {
     font-size: 13px;
   }
+
   .modal-content {
     padding: 30px 20px;
   }
+
   .modal-title {
     font-size: 24px;
   }
+
   .user-details-actions {
     flex-direction: column;
   }
@@ -1255,4 +1276,98 @@
   color: #888;
   font-family: "Poppins", Helvetica;
   font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ≤ 768px — User Management Page
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .user-management-container {
+    padding-top: 80px;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────────────── */
+  .usermanagement-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 0;
+    gap: 12px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .notification-button-wrapper {
+    margin-left: auto;
+  }
+
+  /* ── User Summary Stats Card: 2×2 grid ──────────────────────────────── */
+  .user-summary-card .stats-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px 8px;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .user-summary-card .stat-divider {
+    display: none;
+  }
+
+  .user-summary-card .stat-item {
+    min-width: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .user-summary-card .stat-number {
+    font-size: 24px;
+  }
+
+  .user-summary-card .stat-label {
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .user-summary-card .instruction {
+    font-size: 13px;
+    width: 100%;
+  }
+
+  /* ── Pending Users Table: horizontal scroll ─────────────────────────── */
+  .pending-users-table {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+
+  .pending-users-table-header,
+  .pending-user-row {
+    min-width: 580px;
+    white-space: nowrap;
+  }
+
+  .pending-user-row .table-cell,
+  .pending-users-table-header .header-cell {
+    white-space: nowrap;
+  }
+
+  .pending-user-row .action-buttons {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
 }

@@ -78,4 +78,9 @@ iframe {
   body.side-panel-open {
     overflow: hidden;
   }
+
+  /* Compensate for title's top:25px so search bar doesn't overlap */
+  .welcome-message {
+    margin-bottom: 30px;
+  }
 }
