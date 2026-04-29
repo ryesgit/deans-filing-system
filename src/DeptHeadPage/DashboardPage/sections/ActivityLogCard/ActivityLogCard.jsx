@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { statsAPI } from "../../../../services/api";
+import { API_BASE_URL } from "../../../../config/apiBaseUrl";
 import "./style.css";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const getInitials = (name) => {
   if (!name) return "?";

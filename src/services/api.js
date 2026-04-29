@@ -1,11 +1,6 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/apiBaseUrl';
 
-const runtimeConfig = typeof window !== 'undefined' ? window.__APP_CONFIG__ || {} : {};
-const API_BASE_URL = (
-  runtimeConfig.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:3001'
-).replace(/\/+$/, '');
 const CATEGORY_CACHE_TTL_MS = 60 * 1000;
 const CATEGORY_RATE_LIMIT_COOLDOWN_MS = 5 * 60 * 1000;
 
