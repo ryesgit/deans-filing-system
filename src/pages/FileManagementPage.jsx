@@ -76,6 +76,8 @@ const filterArchivedFiles = (files) => {
   return (files || []).filter((f) => !archivedIds.includes(String(f.id)));
 };
 
+const formatFileCount = (count) => `${count} file${count === 1 ? "" : "s"}`;
+
 export const FileManagementPage = () => {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -712,7 +714,11 @@ export const FileManagementPage = () => {
                   />
                   <div className="text-wrapper-27">{folder.name}</div>
                   <div className="text-wrapper-28">
-                    {folder.files ? filterArchivedFiles(folder.files).length : (folder.fileCount || 0)} files
+                    {formatFileCount(
+                      folder.files
+                        ? filterArchivedFiles(folder.files).length
+                        : (folder.fileCount || 0)
+                    )}
                   </div>
                 </div>
               ))}
