@@ -206,7 +206,7 @@
     position: fixed;
     top: 12px;
     left: 12px;
-    z-index: 230;
+    z-index: 2600;
     min-width: 44px;
     min-height: 44px;
     width: 52px;
@@ -255,7 +255,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
-    z-index: 190;
+    z-index: 2400;
   }
 
   .side-panel-backdrop.is-visible {
@@ -268,7 +268,7 @@
     width: min(82vw, 320px);
     transform: translateX(-110%);
     transition: transform 0.25s ease;
-    z-index: 220;
+    z-index: 2500;
   }
 
   .side-panel.mobile-open {
@@ -318,5 +318,22 @@
 
   .side-panel .logout {
     margin: auto 24px 32px;
+  }
+
+  /* Logout Modal Mobile Adjustments */
+  .confirmation-text-02 {
+    font-size: 18px;
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  .modal-actions {
+    gap: 12px;
+  }
+
+  .modal-actions .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    flex: 1; /* Make buttons equal width on mobile */
   }
 }

@@ -50,11 +50,15 @@
 .welcome-message .text-wrapper-77 {
   color: #800000;
   font-family: "Poppins", Helvetica;
-  font-size: clamp(32px, 3.7vw, 52.9px);
-  font-weight: 600;
+  font-size: clamp(40px, 4.5vw, 60px);
+  font-weight: 700;
   letter-spacing: -3.17px;
-  position: relative;
-  top: 25px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.welcome-message {
+  margin-bottom: 12px;
 }
 
 /* Form Card Styles */
@@ -294,6 +298,18 @@
   margin: 0 0 1rem 0;
   letter-spacing: -0.5px;
   text-align: center;
+}
+
+.request-page .notification-button-wrapper {
+  position: relative;
+  z-index: 2000;
+  cursor: pointer;
+  overflow: visible;
+  border-radius: 50%;
+  height: 45px;
+  width: 45px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
 }
 
 .request-page .qr-code-wrapper {
@@ -867,6 +883,11 @@
     align-items: stretch;
     gap: 1rem;
     margin-bottom: 1rem;
+  }
+
+  .welcome-message .text-wrapper-77 {
+    font-size: clamp(28px, 7vw, 40px);
+    letter-spacing: -2px;
   }
 
   .request-page .header-actions {

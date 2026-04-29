@@ -26,10 +26,15 @@
 .welcome-message .text-wrapper-77 {
   color: #800000;
   font-family: "Poppins", Helvetica;
-  font-size: clamp(32px, 3.7vw, 48px);
-  font-weight: 600;
-  letter-spacing: -2px;
+  font-size: clamp(40px, 4.5vw, 60px);
+  font-weight: 700;
+  letter-spacing: -3.17px;
+  line-height: 1.1;
   margin: 0;
+}
+
+.welcome-message {
+  margin-bottom: 12px;
 }
 
 .header-actions {
@@ -78,12 +83,14 @@
 
 .notification-button-wrapper {
   position: relative;
+  z-index: 2000;
   cursor: pointer;
   height: 45px;
   width: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: visible;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform 0.2s;
 }
 
 .notification-button {
@@ -324,10 +331,16 @@
   font-weight: 600;
   left: 112px;
   letter-spacing: -1.44px;
-  line-height: 23.6px;
+  line-height: 1.2;
   position: absolute;
   top: 34px;
-  width: 20px;
+  width: calc(100% - 132px);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: auto;
+  max-height: 70px;
 }
 
 .users-section .div {
@@ -339,7 +352,7 @@
   letter-spacing: -0.72px;
   line-height: 11.8px;
   position: absolute;
-  top: 89px;
+  top: 102px;
   white-space: nowrap;
 }
 
@@ -488,6 +501,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  min-width: 600px; /* Ensure enough room for all columns */
 }
 
 .users-section .list-item:hover {
@@ -548,6 +562,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0; /* Allow flex child to shrink for ellipsis */
 }
 
 .users-section .list-name {
@@ -556,6 +571,9 @@
   font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .users-section .list-details {
@@ -566,6 +584,17 @@
   font-family: "Poppins", Helvetica;
   font-size: 14px;
   font-weight: 400;
+}
+
+.users-section .list-role,
+.users-section .list-department {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.users-section .list-department {
+  max-width: 200px;
 }
 
 .users-section .list-separator {
@@ -1067,6 +1096,11 @@
     gap: 12px;
   }
 
+  .welcome-message .text-wrapper-77 {
+    font-size: clamp(28px, 7vw, 40px);
+    letter-spacing: -2px;
+  }
+
   .search-wrapper {
     width: 100%;
     max-width: none;
@@ -1369,5 +1403,56 @@
   .pending-user-row .action-buttons {
     flex-wrap: nowrap;
     gap: 6px;
+  }
+
+  /* ── List View Mobile Optimizations ───────────────────────────────── */
+  .users-section .list-container {
+    overflow-x: hidden;
+    padding-bottom: 0;
+  }
+
+  .users-section .list-item {
+    min-width: 0;
+    width: 100%;
+    margin-right: 0;
+    padding: 12px;
+    flex-wrap: wrap; /* Allow wrapping if absolutely necessary */
+  }
+
+  .users-section .list-content {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .users-section .list-name {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+
+  .users-section .list-details {
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .users-section .list-department {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .users-section .list-date {
+    display: none; /* Hide date joined on mobile list to save space */
+  }
+
+  .users-section .list-status-text {
+    margin-left: auto;
+    font-size: 12px;
   }
 }
