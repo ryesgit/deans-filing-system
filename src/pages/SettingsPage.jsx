@@ -166,15 +166,9 @@ export const SettingsPage = () => {
                         <div className="profile-divider"></div>
                         <div className="profile-right">
                             <div className="profile-detail-group">
-                                <span className="profile-detail-label">ID Number</span>
+                                <span className="profile-detail-label">User ID</span>
                                 <span className="profile-detail-value">
                                     {currentUser?.userId || currentUser?.id || "N/A"}
-                                </span>
-                            </div>
-                            <div className="profile-detail-group">
-                                <span className="profile-detail-label">Username</span>
-                                <span className="profile-detail-value">
-                                    {currentUser?.username || "N/A"}
                                 </span>
                             </div>
                             <div className="profile-detail-group">

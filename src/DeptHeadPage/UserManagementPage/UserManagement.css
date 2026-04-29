@@ -501,7 +501,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  min-width: 600px; /* Ensure enough room for all columns */
+  min-width: 600px;
+  /* Ensure enough room for all columns */
 }
 
 .users-section .list-item:hover {
@@ -562,7 +563,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0; /* Allow flex child to shrink for ellipsis */
+  min-width: 0;
+  /* Allow flex child to shrink for ellipsis */
 }
 
 .users-section .list-name {
@@ -1416,7 +1418,8 @@
     width: 100%;
     margin-right: 0;
     padding: 12px;
-    flex-wrap: wrap; /* Allow wrapping if absolutely necessary */
+    flex-wrap: wrap;
+    /* Allow wrapping if absolutely necessary */
   }
 
   .users-section .list-content {
@@ -1448,7 +1451,8 @@
   }
 
   .users-section .list-date {
-    display: none; /* Hide date joined on mobile list to save space */
+    display: none;
+    /* Hide date joined on mobile list to save space */
   }
 
   .users-section .list-status-text {

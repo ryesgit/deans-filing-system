@@ -1267,12 +1267,8 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
 
                 <div className="user-details-info">
                     <div className="info-row">
-                        <span className="info-label">ID Number</span>
-                        <span className="info-value">{user.idNumber}</span>
-                    </div>
-                    <div className="info-row">
-                        <span className="info-label">Username</span>
-                        <span className="info-value">{user.username}</span>
+                        <span className="info-label">User ID</span>
+                        <span className="info-value">{user.userId || user.idNumber}</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Email</span>
@@ -1296,7 +1292,9 @@ const UserDetailsModal = ({ user, onClose, onEdit, onDelete }) => {
                     </div>
                     <div className="info-row">
                         <span className="info-label">Date of Birth</span>
-                        <span className="info-value">{user.dateOfBirth}</span>
+                        <span className="info-value">
+                            {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'N/A'}
+                        </span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Status</span>

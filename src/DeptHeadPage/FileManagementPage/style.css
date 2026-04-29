@@ -90,15 +90,15 @@
 }
 
 .notification-button-wrapper {
-  position: relative;
-  z-index: 2000;
-  cursor: pointer;
-  overflow: visible;
-  border-radius: 50%;
-  height: 45px;
-  width: 45px;
-  flex-shrink: 0;
-  transition: transform 0.2s;
+    position: relative;
+    z-index: 2000;
+    cursor: pointer;
+    overflow: visible;
+    border-radius: 50%;
+    height: 45px;
+    width: 45px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
 }
 
 .notification-badge {
