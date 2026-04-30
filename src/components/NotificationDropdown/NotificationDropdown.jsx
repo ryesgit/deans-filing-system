@@ -1,7 +1,41 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "./NotificationContext";
+import { useAuth } from "../Modal/AuthContext";
 import "./style.css";
+
+const ADMIN_REQUEST_ROLES = ["ADMIN", "STAFF", "FACULTY"];
+const REQUEST_LINK_PATTERN = /^\/requests?\/(\d+)\/?$/i;
+
+const getNotificationTarget = (notification, userRole) => {
+  const link = notification?.link?.trim();
+
+  if (!link) {
+    return null;
+  }
+
+  const requestMatch = link.match(REQUEST_LINK_PATTERN);
+  if (requestMatch) {
+    return {
+      pathname: ADMIN_REQUEST_ROLES.includes(userRole) ? "/dashboard" : "/request",
+      state: {
+        selectedRequestId: Number(requestMatch[1]),
+      },
+    };
+  }
+
+  if (link === "/requests" || link === "/requests/") {
+    return {
+      pathname: ADMIN_REQUEST_ROLES.includes(userRole) ? "/dashboard" : "/request",
+    };
+  }
+
+  if (link === "/") {
+    return { pathname: "/dashboard" };
+  }
+
+  return { pathname: link };
+};
 
 const formatTime = (dateString) => {
     if (!dateString) return "";
@@ -20,8 +54,10 @@ const formatTime = (dateString) => {
 };
 
 export const NotificationDropdown = ({ isOpen, onClose }) => {
-    const { notifications, markAsRead, markAllAsRead } = useNotifications();
-    const navigate = useNavigate();
+  const { notifications, markAsRead, markAllAsRead } = useNotifications();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const userRole = user?.role?.toUpperCase() || "";
 
     if (!isOpen) return null;
 
@@ -33,11 +69,19 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
             await markAsRead(notification.id);
         }
 
-        if (notification.link) {
-            navigate(notification.link);
-            onClose();
-        }
-    };
+    const target = getNotificationTarget(notification, userRole);
+    if (target) {
+      navigate(target.pathname, target.state
+        ? {
+            state: {
+              ...target.state,
+              requestFocusNonce: Date.now(),
+            },
+          }
+        : undefined);
+      onClose();
+    }
+  };
 
     const handleMarkAllAsRead = async (e) => {
         e.stopPropagation();
@@ -99,6 +143,34 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
                     )}
                 </div>
             </div>
-        </>
-    );
+          ) : (
+            notificationList.map((notification) => (
+              (() => {
+                const target = getNotificationTarget(notification, userRole);
+
+                return (
+                  <div
+                    key={notification.id}
+                    className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
+                    onClick={() => handleNotificationClick(notification)}
+                    style={{
+                      cursor: target ? "pointer" : "default",
+                    }}
+                  >
+                    {notification.title && (
+                      <h4 className="notification-title">{notification.title}</h4>
+                    )}
+                    <p className="notification-message">{notification.message}</p>
+                    <span className="notification-time">
+                      {formatTime(notification.createdAt || notification.time)}
+                    </span>
+                  </div>
+                );
+              })()
+            ))
+          )}
+        </div>
+      </div>
+    </>
+  );
 };

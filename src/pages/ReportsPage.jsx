@@ -5,7 +5,7 @@ import { NotificationDropdown } from "../components/NotificationDropdown";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { useAuth } from "../components/Modal/AuthContext";
-import { reportsAPI, filesAPI, categoriesAPI } from "../services/api";
+import { requestsAPI, filesAPI, categoriesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 
 const normalizeId = (value) =>
@@ -23,19 +23,19 @@ const belongsToUser = (request, currentUser) => {
 };
 
 const isReturnedRequest = (request) =>
-    ["RETURNED", "COMPLETED"].includes(request?.status) || Boolean(request?.returnedAt);
+  request?.status === "COMPLETED" || Boolean(request?.returnedAt);
 
 const isBorrowedRequest = (request) =>
-    !isReturnedRequest(request) && request?.status === "BORROWED";
+  request?.status === "APPROVED" && request?.file?.status === "RETRIEVED";
 
 const getRequestDate = (activeTab, row) => {
     if (activeTab === "returned") {
         return row.returnedAt || row.updatedAt || row.createdAt;
     }
 
-    if (activeTab === "borrowed") {
-        return row.borrowedAt || row.approvedAt || row.updatedAt || row.createdAt;
-    }
+  if (activeTab === "borrowed") {
+    return row.borrowedAt || row.file?.updatedAt || row.approvedAt || row.updatedAt || row.createdAt;
+  }
 
     return row.createdAt || row.updatedAt;
 };
@@ -154,95 +154,25 @@ export const ReportsPage = () => {
                     archivedIds = [];
                 }
 
-                // Merge localStorage validity dates and resolve folder names
-                const allFilesWithDetails = allFiles.map((f) => ({
-                    ...f,
-                    validUntil: f.validUntil || validityMap[f.id] || null,
-                    folderName: folderMap[f.categoryId] || folderMap[f.category_id] || null,
-                }));
-
-                const filesWithValidity = allFilesWithDetails
-                    .filter((f) => f.validUntil && !archivedIds.includes(String(f.id)))
-                    .sort((a, b) => new Date(a.validUntil) - new Date(b.validUntil));
-
-                const archivedFilesList = allFilesWithDetails
-                    .filter((f) => archivedIds.includes(String(f.id)))
-                    .sort((a, b) => new Date(b.validUntil || 0) - new Date(a.validUntil || 0));
-
-                setArchivedFiles(archivedFilesList);
-                setReportsData((prev) => ({
-                    ...prev,
-                    validityDue: filesWithValidity,
-                }));
-            } catch (error) {
-                console.error("Failed to fetch files for validity:", error);
-            }
-        };
-
-        fetchReports();
-        fetchValidityFiles();
-    }, [user]);
-
-    const handleExport = () => {
-        if (activeTab === "validityDue") {
-            const data = Array.isArray(reportsData.validityDue) ? reportsData.validityDue : [];
-            const headers = ["File ID", "File Name", "Department", "Category", "Valid Until", "Status"];
-            let csv = headers.join(",") + "\n";
-            const now = new Date();
-            data.forEach((file) => {
-                const validDate = new Date(file.validUntil);
-                const daysLeft = Math.ceil((validDate - now) / (1000 * 60 * 60 * 24));
-                const status = daysLeft < 0 ? "Expired" : daysLeft <= 30 ? "Due Soon" : "Valid";
-                const values = [
-                    file.id,
-                    file.filename || file.name || "N/A",
-                    file.user?.department || file.department || "N/A",
-                    file.category?.name || file.category || "N/A",
-                    new Date(file.validUntil).toLocaleDateString(),
-                    status,
-                ];
-                csv += values.join(",") + "\n";
-            });
-            const blob = new Blob([csv], { type: "text/csv" });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `validity_due_report_${new Date().toISOString().split("T")[0]}.csv`;
-            a.click();
-            return;
-        }
-
-        const data = Array.isArray(reportsData[activeTab])
-            ? reportsData[activeTab]
-            : [];
-        const headers =
-            activeTab === "request"
-                ? ["Request ID", "File Name", "Date Submitted", "Status"]
-                : [
-                    "Request ID",
-                    "File Name",
-                    `Date ${activeTab === "borrowed" ? "Borrowed" : "Returned"}`,
-                ];
-
-        let csv = headers.join(",") + "\n";
-        data.forEach((row) => {
-            const dateField = getRequestDate(activeTab, row);
-            const values = [
-                row.id,
-                getFileName(row),
-                dateField ? new Date(dateField).toLocaleDateString() : "N/A",
-                ...(activeTab === "request" ? [row.status || "N/A"] : []),
-            ];
-            csv += values.join(",") + "\n";
-        });
-
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${activeTab}_report_${new Date().toISOString().split("T")[0]
-            }.csv`;
-        a.click();
+        setReportsData((prev) => ({
+          ...prev,
+          request: userRequests.filter(
+            (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
+          ),
+          borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
+          returned: userRequests.filter((request) => isReturnedRequest(request)),
+        }));
+      } catch (error) {
+        console.error("Failed to fetch reports:", error);
+        setReportsData((prev) => ({
+          ...prev,
+          request: [],
+          borrowed: [],
+          returned: [],
+        }));
+      } finally {
+        setLoading(false);
+      }
     };
 
     const handleShowDetails = (transaction) => {
