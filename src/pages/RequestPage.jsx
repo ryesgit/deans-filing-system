@@ -16,739 +16,741 @@ import { useAuth } from "../components/Modal/AuthContext";
 import { sendReturnDateReminderEmail } from "../utils/email";
 
 const normalizeId = (value) =>
-    value === null || value === undefined ? null : String(value);
+  value === null || value === undefined ? null : String(value);
 
 const belongsToUser = (request, currentUser) => {
-    const requestUserIds = [request?.userId, request?.user?.userId, request?.user?.id]
-        .map(normalizeId)
-        .filter(Boolean);
-    const currentUserIds = [currentUser?.userId, currentUser?.id]
-        .map(normalizeId)
-        .filter(Boolean);
+  const requestUserIds = [request?.userId, request?.user?.userId, request?.user?.id]
+    .map(normalizeId)
+    .filter(Boolean);
+  const currentUserIds = [currentUser?.userId, currentUser?.id]
+    .map(normalizeId)
+    .filter(Boolean);
 
-    return currentUserIds.some((userId) => requestUserIds.includes(userId));
+  return currentUserIds.some((userId) => requestUserIds.includes(userId));
 };
 const ConfirmModal = ({
-    isOpen,
-    onClose,
-    onConfirm,
-    title,
-    children,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  children,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
 }) => {
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    return (
-        <div className="confirm-modal-overlay" onClick={onClose}>
-            <div
-                className="confirm-modal-content"
-                onClick={(e) => e.stopPropagation()}
+  return (
+    <div className="confirm-modal-overlay" onClick={onClose}>
+      <div
+        className="confirm-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="confirm-modal-close" onClick={onClose}>
+          ×
+        </button>
+        <h2 className="confirm-modal-title">{title}</h2>
+        <div className="confirm-modal-body">{children}</div>
+        <div className="confirm-modal-actions">
+          {cancelText && (
+            <button
+              className="confirm-modal-btn confirm-modal-cancel"
+              onClick={onClose}
             >
-                <button className="confirm-modal-close" onClick={onClose}>
-                    ×
-                </button>
-                <h2 className="confirm-modal-title">{title}</h2>
-                <div className="confirm-modal-body">{children}</div>
-                <div className="confirm-modal-actions">
-                    {cancelText && (
-                        <button
-                            className="confirm-modal-btn confirm-modal-cancel"
-                            onClick={onClose}
-                        >
-                            {cancelText}
-                        </button>
-                    )}
-                    {confirmText && (
-                        <button
-                            className="confirm-modal-btn confirm-modal-confirm"
-                            onClick={onConfirm}
-                        >
-                            {confirmText}
-                        </button>
-                    )}
-                </div>
-            </div>
+              {cancelText}
+            </button>
+          )}
+          {confirmText && (
+            <button
+              className="confirm-modal-btn confirm-modal-confirm"
+              onClick={onConfirm}
+            >
+              {confirmText}
+            </button>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    return (
-        <div className="qr-modal-overlay" onClick={onClose}>
-            <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
-                <button className="qr-modal-close" onClick={onClose}>
-                    ×
-                </button>
-                <h2 className="qr-modal-title">Your QR Code</h2>
-                <div className="qr-modal-code">
-                    {qrCodeUrl ? (
-                        <img
-                            src={qrCodeUrl}
-                            alt="QR Code"
-                            style={{
-                                width: "300px",
-                                height: "300px",
-                                objectFit: "contain",
-                            }}
-                        />
-                    ) : (
-                        <QRCodeSVG value={qrValue} size={300} level="H" />
-                    )}
-                </div>
-                <p className="qr-modal-user">{userName}</p>
-            </div>
+  return (
+    <div className="qr-modal-overlay" onClick={onClose}>
+      <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="qr-modal-close" onClick={onClose}>
+          ×
+        </button>
+        <h2 className="qr-modal-title">Your QR Code</h2>
+        <div className="qr-modal-code">
+          {qrCodeUrl ? (
+            <img
+              src={qrCodeUrl}
+              alt="QR Code"
+              style={{
+                width: "300px",
+                height: "300px",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <QRCodeSVG value={qrValue} size={300} level="H" />
+          )}
         </div>
-    );
+        <p className="qr-modal-user">{userName}</p>
+      </div>
+    </div>
+  );
 };
 
 const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
-    const { user } = useAuth();
-    const isRestrictedRole = ["ADMIN", "STAFF", "STUDENT"].includes(user?.role);
+  const { user } = useAuth();
+  const isOriginalOnlyRole = ["ADMIN", "STAFF"].includes(
+    user?.role?.toUpperCase()
+  );
 
-    const [formData, setFormData] = useState({
-        fileName: "",
-        department: "",
-        fileCategory: "",
-        purpose: "",
-        copyType: isRestrictedRole ? "original" : "soft",
-        returnDate: "",
-        priority: "",
-        fileId: null,
+  const [formData, setFormData] = useState({
+    fileName: "",
+    department: "",
+    fileCategory: "",
+    purpose: "",
+    copyType: isOriginalOnlyRole ? "original" : "soft",
+    returnDate: "",
+    priority: "",
+    fileId: null,
+  });
+
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [showFileLimitModal, setShowFileLimitModal] = useState(false);
+
+  const departments = [
+    "Civil Engineering",
+    "Industrial Engineering",
+    "Electronics and Communications Engineering",
+    "Mechanical Engineering",
+    "Computer Engineering",
+    "Electrical Engineering",
+    "Railway Engineering",
+  ];
+
+  const categories = [
+    "Thesis",
+    "Capstone",
+    "Research",
+    "Administrative",
+    "Research Papers",
+    "Reports",
+    "Guidelines",
+    "Handbooks",
+    "Grant Documents",
+  ];
+
+  const priorities = ["Low", "Medium", "High"];
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleFileSelect = (fileInfo) => {
+    // category may come as an object {name:...} or a plain string
+    const rawCategory = fileInfo.fileCategory;
+    const resolvedCategory =
+      rawCategory && typeof rawCategory === "object"
+        ? rawCategory.name || ""
+        : rawCategory || "";
+
+    setFormData((prev) => ({
+      ...prev,
+      fileName: fileInfo.fileName,
+      fileId: fileInfo.fileData?.id,
+      department: fileInfo.department || prev.department,
+      fileCategory: resolvedCategory || prev.fileCategory,
+    }));
+  };
+
+  const handleCopyTypeChange = (type) => {
+    setFormData((prev) => ({
+      ...prev,
+      copyType: type,
+      returnDate: type === "soft" ? "" : prev.returnDate,
+      priority: type === "soft" ? "" : prev.priority,
+    }));
+  };
+
+  const handleSubmitClick = () => {
+    if (
+      !formData.fileName ||
+      !formData.department ||
+      !formData.fileCategory ||
+      !formData.purpose
+    ) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    // Check if user already has an active original file
+    if (formData.copyType === "original" && hasActiveOriginalFile) {
+      setShowFileLimitModal(true);
+      return;
+    }
+
+    if (
+      formData.copyType === "original" &&
+      (!formData.returnDate || !formData.priority)
+    ) {
+      alert(
+        "Please select return date and priority for original copy requests"
+      );
+      return;
+    }
+
+    setShowSubmitModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    const descriptionParts = [
+      `Purpose: ${formData.purpose}`,
+      `Department: ${formData.department}`,
+      `Category: ${formData.fileCategory}`,
+      `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
+      }`,
+    ];
+
+    if (formData.copyType === "original" && formData.returnDate) {
+      descriptionParts.push(`Return Date: ${formData.returnDate}`);
+    }
+
+    const requestData = {
+      title: formData.fileName,
+      description: descriptionParts.join("\n"),
+      type: "FILE_ACCESS",
+      priority: formData.priority || "normal",
+      fileId: formData.fileId, // Include file ID in request
+    };
+
+    try {
+      const response = await requestsAPI.create(requestData);
+      onSubmit(response.data.request || response.data);
+      setShowSubmitModal(false);
+      handleClear();
+    } catch (error) {
+      console.error("Failed to submit request:", error);
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to submit request"
+      );
+      setShowSubmitModal(false);
+    }
+  };
+
+  const handleClearClick = () => {
+    setShowClearModal(true);
+  };
+
+  const handleConfirmClear = () => {
+    setFormData({
+      fileName: "",
+      department: "",
+      fileCategory: "",
+      purpose: "",
+      copyType: isOriginalOnlyRole ? "original" : "soft",
+      returnDate: "",
+      priority: "",
+      fileId: null,
     });
+    setShowClearModal(false);
+  };
 
-    const [showSubmitModal, setShowSubmitModal] = useState(false);
-    const [showClearModal, setShowClearModal] = useState(false);
-    const [showFileLimitModal, setShowFileLimitModal] = useState(false);
+  const handleClear = () => {
+    setFormData({
+      fileName: "",
+      department: "",
+      fileCategory: "",
+      purpose: "",
+      copyType: isOriginalOnlyRole ? "original" : "soft",
+      returnDate: "",
+      priority: "",
+      fileId: null,
+    });
+  };
 
-    const departments = [
-        "Civil Engineering",
-        "Industrial Engineering",
-        "Electronics and Communications Engineering",
-        "Mechanical Engineering",
-        "Computer Engineering",
-        "Electrical Engineering",
-        "Railway Engineering",
-    ];
+  return (
+    <div className="form-card">
+      <h2 className="form-title">Request Form</h2>
 
-    const categories = [
-        "Thesis",
-        "Capstone",
-        "Research",
-        "Administrative",
-        "Research Papers",
-        "Reports",
-        "Guidelines",
-        "Handbooks",
-        "Grant Documents",
-    ];
-
-    const priorities = ["Low", "Medium", "High"];
-
-    const handleChange = (field, value) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    };
-
-    const handleFileSelect = (fileInfo) => {
-        // category may come as an object {name:...} or a plain string
-        const rawCategory = fileInfo.fileCategory;
-        const resolvedCategory =
-            rawCategory && typeof rawCategory === "object"
-                ? rawCategory.name || ""
-                : rawCategory || "";
-
-        setFormData((prev) => ({
-            ...prev,
-            fileName: fileInfo.fileName,
-            fileId: fileInfo.fileData?.id,
-            department: fileInfo.department || prev.department,
-            fileCategory: resolvedCategory || prev.fileCategory,
-        }));
-    };
-
-    const handleCopyTypeChange = (type) => {
-        setFormData((prev) => ({
-            ...prev,
-            copyType: type,
-            returnDate: type === "soft" ? "" : prev.returnDate,
-            priority: type === "soft" ? "" : prev.priority,
-        }));
-    };
-
-    const handleSubmitClick = () => {
-        if (
-            !formData.fileName ||
-            !formData.department ||
-            !formData.fileCategory ||
-            !formData.purpose
-        ) {
-            alert("Please fill in all required fields");
-            return;
-        }
-
-        // Check if user already has an active original file
-        if (formData.copyType === "original" && hasActiveOriginalFile) {
-            setShowFileLimitModal(true);
-            return;
-        }
-
-        if (
-            formData.copyType === "original" &&
-            (!formData.returnDate || !formData.priority)
-        ) {
-            alert(
-                "Please select return date and priority for original copy requests"
-            );
-            return;
-        }
-
-        setShowSubmitModal(true);
-    };
-
-    const handleConfirmSubmit = async () => {
-        const descriptionParts = [
-            `Purpose: ${formData.purpose}`,
-            `Department: ${formData.department}`,
-            `Category: ${formData.fileCategory}`,
-            `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
-            }`,
-        ];
-
-        if (formData.copyType === "original" && formData.returnDate) {
-            descriptionParts.push(`Return Date: ${formData.returnDate}`);
-        }
-
-        const requestData = {
-            title: formData.fileName,
-            description: descriptionParts.join("\n"),
-            type: "FILE_ACCESS",
-            priority: formData.priority || "normal",
-            fileId: formData.fileId, // Include file ID in request
-        };
-
-        try {
-            const response = await requestsAPI.create(requestData);
-            onSubmit(response.data.request || response.data);
-            setShowSubmitModal(false);
-            handleClear();
-        } catch (error) {
-            console.error("Failed to submit request:", error);
-            alert(
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to submit request"
-            );
-            setShowSubmitModal(false);
-        }
-    };
-
-    const handleClearClick = () => {
-        setShowClearModal(true);
-    };
-
-    const handleConfirmClear = () => {
-        setFormData({
-            fileName: "",
-            department: "",
-            fileCategory: "",
-            purpose: "",
-            copyType: isRestrictedRole ? "original" : "soft",
-            returnDate: "",
-            priority: "",
-            fileId: null,
-        });
-        setShowClearModal(false);
-    };
-
-    const handleClear = () => {
-        setFormData({
-            fileName: "",
-            department: "",
-            fileCategory: "",
-            purpose: "",
-            copyType: isRestrictedRole ? "original" : "soft",
-            returnDate: "",
-            priority: "",
-            fileId: null,
-        });
-    };
-
-    return (
-        <div className="form-card">
-            <h2 className="form-title">Request Form</h2>
-
-            <div className="form-row-three">
-                <div className="form-field">
-                    <FileSearchInput
-                        value={formData.fileName}
-                        onChange={(value) => handleChange("fileName", value)}
-                        onFileSelect={handleFileSelect}
-                        copyType={formData.copyType}
-                    />
-                </div>
-
-                <div className="form-field">
-                    <select
-                        className="form-select"
-                        value={formData.department}
-                        onChange={(e) => handleChange("department", e.target.value)}
-                    >
-                        <option value="">Department</option>
-                        {/* Include auto-filled value if not in the hardcoded list */}
-                        {formData.department && !departments.includes(formData.department) && (
-                            <option key={formData.department} value={formData.department}>
-                                {formData.department}
-                            </option>
-                        )}
-                        {departments.map((dept) => (
-                            <option key={dept} value={dept}>
-                                {dept}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="form-field">
-                    <select
-                        className="form-select"
-                        value={formData.fileCategory}
-                        onChange={(e) => handleChange("fileCategory", e.target.value)}
-                    >
-                        <option value="">File Category</option>
-                        {/* Include auto-filled value if not in the hardcoded list */}
-                        {formData.fileCategory && !categories.includes(formData.fileCategory) && (
-                            <option key={formData.fileCategory} value={formData.fileCategory}>
-                                {formData.fileCategory}
-                            </option>
-                        )}
-                        {categories.map((category) => (
-                            <option key={category} value={category}>
-                                {category}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            <div className="form-row">
-                <div className="copy-type-section">
-                    <label className="copy-type-label">Copy Type</label>
-                    <div className="copy-type-buttons">
-                        {!isRestrictedRole && (
-                            <label
-                                className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
-                                    }`}
-                            >
-                                <input
-                                    type="radio"
-                                    name="copyType"
-                                    className="copy-type-btn"
-                                    checked={formData.copyType === "soft"}
-                                    onChange={() => handleCopyTypeChange("soft")}
-                                />
-                                Soft Copy Only
-                            </label>
-                        )}
-                        <label
-                            className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
-                                }`}
-                        >
-                            <input
-                                type="radio"
-                                name="copyType"
-                                className="copy-type-btn"
-                                checked={formData.copyType === "original"}
-                                onChange={() => handleCopyTypeChange("original")}
-                            />
-                            Original Copy
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {formData.copyType === "original" && (
-                <div className="form-row-two">
-                    <div className="form-field">
-                        <label className="copy-type-label">Return Date</label>
-                        <input
-                            type="date"
-                            className="form-input"
-                            value={formData.returnDate}
-                            onChange={(e) => handleChange("returnDate", e.target.value)}
-                            min={format(new Date(), "yyyy-MM-dd")}
-                        />
-                    </div>
-
-                    <div className="form-field">
-                        <label className="copy-type-label">Priority</label>
-                        <select
-                            className="form-select"
-                            value={formData.priority}
-                            onChange={(e) => handleChange("priority", e.target.value)}
-                        >
-                            <option value="">Select Priority</option>
-                            {priorities.map((priority) => (
-                                <option key={priority} value={priority}>
-                                    {priority}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-            )}
-
-            <div className="form-row">
-                <div className="form-field-full">
-                    <textarea
-                        className="form-textarea"
-                        placeholder="Purpose"
-                        value={formData.purpose}
-                        onChange={(e) => handleChange("purpose", e.target.value)}
-                        rows="4"
-                    />
-                </div>
-            </div>
-
-            <div className="form-actions">
-                <button className="btn-clear" onClick={handleClearClick} type="button">
-                    Clear
-                </button>
-                <button
-                    className="btn-submit"
-                    onClick={handleSubmitClick}
-                    type="button"
-                >
-                    Submit
-                </button>
-            </div>
-
-            <ConfirmModal
-                isOpen={showSubmitModal}
-                onClose={() => setShowSubmitModal(false)}
-                onConfirm={handleConfirmSubmit}
-                title="Confirm Request Submission"
-                confirmText="Confirm"
-                cancelText="Cancel"
-            >
-                <div className="confirm-detail-row">
-                    <span className="confirm-detail-label">File Name:</span>
-                    <span className="confirm-detail-value">{formData.fileName}</span>
-                </div>
-                <div className="confirm-detail-row">
-                    <span className="confirm-detail-label">Department:</span>
-                    <span className="confirm-detail-value">{formData.department}</span>
-                </div>
-                <div className="confirm-detail-row">
-                    <span className="confirm-detail-label">File Category:</span>
-                    <span className="confirm-detail-value">{formData.fileCategory}</span>
-                </div>
-                <div className="confirm-detail-row">
-                    <span className="confirm-detail-label">Purpose:</span>
-                    <span className="confirm-detail-value">{formData.purpose}</span>
-                </div>
-                <div className="confirm-detail-row">
-                    <span className="confirm-detail-label">Copy Type:</span>
-                    <span className="confirm-detail-value">
-                        {formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"}
-                    </span>
-                </div>
-                {formData.copyType === "original" && (
-                    <>
-                        <div className="confirm-detail-row">
-                            <span className="confirm-detail-label">Return Date:</span>
-                            <span className="confirm-detail-value">
-                                {formData.returnDate
-                                    ? format(new Date(formData.returnDate), "MM/dd/yyyy")
-                                    : "Not set"}
-                            </span>
-                        </div>
-                        <div className="confirm-detail-row">
-                            <span className="confirm-detail-label">Priority:</span>
-                            <span className="confirm-detail-value">{formData.priority}</span>
-                        </div>
-                    </>
-                )}
-            </ConfirmModal>
-
-            <ConfirmModal
-                isOpen={showClearModal}
-                onClose={() => setShowClearModal(false)}
-                onConfirm={handleConfirmClear}
-                title="Clear Form?"
-                confirmText="Yes, Clear Form"
-                cancelText="Cancel"
-            >
-                <p className="confirm-modal-message">
-                    Are you sure you want to clear all fields?
-                </p>
-            </ConfirmModal>
-
-            <ConfirmModal
-                isOpen={showFileLimitModal}
-                onClose={() => setShowFileLimitModal(false)}
-                onConfirm={() => setShowFileLimitModal(false)}
-                title="File Borrowing Limit Reached"
-                confirmText="OK"
-                cancelText=""
-            >
-                <p className="confirm-modal-message">
-                    You currently have a file assigned for borrowing.
-                    <br />
-                    <br />
-                    Please return your current file before requesting another original copy.
-                    <br />
-                    <br />
-                    <strong>Note:</strong> You can still request soft copies.
-                </p>
-            </ConfirmModal>
+      <div className="form-row-three">
+        <div className="form-field">
+          <FileSearchInput
+            value={formData.fileName}
+            onChange={(value) => handleChange("fileName", value)}
+            onFileSelect={handleFileSelect}
+            copyType={formData.copyType}
+          />
         </div>
-    );
+
+        <div className="form-field">
+          <select
+            className="form-select"
+            value={formData.department}
+            onChange={(e) => handleChange("department", e.target.value)}
+          >
+            <option value="">Department</option>
+            {/* Include auto-filled value if not in the hardcoded list */}
+            {formData.department && !departments.includes(formData.department) && (
+              <option key={formData.department} value={formData.department}>
+                {formData.department}
+              </option>
+            )}
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <select
+            className="form-select"
+            value={formData.fileCategory}
+            onChange={(e) => handleChange("fileCategory", e.target.value)}
+          >
+            <option value="">File Category</option>
+            {/* Include auto-filled value if not in the hardcoded list */}
+            {formData.fileCategory && !categories.includes(formData.fileCategory) && (
+              <option key={formData.fileCategory} value={formData.fileCategory}>
+                {formData.fileCategory}
+              </option>
+            )}
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="copy-type-section">
+          <label className="copy-type-label">Copy Type</label>
+          <div className="copy-type-buttons">
+            {!isOriginalOnlyRole && (
+              <label
+                className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="copyType"
+                  className="copy-type-btn"
+                  checked={formData.copyType === "soft"}
+                  onChange={() => handleCopyTypeChange("soft")}
+                />
+                Soft Copy Only
+              </label>
+            )}
+            <label
+              className={`copy-type-label-btn ${formData.copyType === "original" ? "active" : ""
+                }`}
+            >
+              <input
+                type="radio"
+                name="copyType"
+                className="copy-type-btn"
+                checked={formData.copyType === "original"}
+                onChange={() => handleCopyTypeChange("original")}
+              />
+              Original Copy
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {formData.copyType === "original" && (
+        <div className="form-row-two">
+          <div className="form-field">
+            <label className="copy-type-label">Return Date</label>
+            <input
+              type="date"
+              className="form-input"
+              value={formData.returnDate}
+              onChange={(e) => handleChange("returnDate", e.target.value)}
+              min={format(new Date(), "yyyy-MM-dd")}
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="copy-type-label">Priority</label>
+            <select
+              className="form-select"
+              value={formData.priority}
+              onChange={(e) => handleChange("priority", e.target.value)}
+            >
+              <option value="">Select Priority</option>
+              {priorities.map((priority) => (
+                <option key={priority} value={priority}>
+                  {priority}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      <div className="form-row">
+        <div className="form-field-full">
+          <textarea
+            className="form-textarea"
+            placeholder="Purpose"
+            value={formData.purpose}
+            onChange={(e) => handleChange("purpose", e.target.value)}
+            rows="4"
+          />
+        </div>
+      </div>
+
+      <div className="form-actions">
+        <button className="btn-clear" onClick={handleClearClick} type="button">
+          Clear
+        </button>
+        <button
+          className="btn-submit"
+          onClick={handleSubmitClick}
+          type="button"
+        >
+          Submit
+        </button>
+      </div>
+
+      <ConfirmModal
+        isOpen={showSubmitModal}
+        onClose={() => setShowSubmitModal(false)}
+        onConfirm={handleConfirmSubmit}
+        title="Confirm Request Submission"
+        confirmText="Confirm"
+        cancelText="Cancel"
+      >
+        <div className="confirm-detail-row">
+          <span className="confirm-detail-label">File Name:</span>
+          <span className="confirm-detail-value">{formData.fileName}</span>
+        </div>
+        <div className="confirm-detail-row">
+          <span className="confirm-detail-label">Department:</span>
+          <span className="confirm-detail-value">{formData.department}</span>
+        </div>
+        <div className="confirm-detail-row">
+          <span className="confirm-detail-label">File Category:</span>
+          <span className="confirm-detail-value">{formData.fileCategory}</span>
+        </div>
+        <div className="confirm-detail-row">
+          <span className="confirm-detail-label">Purpose:</span>
+          <span className="confirm-detail-value">{formData.purpose}</span>
+        </div>
+        <div className="confirm-detail-row">
+          <span className="confirm-detail-label">Copy Type:</span>
+          <span className="confirm-detail-value">
+            {formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"}
+          </span>
+        </div>
+        {formData.copyType === "original" && (
+          <>
+            <div className="confirm-detail-row">
+              <span className="confirm-detail-label">Return Date:</span>
+              <span className="confirm-detail-value">
+                {formData.returnDate
+                  ? format(new Date(formData.returnDate), "MM/dd/yyyy")
+                  : "Not set"}
+              </span>
+            </div>
+            <div className="confirm-detail-row">
+              <span className="confirm-detail-label">Priority:</span>
+              <span className="confirm-detail-value">{formData.priority}</span>
+            </div>
+          </>
+        )}
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={handleConfirmClear}
+        title="Clear Form?"
+        confirmText="Yes, Clear Form"
+        cancelText="Cancel"
+      >
+        <p className="confirm-modal-message">
+          Are you sure you want to clear all fields?
+        </p>
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={showFileLimitModal}
+        onClose={() => setShowFileLimitModal(false)}
+        onConfirm={() => setShowFileLimitModal(false)}
+        title="File Borrowing Limit Reached"
+        confirmText="OK"
+        cancelText=""
+      >
+        <p className="confirm-modal-message">
+          You currently have a file assigned for borrowing.
+          <br />
+          <br />
+          Please return your current file before requesting another original copy.
+          <br />
+          <br />
+          <strong>Note:</strong> You can still request soft copies.
+        </p>
+      </ConfirmModal>
+    </div>
+  );
 };
 
 const QRCard = ({
-    userName = "John Doe",
-    userId = "USER-001",
-    assignedFile = null,
-    onQRCodeClick,
-    qrCodeUrl = null,
+  userName = "John Doe",
+  userId = "USER-001",
+  assignedFile = null,
+  onQRCodeClick,
+  qrCodeUrl = null,
 }) => {
-    const [showDownloadModal, setShowDownloadModal] = useState(false);
-    const [imageLoadError, setImageLoadError] = useState(false);
-    const qrValue = userId || "USER-UNKNOWN";
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const qrValue = userId || "USER-UNKNOWN";
 
-    const handleDownloadQROnly = () => {
-        const svg = document.getElementById("qr-code-svg");
-        if (!svg) return;
+  const handleDownloadQROnly = () => {
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
 
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        const img = new Image();
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
 
-        img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            const pngFile = canvas.toDataURL("image/png");
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL("image/png");
 
-            const downloadLink = document.createElement("a");
-            downloadLink.download = `QR_${userId}.png`;
-            downloadLink.href = pngFile;
-            downloadLink.click();
-            setShowDownloadModal(false);
-        };
-
-        img.src = "data:image/svg+xml;base64," + btoa(svgData);
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `QR_${userId}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+      setShowDownloadModal(false);
     };
 
-    const handleDownloadWithDetails = async () => {
-        const qrCardElement = document.getElementById("qr-card-content");
-        const downloadButton = document.getElementById("qr-download-button");
-        if (!qrCardElement) return;
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
 
-        try {
-            // Hide the download button before capturing
-            if (downloadButton) {
-                downloadButton.style.display = 'none';
-            }
+  const handleDownloadWithDetails = async () => {
+    const qrCardElement = document.getElementById("qr-card-content");
+    const downloadButton = document.getElementById("qr-download-button");
+    if (!qrCardElement) return;
 
-            const canvas = await html2canvas(qrCardElement, {
-                backgroundColor: "#ffffff",
-                scale: 2,
-                logging: false,
-                useCORS: true,
-            });
+    try {
+      // Hide the download button before capturing
+      if (downloadButton) {
+        downloadButton.style.display = 'none';
+      }
 
-            const pngFile = canvas.toDataURL("image/png");
-            const downloadLink = document.createElement("a");
-            downloadLink.download = `QR_${userId}_with_details.png`;
-            downloadLink.href = pngFile;
-            downloadLink.click();
-            setShowDownloadModal(false);
-        } catch (error) {
-            console.error("Failed to download QR with details:", error);
-            alert("Failed to download. Please try again.");
-        } finally {
-            // Show the download button again
-            if (downloadButton) {
-                downloadButton.style.display = 'flex';
-            }
-        }
-    };
+      const canvas = await html2canvas(qrCardElement, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
 
-    return (
-        <div className="qr-card">
-            <div id="qr-card-content" style={{ width: '100%' }}>
-                <div
-                    className="qr-code-wrapper"
-                    onClick={onQRCodeClick}
-                    title="Click to enlarge"
-                    style={{
-                        background: "white",
-                        padding: "0.75rem",
-                        borderRadius: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        border: "2px solid #f0f0f0",
-                        minHeight: "220px",
-                        minWidth: "220px",
-                    }}
-                >
-                    {/* Always render QRCodeSVG, ignore qrCodeUrl from backend */}
-                    <div
-                        style={{
-                            width: "180px",
-                            height: "180px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <QRCodeSVG
-                            id="qr-code-svg"
-                            value={qrValue}
-                            size={180}
-                            level="H"
-                            className="qr-code-svg"
-                            style={{ display: "block" }}
-                        />
-                    </div>
-                </div>
-                <button
-                    id="qr-download-button"
-                    className="qr-btn qr-btn-download"
-                    onClick={() => setShowDownloadModal(true)}
-                >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path
-                            d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="M4.66669 6.66669L8.00002 10L11.3334 6.66669"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="M8 10V2"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                    Download
-                </button>
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `QR_${userId}_with_details.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+      setShowDownloadModal(false);
+    } catch (error) {
+      console.error("Failed to download QR with details:", error);
+      alert("Failed to download. Please try again.");
+    } finally {
+      // Show the download button again
+      if (downloadButton) {
+        downloadButton.style.display = 'flex';
+      }
+    }
+  };
 
-                {assignedFile ? (
-                    <div className="qr-file-stats">
-                        <div className="qr-file-stat-item">
-                            <span className="qr-file-stat-label">Assigned File:</span>
-                            <span className="qr-file-stat-value">{assignedFile.fileName || 'N/A'}</span>
-                        </div>
-                        <div className="qr-file-stat-item">
-                            <span className="qr-file-stat-label">Folder Number:</span>
-                            <span className="qr-file-stat-value">{assignedFile.folderNumber || 'N/A'}</span>
-                        </div>
-                        <div className="qr-file-stat-item">
-                            <span className="qr-file-stat-label">Folder Name:</span>
-                            <span className="qr-file-stat-value">{assignedFile.folderName || 'N/A'}</span>
-                        </div>
-                        <div className="qr-file-stat-item">
-                            <span className="qr-file-stat-label">Return Date:</span>
-                            <span className="qr-file-stat-value">{assignedFile.returnDate || 'N/A'}</span>
-                        </div>
-                        <div className="qr-file-stat-item">
-                            <span className="qr-file-stat-label">Location:</span>
-                            <span className="qr-file-stat-value">
-                                Row {assignedFile.row || 'N/A'} - Column {assignedFile.column || 'N/A'}
-                            </span>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="qr-file-stats">
-                        <div className="qr-file-stat-item">
-                            <span className="qr-file-stat-label">No file assigned</span>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Download Options Modal */}
-            <ConfirmModal
-                isOpen={showDownloadModal}
-                onClose={() => setShowDownloadModal(false)}
-                onConfirm={() => setShowDownloadModal(false)}
-                title="Download QR Code"
-                confirmText=""
-                cancelText="Cancel"
-            >
-                <p style={{
-                    fontFamily: 'Poppins, Helvetica',
-                    fontSize: '14px',
-                    marginBottom: '1rem',
-                    textAlign: 'center'
-                }}>
-                    Choose download option:
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <button
-                        onClick={handleDownloadQROnly}
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            backgroundColor: '#800000',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontFamily: 'Poppins, Helvetica',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
-                    >
-                        Download QR Code Only
-                    </button>
-                    {assignedFile && (
-                        <button
-                            onClick={handleDownloadWithDetails}
-                            style={{
-                                padding: '0.75rem 1.5rem',
-                                backgroundColor: '#800000',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontFamily: 'Poppins, Helvetica',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
-                        >
-                            Download with File Details
-                        </button>
-                    )}
-                </div>
-            </ConfirmModal>
+  return (
+    <div className="qr-card">
+      <div id="qr-card-content" style={{ width: '100%' }}>
+        <div
+          className="qr-code-wrapper"
+          onClick={onQRCodeClick}
+          title="Click to enlarge"
+          style={{
+            background: "white",
+            padding: "0.75rem",
+            borderRadius: "12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            border: "2px solid #f0f0f0",
+            minHeight: "220px",
+            minWidth: "220px",
+          }}
+        >
+          {/* Always render QRCodeSVG, ignore qrCodeUrl from backend */}
+          <div
+            style={{
+              width: "180px",
+              height: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <QRCodeSVG
+              id="qr-code-svg"
+              value={qrValue}
+              size={180}
+              level="H"
+              className="qr-code-svg"
+              style={{ display: "block" }}
+            />
+          </div>
         </div>
-    );
+        <button
+          id="qr-download-button"
+          className="qr-btn qr-btn-download"
+          onClick={() => setShowDownloadModal(true)}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4.66669 6.66669L8.00002 10L11.3334 6.66669"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8 10V2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Download
+        </button>
+
+        {assignedFile ? (
+          <div className="qr-file-stats">
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Assigned File:</span>
+              <span className="qr-file-stat-value">{assignedFile.fileName || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Folder Number:</span>
+              <span className="qr-file-stat-value">{assignedFile.folderNumber || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Folder Name:</span>
+              <span className="qr-file-stat-value">{assignedFile.folderName || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Return Date:</span>
+              <span className="qr-file-stat-value">{assignedFile.returnDate || 'N/A'}</span>
+            </div>
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">Location:</span>
+              <span className="qr-file-stat-value">
+                Row {assignedFile.row || 'N/A'} - Column {assignedFile.column || 'N/A'}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="qr-file-stats">
+            <div className="qr-file-stat-item">
+              <span className="qr-file-stat-label">No file assigned</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Download Options Modal */}
+      <ConfirmModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        onConfirm={() => setShowDownloadModal(false)}
+        title="Download QR Code"
+        confirmText=""
+        cancelText="Cancel"
+      >
+        <p style={{
+          fontFamily: 'Poppins, Helvetica',
+          fontSize: '14px',
+          marginBottom: '1rem',
+          textAlign: 'center'
+        }}>
+          Choose download option:
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <button
+            onClick={handleDownloadQROnly}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#800000',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontFamily: 'Poppins, Helvetica',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
+          >
+            Download QR Code Only
+          </button>
+          {assignedFile && (
+            <button
+              onClick={handleDownloadWithDetails}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#800000',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontFamily: 'Poppins, Helvetica',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
+            >
+              Download with File Details
+            </button>
+          )}
+        </div>
+      </ConfirmModal>
+    </div>
+  );
 };
 
 const RequestCard = ({
@@ -806,46 +808,13 @@ const RequestCard = ({
         window.URL.revokeObjectURL(pdfUrl);
       }
     };
+  }, [pdfUrl]);
 
-    // Clean up PDF URL when modal closes
-    useEffect(() => {
-        return () => {
-            if (pdfUrl) {
-                window.URL.revokeObjectURL(pdfUrl);
-            }
-        };
-    }, [pdfUrl]);
-
-    useEffect(() => {
-        const handleClickOutside = () => {
-            if (openMenuId) {
-                setOpenMenuId(null);
-            }
-        };
-
-        document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
-    }, [openMenuId]);
-
-    const handleShowDetails = (request, e) => {
-        if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
-            return;
-        }
-
-        setSelectedRequestForDetails(request);
-        setShowDetailsModal(true);
-    };
-
-    const toggleMenu = (id, e) => {
-        e.stopPropagation();
-        setOpenMenuId(openMenuId === id ? null : id);
-    };
-
-    const handleCancelClick = (request, e) => {
-        e.stopPropagation();
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openMenuId) {
         setOpenMenuId(null);
-        setRequestToCancel(request);
-        setShowCancelModal(true);
+      }
     };
 
     document.addEventListener("click", handleClickOutside);
@@ -916,314 +885,301 @@ const RequestCard = ({
       Returned: "status-returned",
       Declined: "status-declined",
     };
+    return statusMap[status] || "status-pending";
+  };
 
-    const getStatusClass = (status) => {
-        const statusMap = {
-            PENDING: "status-pending",
-            APPROVED: "status-approved",
-            DECLINED: "status-declined",
-            CANCELLED: "status-cancelled",
-            Pending: "status-pending",
-            Approved: "status-approved",
-            Borrowed: "status-borrowed",
-            Returned: "status-returned",
-            Declined: "status-declined",
-        };
-        return statusMap[status] || "status-pending";
+  const getStatusLabel = (status) => {
+    const labelMap = {
+      PENDING: "Pending",
+      APPROVED: "Approved",
+      DECLINED: "Declined",
+      CANCELLED: "Cancelled",
     };
+    return labelMap[status] || status;
+  };
 
-    const getStatusLabel = (status) => {
-        const labelMap = {
-            PENDING: "Pending",
-            APPROVED: "Approved",
-            DECLINED: "Declined",
-            CANCELLED: "Cancelled",
-        };
-        return labelMap[status] || status;
-    };
-
-    return (
-        <>
-            <div className="request-card">
-                <h3 className="request-card-title">Request Status</h3>
-                <div className="table-container">
-                    <table className="request-table">
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>File Name</th>
-                                <th>Return Date</th>
-                                <th>Status</th>
-                                <th style={{ textAlign: "center" }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {requests.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="no-requests-row">
-                                        No requests yet. Submit a request to get started!
-                                    </td>
-                                </tr>
-                            ) : (
-                                requests.map((request) => (
-                                    <tr
-                                        key={request.id}
-                                        className="table-row"
-                                        onClick={(e) => handleShowDetails(request, e)}
-                                        style={{ cursor: "pointer" }}
-                                    >
-                                        <td>{request.id}</td>
-                                        <td className="file-name-cell" title={request.fileName}>
-                                            {request.fileName}
-                                        </td>
-                                        <td>{request.returnDue}</td>
-                                        <td>
-                                            {request.status === "APPROVED" &&
-                                                isSoftCopy(request.description) &&
-                                                user?.role !== "ADMIN" &&
-                                                user?.role !== "STAFF" ? (
-                                                <span
-                                                    className="status-badge status-view-pdf"
-                                                    onClick={() => handleViewPDF(request)}
-                                                    title="Click to view PDF"
-                                                    style={{ cursor: "pointer" }}
-                                                >
-                                                    View PDF
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    className={`status-badge ${getStatusClass(
-                                                        request.status
-                                                    )}`}
-                                                >
-                                                    {getStatusLabel(request.status)}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td style={{ position: "relative", textAlign: "center" }}>
-                                            <div style={{ position: "relative", display: "inline-block" }} className="three-dot-menu">
-                                                <button
-                                                    onClick={(e) => toggleMenu(request.id, e)}
-                                                    style={{
-                                                        background: "none",
-                                                        border: "none",
-                                                        cursor: "pointer",
-                                                        fontSize: "20px",
-                                                        padding: "4px 8px",
-                                                    }}
-                                                >
-                                                    ⋯
-                                                </button>
-                                                {openMenuId === request.id && (
-                                                    <div
-                                                        style={{
-                                                            position: "absolute",
-                                                            right: 0,
-                                                            top: "100%",
-                                                            backgroundColor: "white",
-                                                            border: "1px solid #ddd",
-                                                            borderRadius: "4px",
-                                                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                                                            zIndex: 1000,
-                                                            minWidth: "120px",
-                                                        }}
-                                                    >
-                                                        <button
-                                                            onClick={
-                                                                request.status === "PENDING"
-                                                                    ? (e) => handleCancelClick(request, e)
-                                                                    : undefined
-                                                            }
-                                                            disabled={request.status !== "PENDING"}
-                                                            style={{
-                                                                width: "100%",
-                                                                padding: "8px 16px",
-                                                                border: "none",
-                                                                background: "none",
-                                                                textAlign: "left",
-                                                                cursor: request.status === "PENDING" ? "pointer" : "not-allowed",
-                                                                color: request.status === "PENDING" ? "#d32f2f" : "#999",
-                                                                opacity: request.status === "PENDING" ? 1 : 0.5,
-                                                            }}
-                                                            onMouseEnter={(e) =>
-                                                                request.status === "PENDING" &&
-                                                                (e.target.style.backgroundColor = "#f5f5f5")
-                                                            }
-                                                            onMouseLeave={(e) =>
-                                                                (e.target.style.backgroundColor = "transparent")
-                                                            }
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* PDF Viewer Modal */}
-            <Modal
-                isOpen={showPDFModal}
-                onClose={() => {
-                    setShowPDFModal(false);
-                    if (pdfUrl) {
-                        window.URL.revokeObjectURL(pdfUrl);
-                    }
-                    setPdfUrl(null);
-                    setPdfLoading(false);
-                }}
-                title="File Preview"
-            >
-                {selectedRequest && (
-                    <>
-                        <div className="file-info">
-                            <div className="file-info-row">
-                                <span className="file-info-label">File Name:</span>
-                                <span className="file-info-value">
-                                    {selectedRequest.fileName}
-                                </span>
-                            </div>
-                            <div className="file-info-row">
-                                <span className="file-info-label">Request ID:</span>
-                                <span className="file-info-value">{selectedRequest.id}</span>
-                            </div>
-                            <div className="file-info-row">
-                                <span className="file-info-label">Date Requested:</span>
-                                <span className="file-info-value">
-                                    {selectedRequest.dateRequested}
-                                </span>
-                            </div>
-                        </div>
-                        {pdfLoading && (
-                            <div
-                                className="pdf-preview"
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    minHeight: "600px",
-                                    border: "1px solid #e0e0e0",
-                                    borderRadius: "8px",
-                                    marginTop: "20px",
-                                    backgroundColor: "#f5f5f5",
-                                }}
+  return (
+    <>
+      <div className="request-card">
+        <h3 className="request-card-title">Request Status</h3>
+        <div className="table-container">
+          <table className="request-table">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>File Name</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th style={{ textAlign: "center" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="no-requests-row">
+                    No requests yet. Submit a request to get started!
+                  </td>
+                </tr>
+              ) : (
+                requests.map((request) => (
+                  <tr
+                    key={request.id}
+                    className="table-row"
+                    onClick={(e) => handleShowDetails(request, e)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <td>{request.id}</td>
+                    <td className="file-name-cell" title={request.fileName}>
+                      {request.fileName}
+                    </td>
+                    <td>{request.returnDue}</td>
+                    <td>
+                      {request.status === "APPROVED" &&
+                        isSoftCopy(request.description) &&
+                        user?.role !== "ADMIN" &&
+                        user?.role !== "STAFF" ? (
+                        <span
+                          className="status-badge status-view-pdf"
+                          onClick={() => handleViewPDF(request)}
+                          title="Click to view PDF"
+                          style={{ cursor: "pointer" }}
+                        >
+                          View PDF
+                        </span>
+                      ) : (
+                        <span
+                          className={`status-badge ${getStatusClass(
+                            request.status
+                          )}`}
+                        >
+                          {getStatusLabel(request.status)}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ position: "relative", textAlign: "center" }}>
+                      <div style={{ position: "relative", display: "inline-block" }} className="three-dot-menu">
+                        <button
+                          onClick={(e) => toggleMenu(request.id, e)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "20px",
+                            padding: "4px 8px",
+                          }}
+                        >
+                          ⋯
+                        </button>
+                        {openMenuId === request.id && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              right: 0,
+                              top: "100%",
+                              backgroundColor: "white",
+                              border: "1px solid #ddd",
+                              borderRadius: "4px",
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                              zIndex: 1000,
+                              minWidth: "120px",
+                            }}
+                          >
+                            <button
+                              onClick={
+                                request.status === "PENDING"
+                                  ? (e) => handleCancelClick(request, e)
+                                  : undefined
+                              }
+                              disabled={request.status !== "PENDING"}
+                              style={{
+                                width: "100%",
+                                padding: "8px 16px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: request.status === "PENDING" ? "pointer" : "not-allowed",
+                                color: request.status === "PENDING" ? "#d32f2f" : "#999",
+                                opacity: request.status === "PENDING" ? 1 : 0.5,
+                              }}
+                              onMouseEnter={(e) =>
+                                request.status === "PENDING" &&
+                                (e.target.style.backgroundColor = "#f5f5f5")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.target.style.backgroundColor = "transparent")
+                              }
                             >
-                                <p
-                                    style={{
-                                        fontFamily: "Poppins, Helvetica",
-                                        fontSize: "16px",
-                                        color: "#666",
-                                    }}
-                                >
-                                    Loading PDF...
-                                </p>
-                            </div>
+                              Cancel
+                            </button>
+                          </div>
                         )}
-                        {!pdfLoading && pdfUrl && (
-                            <div className="pdf-preview">
-                                <iframe
-                                    src={pdfUrl}
-                                    title="PDF Preview"
-                                    width="100%"
-                                    height="600px"
-                                    style={{
-                                        border: "1px solid #e0e0e0",
-                                        borderRadius: "8px",
-                                        marginTop: "20px",
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </>
-                )}
-            </Modal>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-            {/* Request Details Modal */}
-            <Modal
-                isOpen={showDetailsModal}
-                onClose={() => setShowDetailsModal(false)}
-                title="Request Details"
-            >
-                {selectedRequestForDetails && (
-                    <div className="request-details-modal-content">
-                        <div className="details-row">
-                            <span className="file-info-label">Request ID:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.id}
-                            </span>
-                        </div>
-                        <div className="details-row">
-                            <span className="file-info-label">File Name:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.fileName}
-                            </span>
-                        </div>
-                        <div className="details-row">
-                            <span className="file-info-label">Copy Type:</span>
-                            <span className="file-info-value">
-                                {isSoftCopy(selectedRequestForDetails.description)
-                                    ? "Soft Copy"
-                                    : "Hard Copy"}
-                            </span>
-                        </div>
-                        <div className="details-row">
-                            <span className="file-info-label">Date Submitted:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.dateRequested}
-                            </span>
-                        </div>
-                        <div className="details-row">
-                            <span className="file-info-label">Return Date:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.returnedAt
-                                    ? new Date(
-                                        selectedRequestForDetails.returnedAt
-                                    ).toLocaleDateString()
-                                    : "N/A"}
-                            </span>
-                        </div>
-                        <div className="details-row">
-                            <span className="file-info-label">Purpose:</span>
-                            <span className="file-info-value purpose">
-                                {selectedRequestForDetails.description || "No description"}
-                            </span>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-
-            {/* Cancel Confirmation Modal */}
-            <ConfirmModal
-                isOpen={showCancelModal}
-                onClose={() => {
-                    setShowCancelModal(false);
-                    setRequestToCancel(null);
+      {/* PDF Viewer Modal */}
+      <Modal
+        isOpen={showPDFModal}
+        onClose={() => {
+          setShowPDFModal(false);
+          if (pdfUrl) {
+            window.URL.revokeObjectURL(pdfUrl);
+          }
+          setPdfUrl(null);
+          setPdfLoading(false);
+        }}
+        title="File Preview"
+      >
+        {selectedRequest && (
+          <>
+            <div className="file-info">
+              <div className="file-info-row">
+                <span className="file-info-label">File Name:</span>
+                <span className="file-info-value">
+                  {selectedRequest.fileName}
+                </span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Request ID:</span>
+                <span className="file-info-value">{selectedRequest.id}</span>
+              </div>
+              <div className="file-info-row">
+                <span className="file-info-label">Date Requested:</span>
+                <span className="file-info-value">
+                  {selectedRequest.dateRequested}
+                </span>
+              </div>
+            </div>
+            {pdfLoading && (
+              <div
+                className="pdf-preview"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "600px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  marginTop: "20px",
+                  backgroundColor: "#f5f5f5",
                 }}
-                onConfirm={handleConfirmCancel}
-                title="Cancel Request"
-                confirmText="Yes, Cancel Request"
-                cancelText="No, Keep Request"
-            >
-                <p className="confirm-modal-message">
-                    Are you sure you want to cancel this request?
-                    {requestToCancel && (
-                        <>
-                            <br />
-                            <strong>Request ID: {requestToCancel.id}</strong>
-                            <br />
-                            <strong>File: {requestToCancel.fileName}</strong>
-                        </>
-                    )}
+              >
+                <p
+                  style={{
+                    fontFamily: "Poppins, Helvetica",
+                    fontSize: "16px",
+                    color: "#666",
+                  }}
+                >
+                  Loading PDF...
                 </p>
-            </ConfirmModal>
-        </>
-    );
+              </div>
+            )}
+            {!pdfLoading && pdfUrl && (
+              <div className="pdf-preview">
+                <iframe
+                  src={pdfUrl}
+                  title="PDF Preview"
+                  width="100%"
+                  height="600px"
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                    marginTop: "20px",
+                  }}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
+
+      {/* Request Details Modal */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title="Request Details"
+      >
+        {selectedRequestForDetails && (
+          <div className="request-details-modal-content">
+            <div className="details-row">
+              <span className="file-info-label">Request ID:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.id}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">File Name:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.fileName}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Copy Type:</span>
+              <span className="file-info-value">
+                {isSoftCopy(selectedRequestForDetails.description)
+                  ? "Soft Copy"
+                  : "Hard Copy"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Date Submitted:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.dateRequested}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Return Date:</span>
+              <span className="file-info-value">
+                {selectedRequestForDetails.returnedAt
+                  ? new Date(
+                    selectedRequestForDetails.returnedAt
+                  ).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="file-info-label">Purpose:</span>
+              <span className="file-info-value purpose">
+                {selectedRequestForDetails.description || "No description"}
+              </span>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => {
+          setShowCancelModal(false);
+          setRequestToCancel(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Request"
+        confirmText="Yes, Cancel Request"
+        cancelText="No, Keep Request"
+      >
+        <p className="confirm-modal-message">
+          Are you sure you want to cancel this request?
+          {requestToCancel && (
+            <>
+              <br />
+              <strong>Request ID: {requestToCancel.id}</strong>
+              <br />
+              <strong>File: {requestToCancel.fileName}</strong>
+            </>
+          )}
+        </p>
+      </ConfirmModal>
+    </>
+  );
 };
 
 export const RequestPage = () => {
@@ -1258,250 +1214,236 @@ export const RequestPage = () => {
           .filter((req) => req.status !== "CANCELLED")
           .filter((req) => belongsToUser(req, currentUser));
 
-            try {
-                const response = await requestsAPI.getAll();
-                const requestsData = response.data.requests || response.data;
-
-                if (!Array.isArray(requestsData)) {
-                    setRequests([]);
-                    return;
-                }
-
-                const filteredRequests = requestsData
-                    .filter((req) => req.status !== "CANCELLED")
-                    .filter((req) => belongsToUser(req, currentUser));
-
-                // Check if any approved original requests need enrichment
-                const hasApprovedOriginal = filteredRequests.some(
-                    (req) =>
-                        (req.status === "APPROVED" || req.status === "Approved") &&
-                        req.description?.includes("Original Copy") &&
-                        req.fileId
-                );
-
-                let filesById = new Map();
-                let allCategories = [];
-                if (hasApprovedOriginal) {
-                    // Always fetch categories for folder details
-                    try {
-                        const catResponse = await categoriesAPI.getAll();
-                        allCategories = catResponse.data?.categories || catResponse.data || [];
-                    } catch (error) {
-                        console.error("Failed to fetch categories for file details:", error);
-                    }
-
-                    // Fetch all files for lookup when some requests don't have file data
-                    const needsFileLookup = filteredRequests.some(
-                        (req) =>
-                            (req.status === "APPROVED" || req.status === "Approved") &&
-                            req.description?.includes("Original Copy") &&
-                            req.fileId &&
-                            !req.file
-                    );
-                    if (needsFileLookup) {
-                        try {
-                            const fileResponse = await filesAPI.getAll();
-                            const allFiles = fileResponse.data.files || fileResponse.data || [];
-                            filesById = new Map(allFiles.map((file) => [file.id, file]));
-                        } catch (error) {
-                            console.error("Failed to fetch file details for requests:", error);
-                        }
-                    }
-                }
-
-                const mappedRequests = await Promise.all(
-                    filteredRequests.map(async (req) => {
-                        const baseRequest = {
-                            id: req.id,
-                            fileName: req.title,
-                            dateRequested: req.createdAt
-                                ? new Date(req.createdAt).toLocaleDateString()
-                                : "N/A",
-                            returnDue: req.approvedAt
-                                ? new Date(req.approvedAt).toLocaleDateString()
-                                : "N/A",
-                            status: req.status,
-                            copyType: req.type,
-                            fileId: req.fileId,
-                            description: req.description,
-                            file: req.file ? { ...req.file } : null,
-                            createdAt: req.createdAt,
-                            approvedAt: req.approvedAt,
-                            returnedAt: req.returnedAt,
-                        };
-
-                        const isApprovedOriginal =
-                            (req.status === "APPROVED" || req.status === "Approved") &&
-                            req.description?.includes("Original Copy") &&
-                            req.fileId;
-
-                        if (isApprovedOriginal) {
-                            // If file is missing, look it up
-                            if (!baseRequest.file) {
-                                const fileDetails = filesById.get(req.fileId);
-                                if (fileDetails) {
-                                    baseRequest.file = { ...fileDetails };
-                                }
-                            }
-
-                            // Enrich file with folder/category details
-                            if (baseRequest.file && allCategories.length > 0) {
-                                const catId = baseRequest.file.categoryId || baseRequest.file.category?.id;
-                                const catName = typeof baseRequest.file.category === 'string'
-                                    ? baseRequest.file.category
-                                    : baseRequest.file.category?.name;
-
-                                let matchedCategory = null;
-                                if (catId) {
-                                    matchedCategory = allCategories.find((c) => c.id === catId);
-                                }
-                                if (!matchedCategory && catName) {
-                                    matchedCategory = allCategories.find((c) => c.name === catName);
-                                }
-
-                                if (matchedCategory) {
-                                    baseRequest.file.category = matchedCategory;
-                                    baseRequest.file.folderName = matchedCategory.name;
-                                    baseRequest.file.folderNumber = matchedCategory.folderNumber;
-                                    baseRequest.file.rowPosition = baseRequest.file.rowPosition || matchedCategory.row;
-                                    baseRequest.file.columnPosition = baseRequest.file.columnPosition || matchedCategory.column;
-                                }
-                            }
-                        }
-
-                        return baseRequest;
-                    })
-                );
-
-                setRequests(mappedRequests);
-            } catch (error) {
-                console.error("Failed to fetch requests:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRequests();
-    }, [currentUser]);
-
-    // Check return dates and send reminder emails when requests load
-    useEffect(() => {
-        if (!requests.length || !currentUser) return;
-
-        const REMINDER_DAYS = 1; // Send reminder if due within this many days
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        requests.forEach((req) => {
-            // Only check approved original copy requests
-            if (
-                (req.status !== "APPROVED" && req.status !== "Approved") ||
-                !req.description?.includes("Original Copy")
-            ) return;
-
-            // Extract return date from description
-            const returnDateMatch = req.description?.match(/Return Date:\s*(.+)/);
-            if (!returnDateMatch) return;
-
-            const returnDate = new Date(returnDateMatch[1].trim());
-            if (isNaN(returnDate.getTime())) return;
-            returnDate.setHours(0, 0, 0, 0);
-
-            const daysLeft = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
-
-            // Only send if within reminder window and not already overdue
-            if (daysLeft < 0 || daysLeft > REMINDER_DAYS) return;
-
-            // Check localStorage to avoid sending duplicate reminders (once per day per request)
-            const reminderKey = `return_reminder_${req.id}_${returnDate.toISOString().split('T')[0]}_day${daysLeft}`;
-            if (localStorage.getItem(reminderKey)) return;
-
-            // Get user email — try multiple possible fields
-            const userEmail = currentUser?.email || currentUser?.emailAddress || "";
-            const userName = currentUser?.name || currentUser?.fullName || "User";
-            const fileName = req.fileName || "your borrowed file";
-            const returnDateStr = returnDate.toLocaleDateString("en-US", {
-                year: "numeric", month: "long", day: "numeric"
-            });
-
-            if (!userEmail) return;
-
-            // Send reminder and mark as sent
-            sendReturnDateReminderEmail({
-                toEmail: userEmail,
-                toName: userName,
-                fileName,
-                returnDate: returnDateStr,
-                daysLeft,
-            }).then(() => {
-                localStorage.setItem(reminderKey, "sent");
-                console.log(`Return reminder sent for request ${req.id}, ${daysLeft} day(s) left`);
-            });
-        });
-    }, [requests, currentUser]);
-
-    const handleSubmitRequest = (newRequest) => {
-        const mappedRequest = {
-            id: newRequest.id,
-            fileName: newRequest.title,
-            dateRequested: newRequest.createdAt
-                ? new Date(newRequest.createdAt).toLocaleDateString()
-                : new Date().toLocaleDateString(),
-            returnDue: newRequest.approvedAt
-                ? new Date(newRequest.approvedAt).toLocaleDateString()
-                : "N/A",
-            status: newRequest.status,
-            copyType: newRequest.type,
-            fileId: newRequest.fileId,
-            description: newRequest.description,
-            file: newRequest.file,
-        };
-        setRequests((prev) => [mappedRequest, ...prev]);
-    };
-
-    const handleRequestCancelled = (requestId) => {
-        setRequests((prev) => prev.filter((req) => req.id !== requestId));
-    };
-
-    // Helper function to check if request is for original copy
-    const isOriginalCopy = (req) => {
-        return req.description?.includes("Original Copy");
-    };
-
-    // Get the first approved original copy request with file details
-    const approvedOriginalRequest = requests.find(
-        (req) =>
+        // Check if any approved original requests need enrichment
+        const hasApprovedOriginal = filteredRequests.some(
+          (req) =>
             (req.status === "APPROVED" || req.status === "Approved") &&
-            !["COMPLETED", "Completed"].includes(req.status) &&
-            isOriginalCopy(req)
-    );
+            req.description?.includes("Original Copy") &&
+            req.fileId
+        );
 
-    // Extract assigned file details
-    const buildAssignedFile = () => {
-        if (!approvedOriginalRequest?.file && !approvedOriginalRequest?.fileId) return null;
+        let filesById = new Map();
+        let allCategories = [];
+        if (hasApprovedOriginal) {
+          // Always fetch categories for folder details
+          try {
+            const catResponse = await categoriesAPI.getAll();
+            allCategories = catResponse.data?.categories || catResponse.data || [];
+          } catch (error) {
+            console.error("Failed to fetch categories for file details:", error);
+          }
 
-        const file = approvedOriginalRequest.file || {};
-        const desc = approvedOriginalRequest.description || "";
+          // Fetch all files for lookup when some requests don't have file data
+          const needsFileLookup = filteredRequests.some(
+            (req) =>
+              (req.status === "APPROVED" || req.status === "Approved") &&
+              req.description?.includes("Original Copy") &&
+              req.fileId &&
+              !req.file
+          );
+          if (needsFileLookup) {
+            try {
+              const fileResponse = await filesAPI.getAll();
+              const allFiles = fileResponse.data.files || fileResponse.data || [];
+              filesById = new Map(allFiles.map((file) => [file.id, file]));
+            } catch (error) {
+              console.error("Failed to fetch file details for requests:", error);
+            }
+          }
+        }
 
-        // Extract return date from description (format: "Return Date: YYYY-MM-DD" or "Return Date: MM/DD/YYYY")
-        const returnDateMatch = desc.match(/Return Date:\s*(.+)/);
-        const returnDate = returnDateMatch ? returnDateMatch[1].trim() : approvedOriginalRequest.returnDue || "N/A";
+        const mappedRequests = await Promise.all(
+          filteredRequests.map(async (req) => {
+            const baseRequest = {
+              id: req.id,
+              fileName: req.title,
+              dateRequested: req.createdAt
+                ? new Date(req.createdAt).toLocaleDateString()
+                : "N/A",
+              returnDue: req.approvedAt
+                ? new Date(req.approvedAt).toLocaleDateString()
+                : "N/A",
+              status: req.status,
+              copyType: req.type,
+              fileId: req.fileId,
+              description: req.description,
+              file: req.file ? { ...req.file } : null,
+              createdAt: req.createdAt,
+              approvedAt: req.approvedAt,
+              returnedAt: req.returnedAt,
+            };
 
-        // Try multiple property names for folder details
-        const folderName = file.folderName || file.category?.name || file.categoryName || "N/A";
-        const folderNumber = file.folderNumber || file.category?.folderNumber || "N/A";
-        const row = file.rowPosition || file.row || file.category?.row || "N/A";
-        const column = file.columnPosition || file.column || file.category?.column || "N/A";
-        const fileName = file.filename || file.name || approvedOriginalRequest.fileName || "N/A";
+            const isApprovedOriginal =
+              (req.status === "APPROVED" || req.status === "Approved") &&
+              req.description?.includes("Original Copy") &&
+              req.fileId;
 
-        return {
-            fileName,
-            folderNumber,
-            folderName,
-            column,
-            row,
-            returnDate,
-        };
+            if (isApprovedOriginal) {
+              // If file is missing, look it up
+              if (!baseRequest.file) {
+                const fileDetails = filesById.get(req.fileId);
+                if (fileDetails) {
+                  baseRequest.file = { ...fileDetails };
+                }
+              }
+
+              // Enrich file with folder/category details
+              if (baseRequest.file && allCategories.length > 0) {
+                const catId = baseRequest.file.categoryId || baseRequest.file.category?.id;
+                const catName = typeof baseRequest.file.category === 'string'
+                  ? baseRequest.file.category
+                  : baseRequest.file.category?.name;
+
+                let matchedCategory = null;
+                if (catId) {
+                  matchedCategory = allCategories.find((c) => c.id === catId);
+                }
+                if (!matchedCategory && catName) {
+                  matchedCategory = allCategories.find((c) => c.name === catName);
+                }
+
+                if (matchedCategory) {
+                  baseRequest.file.category = matchedCategory;
+                  baseRequest.file.folderName = matchedCategory.name;
+                  baseRequest.file.folderNumber = matchedCategory.folderNumber;
+                  baseRequest.file.rowPosition = baseRequest.file.rowPosition || matchedCategory.row;
+                  baseRequest.file.columnPosition = baseRequest.file.columnPosition || matchedCategory.column;
+                }
+              }
+            }
+
+            return baseRequest;
+          })
+        );
+
+        setRequests(mappedRequests);
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [currentUser]);
+
+  // Check return dates and send reminder emails when requests load
+  useEffect(() => {
+    if (!requests.length || !currentUser) return;
+
+    const REMINDER_DAYS = 1; // Send reminder if due within this many days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    requests.forEach((req) => {
+      // Only check approved original copy requests
+      if (
+        (req.status !== "APPROVED" && req.status !== "Approved") ||
+        !req.description?.includes("Original Copy")
+      ) return;
+
+      // Extract return date from description
+      const returnDateMatch = req.description?.match(/Return Date:\s*(.+)/);
+      if (!returnDateMatch) return;
+
+      const returnDate = new Date(returnDateMatch[1].trim());
+      if (isNaN(returnDate.getTime())) return;
+      returnDate.setHours(0, 0, 0, 0);
+
+      const daysLeft = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
+
+      // Only send if within reminder window and not already overdue
+      if (daysLeft < 0 || daysLeft > REMINDER_DAYS) return;
+
+      // Check localStorage to avoid sending duplicate reminders (once per day per request)
+      const reminderKey = `return_reminder_${req.id}_${returnDate.toISOString().split('T')[0]}_day${daysLeft}`;
+      if (localStorage.getItem(reminderKey)) return;
+
+      // Get user email — try multiple possible fields
+      const userEmail = currentUser?.email || currentUser?.emailAddress || "";
+      const userName = currentUser?.name || currentUser?.fullName || "User";
+      const fileName = req.fileName || "your borrowed file";
+      const returnDateStr = returnDate.toLocaleDateString("en-US", {
+        year: "numeric", month: "long", day: "numeric"
+      });
+
+      if (!userEmail) return;
+
+      // Send reminder and mark as sent
+      sendReturnDateReminderEmail({
+        toEmail: userEmail,
+        toName: userName,
+        fileName,
+        returnDate: returnDateStr,
+        daysLeft,
+      }).then(() => {
+        localStorage.setItem(reminderKey, "sent");
+        console.log(`Return reminder sent for request ${req.id}, ${daysLeft} day(s) left`);
+      });
+    });
+  }, [requests, currentUser]);
+
+  const handleSubmitRequest = (newRequest) => {
+    const mappedRequest = {
+      id: newRequest.id,
+      fileName: newRequest.title,
+      dateRequested: newRequest.createdAt
+        ? new Date(newRequest.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString(),
+      returnDue: newRequest.approvedAt
+        ? new Date(newRequest.approvedAt).toLocaleDateString()
+        : "N/A",
+      status: newRequest.status,
+      copyType: newRequest.type,
+      fileId: newRequest.fileId,
+      description: newRequest.description,
+      file: newRequest.file,
+    };
+    setRequests((prev) => [mappedRequest, ...prev]);
+  };
+
+  const handleRequestCancelled = (requestId) => {
+    setRequests((prev) => prev.filter((req) => req.id !== requestId));
+  };
+
+  // Helper function to check if request is for original copy
+  const isOriginalCopy = (req) => {
+    return req.description?.includes("Original Copy");
+  };
+
+  // Get the first approved original copy request with file details
+  const approvedOriginalRequest = requests.find(
+    (req) =>
+      (req.status === "APPROVED" || req.status === "Approved") &&
+      !["COMPLETED", "Completed"].includes(req.status) &&
+      isOriginalCopy(req)
+  );
+
+  // Extract assigned file details
+  const buildAssignedFile = () => {
+    if (!approvedOriginalRequest?.file && !approvedOriginalRequest?.fileId) return null;
+
+    const file = approvedOriginalRequest.file || {};
+    const desc = approvedOriginalRequest.description || "";
+
+    // Extract return date from description (format: "Return Date: YYYY-MM-DD" or "Return Date: MM/DD/YYYY")
+    const returnDateMatch = desc.match(/Return Date:\s*(.+)/);
+    const returnDate = returnDateMatch ? returnDateMatch[1].trim() : approvedOriginalRequest.returnDue || "N/A";
+
+    // Try multiple property names for folder details
+    const folderName = file.folderName || file.category?.name || file.categoryName || "N/A";
+    const folderNumber = file.folderNumber || file.category?.folderNumber || "N/A";
+    const row = file.rowPosition || file.row || file.category?.row || "N/A";
+    const column = file.columnPosition || file.column || file.category?.column || "N/A";
+    const fileName = file.filename || file.name || approvedOriginalRequest.fileName || "N/A";
+
+    return {
+      fileName,
+      folderNumber,
+      folderName,
+      column,
+      row,
+      returnDate,
     };
   };
 

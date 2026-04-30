@@ -123,54 +123,32 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
                         </div>
                     ) : (
                         notificationList.map((notification) => (
-                            <div
-                                key={notification.id}
-                                className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
-                                onClick={() => handleNotificationClick(notification)}
-                                style={{
-                                    cursor: notification.link ? "pointer" : "default",
-                                }}
-                            >
-                                {notification.title && (
-                                    <h4 className="notification-title">{notification.title}</h4>
-                                )}
-                                <p className="notification-message">{notification.message}</p>
-                                <span className="notification-time">
-                                    {formatTime(notification.createdAt || notification.time)}
-                                </span>
-                            </div>
+                            (() => {
+                                const target = getNotificationTarget(notification, userRole);
+
+                                return (
+                                    <div
+                                        key={notification.id}
+                                        className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
+                                        onClick={() => handleNotificationClick(notification)}
+                                        style={{
+                                            cursor: target ? "pointer" : "default",
+                                        }}
+                                    >
+                                        {notification.title && (
+                                            <h4 className="notification-title">{notification.title}</h4>
+                                        )}
+                                        <p className="notification-message">{notification.message}</p>
+                                        <span className="notification-time">
+                                            {formatTime(notification.createdAt || notification.time)}
+                                        </span>
+                                    </div>
+                                );
+                            })()
                         ))
                     )}
                 </div>
             </div>
-          ) : (
-            notificationList.map((notification) => (
-              (() => {
-                const target = getNotificationTarget(notification, userRole);
-
-                return (
-                  <div
-                    key={notification.id}
-                    className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
-                    onClick={() => handleNotificationClick(notification)}
-                    style={{
-                      cursor: target ? "pointer" : "default",
-                    }}
-                  >
-                    {notification.title && (
-                      <h4 className="notification-title">{notification.title}</h4>
-                    )}
-                    <p className="notification-message">{notification.message}</p>
-                    <span className="notification-time">
-                      {formatTime(notification.createdAt || notification.time)}
-                    </span>
-                  </div>
-                );
-              })()
-            ))
-          )}
-        </div>
-      </div>
     </>
   );
 };
