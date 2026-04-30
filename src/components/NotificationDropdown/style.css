@@ -9,14 +9,15 @@
 
 .notification-dropdown {
   position: absolute;
-  top: 125px;
-  right: 20px;
+  top: 100%;
+  right: 0;
   width: 350px;
   background: white;
   border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-  animation: slideDown 0.3s ease-out;
+  box-shadow: none;
+  border: 1px solid #f0f0f0;
+  z-index: 1100;
+  animation: slideDown 0.22s ease-out;
 }
 
 .notification-header {
@@ -91,6 +92,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

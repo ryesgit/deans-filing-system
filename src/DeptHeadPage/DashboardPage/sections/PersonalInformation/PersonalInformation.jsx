@@ -31,7 +31,7 @@ export const PersonalInformation = () => {
 
         <div className="details-section">
           <div className="group">
-            <div className="text-wrapper-43">ID Number</div>
+            <div className="text-wrapper-43">User ID</div>
             <div className="User-id">{user.userId || user.id || 'N/A'}</div>
           </div>
 

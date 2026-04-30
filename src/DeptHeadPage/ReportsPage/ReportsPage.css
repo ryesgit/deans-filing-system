@@ -21,16 +21,17 @@
 
 .welcome-message {
   position: relative;
+  margin-bottom: 12px;
 }
 
 .welcome-message .text-wrapper-77 {
   color: #800000;
   font-family: "Poppins", Helvetica;
-  font-size: clamp(32px, 3.7vw, 52.9px);
-  font-weight: 600;
+  font-size: clamp(40px, 4.5vw, 60px);
+  font-weight: 700;
   letter-spacing: -3.17px;
-  position: relative;
-  top: 25px;
+  line-height: 1.1;
+  margin: 0;
 }
 
 .header-actions {
@@ -41,7 +42,13 @@
 
 .notification-button-wrapper {
   position: relative;
+  z-index: 2000;
   cursor: pointer;
+  overflow: visible;
+  border-radius: 50%;
+  height: 45px;
+  width: 45px;
+  flex-shrink: 0;
   transition: transform 0.2s;
 }
 
@@ -394,6 +401,11 @@
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
+  }
+
+  .welcome-message .text-wrapper-77 {
+    font-size: clamp(28px, 7vw, 40px);
+    letter-spacing: -2px;
   }
 
   .header-actions {

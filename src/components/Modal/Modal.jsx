@@ -38,7 +38,8 @@ export const Modal = ({
         )}
         <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 
   return createPortal(modalContent, document.body);
