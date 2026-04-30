@@ -183,6 +183,67 @@ export const ReportsPage = () => {
         fetchValidityFiles();
     }, [user]);
 
+    const handleExport = () => {
+        if (activeTab === "validityDue") {
+            const data = Array.isArray(reportsData.validityDue) ? reportsData.validityDue : [];
+            const headers = ["File ID", "File Name", "Department", "Category", "Valid Until", "Status"];
+            let csv = headers.join(",") + "\n";
+            const now = new Date();
+
+            data.forEach((file) => {
+                const validDate = new Date(file.validUntil);
+                const daysLeft = Math.ceil((validDate - now) / (1000 * 60 * 60 * 24));
+                const status = daysLeft < 0 ? "Expired" : daysLeft <= 30 ? "Due Soon" : "Valid";
+                const values = [
+                    file.id,
+                    file.filename || file.name || "N/A",
+                    file.user?.department || file.department || "N/A",
+                    file.category?.name || file.category || "N/A",
+                    new Date(file.validUntil).toLocaleDateString(),
+                    status,
+                ];
+                csv += values.join(",") + "\n";
+            });
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `validity_due_report_${new Date().toISOString().split("T")[0]}.csv`;
+            link.click();
+            return;
+        }
+
+        const data = Array.isArray(reportsData[activeTab]) ? reportsData[activeTab] : [];
+        const headers =
+            activeTab === "request"
+                ? ["Request ID", "File Name", "Date Submitted", "Status"]
+                : [
+                    "Request ID",
+                    "File Name",
+                    `Date ${activeTab === "borrowed" ? "Borrowed" : "Returned"}`,
+                ];
+
+        let csv = headers.join(",") + "\n";
+        data.forEach((row) => {
+            const dateField = getRequestDate(activeTab, row);
+            const values = [
+                row.id,
+                getFileName(row),
+                dateField ? new Date(dateField).toLocaleDateString() : "N/A",
+                ...(activeTab === "request" ? [row.status || "N/A"] : []),
+            ];
+            csv += values.join(",") + "\n";
+        });
+
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${activeTab}_report_${new Date().toISOString().split("T")[0]}.csv`;
+        link.click();
+    };
+
     const handleShowDetails = (transaction) => {
         setSelectedTransactionForDetails(transaction);
         setShowDetailsModal(true);
