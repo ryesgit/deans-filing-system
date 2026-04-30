@@ -92,21 +92,22 @@ export const ReportsPage = () => {
                     .filter((request) => request?.status !== "CANCELLED")
                     .filter((request) => belongsToUser(request, user));
 
-                setReportsData({
+                setReportsData((prev) => ({
+                    ...prev,
                     request: userRequests.filter(
                         (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
                     ),
                     borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
                     returned: userRequests.filter((request) => isReturnedRequest(request)),
-                });
+                }));
             } catch (error) {
                 console.error("Failed to fetch reports:", error);
-                setReportsData({
+                setReportsData((prev) => ({
+                    ...prev,
                     request: [],
                     borrowed: [],
                     returned: [],
-                    validityDue: [],
-                });
+                }));
             } finally {
                 setLoading(false);
             }
@@ -154,26 +155,33 @@ export const ReportsPage = () => {
                     archivedIds = [];
                 }
 
-        setReportsData((prev) => ({
-          ...prev,
-          request: userRequests.filter(
-            (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
-          ),
-          borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
-          returned: userRequests.filter((request) => isReturnedRequest(request)),
-        }));
-      } catch (error) {
-        console.error("Failed to fetch reports:", error);
-        setReportsData((prev) => ({
-          ...prev,
-          request: [],
-          borrowed: [],
-          returned: [],
-        }));
-      } finally {
-        setLoading(false);
-      }
-    };
+                const allFilesWithDetails = allFiles.map((file) => ({
+                    ...file,
+                    validUntil: file.validUntil || validityMap[file.id] || null,
+                    folderName: folderMap[file.categoryId] || folderMap[file.category_id] || null,
+                }));
+
+                const filesWithValidity = allFilesWithDetails
+                    .filter((file) => file.validUntil && !archivedIds.includes(String(file.id)))
+                    .sort((left, right) => new Date(left.validUntil) - new Date(right.validUntil));
+
+                const archivedFilesList = allFilesWithDetails
+                    .filter((file) => archivedIds.includes(String(file.id)))
+                    .sort((left, right) => new Date(right.validUntil || 0) - new Date(left.validUntil || 0));
+
+                setArchivedFiles(archivedFilesList);
+                setReportsData((prev) => ({
+                    ...prev,
+                    validityDue: filesWithValidity,
+                }));
+            } catch (error) {
+                console.error("Failed to fetch files for validity:", error);
+            }
+        };
+
+        fetchReports();
+        fetchValidityFiles();
+    }, [user]);
 
     const handleShowDetails = (transaction) => {
         setSelectedTransactionForDetails(transaction);
