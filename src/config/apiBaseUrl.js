@@ -1,7 +1,6 @@
-const runtimeConfig = typeof window !== "undefined" ? window.__APP_CONFIG__ || {} : {};
+import { getRuntimeConfigValue } from "./runtimeConfig";
 
-export const API_BASE_URL = (
-  runtimeConfig.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
+export const API_BASE_URL = getRuntimeConfigValue(
+  "VITE_API_BASE_URL",
   "http://localhost:3001"
 ).replace(/\/+$/, "");
