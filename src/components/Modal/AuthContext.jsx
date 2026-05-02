@@ -7,6 +7,18 @@ const AuthContext = createContext(null);
 
 const hasUserIdentity = (userData) => Boolean(userData?.id || userData?.userId);
 const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');
+const toText = (value, fallback = '') => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (value instanceof Error) return value.message || fallback;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
 
 const processUserData = (userData) => {
   if (!userData) return null;
@@ -118,7 +130,7 @@ export const AuthProvider = ({ children }) => {
       navigate('/');
       return { success: true };
     } catch (err) {
-      const errorMessage = err.message || 'Invalid username or password';
+      const errorMessage = toText(err?.message, 'Invalid username or password');
       setError(errorMessage);
       return {
         success: false,
@@ -139,7 +151,7 @@ export const AuthProvider = ({ children }) => {
         pending: true
       };
     } catch (err) {
-      const errorMessage = err.message || 'Registration failed';
+      const errorMessage = toText(err?.message, 'Registration failed');
       setError(errorMessage);
       return {
         success: false,

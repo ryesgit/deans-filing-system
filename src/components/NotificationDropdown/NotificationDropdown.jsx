@@ -6,6 +6,18 @@ import "./style.css";
 
 const ADMIN_REQUEST_ROLES = ["ADMIN", "STAFF", "FACULTY"];
 const REQUEST_LINK_PATTERN = /^\/requests?\/(\d+)\/?$/i;
+const toText = (value, fallback = "") => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (value instanceof Error) return value.message || fallback;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
 
 const getNotificationTarget = (notification, userRole) => {
   const link = notification?.link?.trim();
@@ -135,10 +147,10 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
                                             cursor: target ? "pointer" : "default",
                                         }}
                                     >
-                                        {notification.title && (
-                                            <h4 className="notification-title">{notification.title}</h4>
-                                        )}
-                                        <p className="notification-message">{notification.message}</p>
+                    {notification.title && (
+                      <h4 className="notification-title">{toText(notification.title)}</h4>
+                    )}
+                    <p className="notification-message">{toText(notification.message, "No details available")}</p>
                                         <span className="notification-time">
                                             {formatTime(notification.createdAt || notification.time)}
                                         </span>
