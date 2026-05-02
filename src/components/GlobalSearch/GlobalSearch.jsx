@@ -4,6 +4,18 @@ import { filesAPI, requestsAPI, usersAPI } from "../../services/api";
 import { useAuth } from "../Modal/AuthContext";
 import "./GlobalSearch.css";
 
+const toText = (value, fallback = "") => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
+
 export const GlobalSearch = ({ onSearchChange }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({
@@ -175,9 +187,9 @@ export const GlobalSearch = ({ onSearchChange }) => {
                     </svg>
                   </div>
                   <div className="search-result-content">
-                    <div className="search-result-title">{file.filename}</div>
+                    <div className="search-result-title">{toText(file.filename, "Unnamed file")}</div>
                     <div className="search-result-subtitle">
-                      {file.category || "Uncategorized"} • {file.department || "N/A"}
+                      {toText(file.category, "Uncategorized")} • {toText(file.department, "N/A")}
                     </div>
                   </div>
                 </div>
@@ -209,9 +221,9 @@ export const GlobalSearch = ({ onSearchChange }) => {
                     </svg>
                   </div>
                   <div className="search-result-content">
-                    <div className="search-result-title">Request #{request.id}</div>
+                    <div className="search-result-title">Request #{toText(request.id, "N/A")}</div>
                     <div className="search-result-subtitle">
-                      {request.title} • Status: {request.status}
+                      {toText(request.title, "Untitled request")} • Status: {toText(request.status, "Unknown")}
                     </div>
                   </div>
                 </div>
@@ -240,9 +252,9 @@ export const GlobalSearch = ({ onSearchChange }) => {
                     </svg>
                   </div>
                   <div className="search-result-content">
-                    <div className="search-result-title">{userItem.name}</div>
+                    <div className="search-result-title">{toText(userItem.name, "Unknown user")}</div>
                     <div className="search-result-subtitle">
-                      {userItem.email} • {userItem.role}
+                      {toText(userItem.email, "N/A")} • {toText(userItem.role, "N/A")}
                     </div>
                   </div>
                 </div>

@@ -17,6 +17,17 @@ import { sendReturnDateReminderEmail } from "../utils/email";
 
 const normalizeId = (value) =>
   value === null || value === undefined ? null : String(value);
+const toText = (value, fallback = "") => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
 
 const belongsToUser = (request, currentUser) => {
   const requestUserIds = [request?.userId, request?.user?.userId, request?.user?.id]
@@ -1117,7 +1128,7 @@ const RequestCard = ({
             <div className="details-row">
               <span className="file-info-label">File Name:</span>
               <span className="file-info-value">
-                {selectedRequestForDetails.fileName}
+                {toText(selectedRequestForDetails.fileName, "Untitled request")}
               </span>
             </div>
             <div className="details-row">
@@ -1131,7 +1142,7 @@ const RequestCard = ({
             <div className="details-row">
               <span className="file-info-label">Date Submitted:</span>
               <span className="file-info-value">
-                {selectedRequestForDetails.dateRequested}
+                {toText(selectedRequestForDetails.dateRequested, "N/A")}
               </span>
             </div>
             <div className="details-row">
@@ -1147,7 +1158,7 @@ const RequestCard = ({
             <div className="details-row">
               <span className="file-info-label">Purpose:</span>
               <span className="file-info-value purpose">
-                {selectedRequestForDetails.description || "No description"}
+                {toText(selectedRequestForDetails.description, "No description")}
               </span>
             </div>
           </div>
