@@ -32,6 +32,7 @@ export const SidePanel = () => {
   };
 
   const confirmLogout = () => {
+    setIsMobileMenuOpen(false);
     logout();
     setShowLogoutModal(false);
   };
@@ -176,14 +177,14 @@ export const SidePanel = () => {
           </Link>
         </nav>
 
-        <div className="logout" onClick={handleLogout}>
+        <button type="button" className="logout" onClick={handleLogout}>
           <img
             className="vector"
             alt="Vector"
             src="https://c.animaapp.com/27o9iVJi/img/vector.svg"
           />
           <div className="text-wrapper-51">Log out</div>
-        </div>
+        </button>
       </div>
 
       <Modal
@@ -196,12 +197,13 @@ export const SidePanel = () => {
         </p>
         <div className="modal-actions">
           <button
+            type="button"
             className="btn btn-secondary"
             onClick={() => setShowLogoutModal(false)}
           >
             Cancel
           </button>
-          <button className="btn btn-primary" onClick={confirmLogout}>
+          <button type="button" className="btn btn-primary" onClick={confirmLogout}>
             Log Out
           </button>
         </div>
