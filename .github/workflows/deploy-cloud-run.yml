@@ -18,6 +18,9 @@ env:
   RUNTIME_SERVICE_ACCOUNT: ohwa-frontend-runtime@deans-filing-system.iam.gserviceaccount.com
   SERVICE_NAME: ohwa-deans-filing-system
   BACKEND_SERVICE_NAME: deans-server
+  VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
+  VITE_EMAILJS_TEMPLATE_ID: ${{ vars.VITE_EMAILJS_TEMPLATE_ID }}
+  VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
 
 jobs:
   deploy:
@@ -81,5 +84,5 @@ jobs:
             --image "$IMAGE" \
             --service-account "$RUNTIME_SERVICE_ACCOUNT" \
             --allow-unauthenticated \
-            --set-env-vars "VITE_API_BASE_URL=${{ steps.backend.outputs.backend_url }}" \
+            --set-env-vars "VITE_API_BASE_URL=${{ steps.backend.outputs.backend_url }},VITE_EMAILJS_SERVICE_ID=${VITE_EMAILJS_SERVICE_ID},VITE_EMAILJS_TEMPLATE_ID=${VITE_EMAILJS_TEMPLATE_ID},VITE_EMAILJS_PUBLIC_KEY=${VITE_EMAILJS_PUBLIC_KEY}" \
             --quiet
