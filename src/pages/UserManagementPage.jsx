@@ -8,6 +8,18 @@ import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
 import { API_BASE_URL } from "../config/apiBaseUrl";
 
+const toText = (value, fallback = "") => {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+    }
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return fallback;
+    }
+};
+
 export const UserManagementPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -437,11 +449,11 @@ export const UserManagementPage = () => {
                             ) : (
                                 pendingUsersList.map((user) => (
                                     <div key={user.id} className="pending-user-row">
-                                        <div className="table-cell">{user.userId}</div>
-                                        <div className="table-cell">{user.name}</div>
-                                        <div className="table-cell">{user.dateOfBirth}</div>
-                                        <div className="table-cell">{user.role}</div>
-                                        <div className="table-cell">{user.department}</div>
+                                        <div className="table-cell">{toText(user.userId, "N/A")}</div>
+                                        <div className="table-cell">{toText(user.name, "N/A")}</div>
+                                        <div className="table-cell">{toText(user.dateOfBirth, "N/A")}</div>
+                                        <div className="table-cell">{toText(user.role, "N/A")}</div>
+                                        <div className="table-cell">{toText(user.department, "N/A")}</div>
                                         <div className="table-cell">
                                             <div className="action-buttons">
                                                 <button
@@ -558,11 +570,11 @@ export const UserManagementPage = () => {
                                     onClick={() => setSelectedUser(user)}
                                 >
                                     <div className="rectangle" />
-                                    <div className="text-wrapper">{user.name}</div>
-                                    <div className="div">{user.role}</div>
+                    <div className="text-wrapper">{toText(user.name, "N/A")}</div>
+                    <div className="div">{toText(user.role, "N/A")}</div>
                                     <div className="text-wrapper-2">Department</div>
-                                    <div className="text-wrapper-3">{user.department}</div>
-                                    <div className="user-datejoined">{user.dateJoined}</div>
+                    <div className="text-wrapper-3">{toText(user.department, "N/A")}</div>
+                    <div className="user-datejoined">{toText(user.dateJoined, "N/A")}</div>
                                     <div className="Date-joined">Date Joined</div>
                                     <div className="user-photo">
                                         {user.profilePicture ? (
