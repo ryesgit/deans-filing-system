@@ -50,6 +50,16 @@ export const DashboardPage = () => {
     fetchStats();
   }, []);
 
+  // Handle scrolling to request section when deep-linked from notification
+  useEffect(() => {
+    if (location.state?.selectedRequestId) {
+      const requestSection = document.querySelector('.request-card');
+      if (requestSection) {
+        requestSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [location.state]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     console.log(`Searching for: ${searchQuery}`);
@@ -89,6 +99,10 @@ export const DashboardPage = () => {
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount}</span>
               )}
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+              />
             </div>
           </div>
         </header>
@@ -240,12 +254,6 @@ export const DashboardPage = () => {
         <RequestCard
           selectedRequestId={location.state?.selectedRequestId ?? null}
           requestFocusNonce={location.state?.requestFocusNonce ?? null}
-        />
-
-        <NotificationDropdown
-
-          isOpen={isNotificationOpen}
-          onClose={() => setIsNotificationOpen(false)}
         />
       </div>
     </>

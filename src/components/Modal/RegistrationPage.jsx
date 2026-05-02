@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendRegistrationConfirmationEmail } from "../../utils/email";
+import { notificationsAPI } from "../../services/api";
 import "./RegistrationPage.css";
 
 export const RegistrationPage = ({ onClose }) => {
@@ -131,6 +132,19 @@ export const RegistrationPage = ({ onClose }) => {
         toName: formData.name,
       });
 
+      // Notify all admin/staff users that a new registration is pending their review
+      notificationsAPI
+        .notifyAdmins({
+          title: "New User Registration",
+          message: `${formData.name} (${formData.role}) has registered and is awaiting approval.`,
+          type: "info",
+          link: "/users",
+          read: false,
+        })
+        .catch((err) =>
+          console.error("Failed to send admin registration notification:", err)
+        );
+
       setTimeout(() => {
         onClose();
       }, 3000);
@@ -144,7 +158,7 @@ export const RegistrationPage = ({ onClose }) => {
     "Mechanical Engineering",
     "Computer Engineering",
     "Electrical Engineering",
-    "Railway Engineering",
+    "Railway Engineering Management",
   ];
 
   return (

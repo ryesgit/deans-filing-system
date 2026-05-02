@@ -143,7 +143,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
     "Mechanical Engineering",
     "Computer Engineering",
     "Electrical Engineering",
-    "Railway Engineering",
+    "Railway Engineering Management",
   ];
 
   const categories = [
@@ -1338,6 +1338,16 @@ export const RequestPage = () => {
     fetchRequests();
   }, [currentUser]);
 
+  // Handle scrolling to request status section when deep-linked from notification
+  useEffect(() => {
+    if (location.state?.selectedRequestId) {
+      const statusSection = document.querySelector('.request-page-container');
+      if (statusSection) {
+        statusSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [location.state]);
+
   // Check return dates and send reminder emails when requests load
   useEffect(() => {
     if (!requests.length || !currentUser) return;
@@ -1503,6 +1513,10 @@ export const RequestPage = () => {
                 {unreadCount > 0 && (
                   <span className="notification-badge">{unreadCount}</span>
                 )}
+                <NotificationDropdown
+                  isOpen={isNotificationOpen}
+                  onClose={() => setIsNotificationOpen(false)}
+                />
               </div>
             </div>
           </header>
@@ -1527,10 +1541,6 @@ export const RequestPage = () => {
             qrCodeUrl={null}
             userName={currentUser?.name || "User"}
             qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
-          />
-          <NotificationDropdown
-            isOpen={isNotificationOpen}
-            onClose={() => setIsNotificationOpen(false)}
           />
         </div>
       </div>

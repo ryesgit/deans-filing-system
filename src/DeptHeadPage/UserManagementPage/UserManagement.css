@@ -708,6 +708,7 @@
   border-radius: 10px;
   font-family: "Poppins", Helvetica;
   font-size: 15px;
+  line-height: 1.4;
   color: #1e1e1e;
   transition: all 0.2s ease;
   background-color: #ffffff;
@@ -1459,4 +1460,18 @@
     margin-left: auto;
     font-size: 12px;
   }
+}
+
+/* Deep Link Highlighting */
+.pending-user-row.highlight-deep-link {
+    animation: highlightPulse 2s ease-out infinite;
+    border: 2px solid #800000;
+    position: relative;
+    z-index: 10;
+}
+
+@keyframes highlightPulse {
+    0% { background-color: white; }
+    50% { background-color: #fff5f5; }
+    100% { background-color: white; }
 }
