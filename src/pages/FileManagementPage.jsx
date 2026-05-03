@@ -71,7 +71,7 @@ const departments = [
     "Mechanical Engineering",
     "Computer Engineering",
     "Electrical Engineering",
-    "Railway Engineering",
+    "Railway Engineering Management",
 ];
 
 // Helper to get archived file IDs from localStorage

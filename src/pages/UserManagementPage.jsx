@@ -8,6 +8,8 @@ import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
 import { API_BASE_URL } from "../config/apiBaseUrl";
 
+import { useLocation } from "react-router-dom";
+
 const toText = (value, fallback = "") => {
     if (value === null || value === undefined) return fallback;
     if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
@@ -21,6 +23,7 @@ const toText = (value, fallback = "") => {
 };
 
 export const UserManagementPage = () => {
+    const location = useLocation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -187,6 +190,16 @@ export const UserManagementPage = () => {
 
         fetchUsers();
     }, []);
+
+    // Handle deep linking from registration notifications
+    useEffect(() => {
+        if (location.state?.selectedUserId) {
+            const pendingSection = document.querySelector(".pending-users-card");
+            if (pendingSection) {
+                pendingSection.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }
+    }, [location.state, location.state?.requestFocusNonce, pendingUsersList]);
 
     const filteredUsers = useMemo(() => {
         let filtered = users.filter((user) =>
@@ -448,7 +461,10 @@ export const UserManagementPage = () => {
                                 </div>
                             ) : (
                                 pendingUsersList.map((user) => (
-                                    <div key={user.id} className="pending-user-row">
+                                    <div 
+                                        key={user.id} 
+                                        className={`pending-user-row ${String(user.id) === String(location.state?.selectedUserId) ? "highlight-deep-link" : ""}`}
+                                    >
                                         <div className="table-cell">{toText(user.userId, "N/A")}</div>
                                         <div className="table-cell">{toText(user.name, "N/A")}</div>
                                         <div className="table-cell">{toText(user.dateOfBirth, "N/A")}</div>
@@ -740,13 +756,23 @@ const formatDateForInput = (dateString) => {
     return date.toISOString().split("T")[0];
 };
 
+// Canonical department list — always up to date regardless of existing user data
+const DEPARTMENTS = [
+    "Civil Engineering",
+    "Industrial Engineering",
+    "Electronics and Communications Engineering",
+    "Mechanical Engineering",
+    "Computer Engineering",
+    "Electrical Engineering",
+    "Railway Engineering Management",
+];
+
 // User Form Modal Component (for both add and edit)
 const UserFormModal = ({
     mode = "add",
     user = null,
     onClose,
     onSave,
-    departments = [],
 }) => {
     const [formData, setFormData] = useState(
         mode === "edit" && user
@@ -837,6 +863,8 @@ const UserFormModal = ({
         }
     };
 
+    const isStaff = formData.role === "STAFF";
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -850,7 +878,8 @@ const UserFormModal = ({
             newErrors.email = "Invalid email format";
         }
         if (!formData.role) newErrors.role = "Role is required";
-        if (!formData.department.trim())
+        // Department is not required for Staff
+        if (!isStaff && !formData.department.trim())
             newErrors.department = "Department is required";
         if (!formData.status) newErrors.status = "Status is required";
 
@@ -1056,27 +1085,29 @@ const UserFormModal = ({
                         {errors.role && <span className="error-text">{errors.role}</span>}
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Department</label>
-                        <select
-                            name="department"
-                            value={formData.department}
-                            onChange={handleChange}
-                            className={`form-select ${errors.department ? "error" : ""}`}
-                        >
-                            <option value="" disabled>
-                                Select a department
-                            </option>
-                            {departments.map((dept) => (
-                                <option key={dept} value={dept}>
-                                    {dept}
+                    {!isStaff && (
+                        <div className="form-group">
+                            <label className="form-label">Department</label>
+                            <select
+                                name="department"
+                                value={formData.department}
+                                onChange={handleChange}
+                                className={`form-select ${errors.department ? "error" : ""}`}
+                            >
+                                <option value="" disabled>
+                                    Select a department
                                 </option>
-                            ))}
-                        </select>
-                        {errors.department && (
-                            <span className="error-text">{errors.department}</span>
-                        )}
-                    </div>
+                                {DEPARTMENTS.map((dept) => (
+                                    <option key={dept} value={dept}>
+                                        {dept}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.department && (
+                                <span className="error-text">{errors.department}</span>
+                            )}
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label className="form-label">Status</label>

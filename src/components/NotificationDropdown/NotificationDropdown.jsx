@@ -46,6 +46,15 @@ const getNotificationTarget = (notification, userRole) => {
     return { pathname: "/dashboard" };
   }
 
+  if (link === "/user-management" || link === "/user-management/") {
+    return {
+      pathname: "/user-management",
+      state: {
+        selectedUserId: notification?._syntheticPendingUserId || null,
+      },
+    };
+  }
+
   return { pathname: link };
 };
 
@@ -83,14 +92,12 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
 
     const target = getNotificationTarget(notification, userRole);
     if (target) {
-      navigate(target.pathname, target.state
-        ? {
-            state: {
-              ...target.state,
-              requestFocusNonce: Date.now(),
-            },
-          }
-        : undefined);
+      navigate(target.pathname, {
+        state: {
+          ...(target.state || {}),
+          requestFocusNonce: Date.now(),
+        },
+      });
       onClose();
     }
   };
