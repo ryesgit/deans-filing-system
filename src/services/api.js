@@ -86,6 +86,7 @@ export const authAPI = {
   register: (userData) => api.post('/api/auth/register', userData),
   getMe: () => api.get('/api/auth/me'),
   logout: () => api.post('/api/auth/logout'),
+  changePassword: (data) => api.put('/api/auth/change-password', data),
 };
 
 // Dashboard Stats API

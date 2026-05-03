@@ -206,7 +206,7 @@ export const RequestCard = () => {
         <div className="request-table">
           <div className="request-table-header">
             <div className="header-cell request-id-col">Request ID</div>
-            <div className="header-cell faculty-name-col">Faculty Name</div>
+            <div className="header-cell faculty-name-col">Name</div>
             <div className="header-cell file-name-col">File Name</div>
             <div className="header-cell copy-type-col">Copy Type</div>
             <div className="header-cell date-col">Date Requested</div>
@@ -376,7 +376,7 @@ export const RequestCard = () => {
               </span>
             </div>
             <div className="details-row">
-              <span className="file-info-label">Faculty Name:</span>
+              <span className="file-info-label">Name:</span>
               <span className="file-info-value">
                 {selectedRequestForDetails.user?.name || "N/A"}
               </span>
@@ -409,20 +409,54 @@ export const RequestCard = () => {
                 ).toLocaleDateString()}
               </span>
             </div>
+            {/* Expected Return Date — parsed from description */}
+            {(() => {
+              const returnDateMatch = selectedRequestForDetails.description?.match(/Return Date:\s*(.+)/);
+              const expectedDate = selectedRequestForDetails.returnDate || selectedRequestForDetails.returnDue || (returnDateMatch ? returnDateMatch[1].trim() : null);
+              if (expectedDate && expectedDate !== "N/A") {
+                return (
+                  <div className="details-row">
+                    <span className="file-info-label">Expected Return Date:</span>
+                    <span className="file-info-value">
+                      {isNaN(new Date(expectedDate).getTime()) ? expectedDate : new Date(expectedDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+            {/* Actual Returned Date — from returnedAt field */}
             <div className="details-row">
               <span className="file-info-label">Returned Date:</span>
               <span className="file-info-value">
                 {selectedRequestForDetails.returnedAt
-                  ? new Date(
-                      selectedRequestForDetails.returnedAt
-                    ).toLocaleDateString()
+                  ? new Date(selectedRequestForDetails.returnedAt).toLocaleDateString()
                   : "N/A"}
               </span>
             </div>
             <div className="details-row">
               <span className="file-info-label">Purpose:</span>
               <span className="file-info-value purpose">
-                {selectedRequestForDetails.description || "No description"}
+                {(() => {
+                  const desc = selectedRequestForDetails.description || "No description";
+                  // Extract only the actual purpose, stripping redundant metadata lines
+                  const purposeMatch = desc.match(/Purpose:\s*(.+)/);
+                  if (purposeMatch) {
+                    return purposeMatch[1].trim();
+                  }
+                  // If no "Purpose:" prefix, return the full description but strip known metadata lines
+                  return desc
+                    .split('\n')
+                    .filter(line => {
+                      const trimmed = line.trim();
+                      return !trimmed.startsWith('Department:') &&
+                             !trimmed.startsWith('Category:') &&
+                             !trimmed.startsWith('Copy Type:') &&
+                             !trimmed.startsWith('Return Date:');
+                    })
+                    .join('\n')
+                    .trim() || "No description";
+                })()}
               </span>
             </div>
           </div>

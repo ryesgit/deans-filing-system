@@ -33,8 +33,27 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
             await markAsRead(notification.id);
         }
 
-        if (notification.link) {
-            navigate(notification.link);
+        let destination = notification.link;
+
+        // Fallback: Infer destination based on message content if link is missing
+        if (!destination) {
+            const message = (notification.message || "").toLowerCase();
+            const title = (notification.title || "").toLowerCase();
+            const content = `${title} ${message}`;
+
+            if (content.includes("file") || content.includes("folder") || content.includes("document")) {
+                destination = "/file-management";
+            } else if (content.includes("request") || content.includes("approval") || content.includes("permission")) {
+                destination = "/request";
+            } else if (content.includes("user") || content.includes("account") || content.includes("profile")) {
+                destination = "/user-management";
+            } else if (content.includes("report") || content.includes("log") || content.includes("activity")) {
+                destination = "/reports";
+            }
+        }
+
+        if (destination) {
+            navigate(destination);
             onClose();
         }
     };
