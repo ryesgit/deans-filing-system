@@ -29,17 +29,64 @@ export const DashboardPage = () => {
   const { user } = useAuth();
 
   // Fetch dashboard stats on mount
+  // ADMIN/STAFF: use global stats from backend
+  // FACULTY/STUDENT: compute stats from their own requests only
   useEffect(() => {
+    const isAdminOrStaff = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase());
+
     const fetchStats = async () => {
       try {
-        const response = await statsAPI.getDashboard();
-        const stats = response.data?.stats || response.data;
-        setStatsData({
-          files: stats?.files || { total: 0, newlyAdded: 0 },
-          borrowing: stats?.borrowing || { activeBorrowed: 0, returnedToday: 0 },
-          approvals: stats?.approvals || { pending: 0, approved: 0 },
-          overdueFiles: stats?.overdueFiles || { overdue: 0, resolved: 0 },
-        });
+        if (isAdminOrStaff) {
+          const response = await statsAPI.getDashboard();
+          const stats = response.data?.stats || response.data;
+          setStatsData({
+            files: stats?.files || { total: 0, newlyAdded: 0 },
+            borrowing: stats?.borrowing || { activeBorrowed: 0, returnedToday: 0 },
+            approvals: stats?.approvals || { pending: 0, approved: 0 },
+            overdueFiles: stats?.overdueFiles || { overdue: 0, resolved: 0 },
+          });
+        } else {
+          // FACULTY/STUDENT: compute from own requests
+          const { requestsAPI } = await import('../services/api');
+          const response = await requestsAPI.getAll();
+          const allRequests = response.data?.requests || response.data || [];
+          const userId = user?.userId || user?.id;
+
+          // Filter to only this user's requests
+          const myRequests = Array.isArray(allRequests)
+            ? allRequests.filter(
+                (req) => String(req.userId) === String(userId)
+              )
+            : [];
+
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const pending = myRequests.filter((r) => r.status === 'PENDING').length;
+          const approved = myRequests.filter((r) => r.status === 'APPROVED').length;
+          const borrowed = myRequests.filter((r) => r.status === 'BORROWED').length;
+
+          // Count overdue: approved original-copy requests whose return date has passed
+          const overdue = myRequests.filter((r) => {
+            if (r.status !== 'APPROVED' && r.status !== 'BORROWED') return false;
+            if (!r.description?.includes('Original Copy')) return false;
+            const match = r.description?.match(/Return Date:\s*(.+)/);
+            if (!match) return false;
+            const returnDate = new Date(match[1].trim());
+            return !isNaN(returnDate.getTime()) && returnDate < today;
+          }).length;
+
+          const returned = myRequests.filter(
+            (r) => r.status === 'COMPLETED' || r.status === 'RETURNED'
+          ).length;
+
+          setStatsData({
+            files: { total: 0, newlyAdded: 0 },
+            borrowing: { activeBorrowed: borrowed, returnedToday: returned },
+            approvals: { pending, approved },
+            overdueFiles: { overdue, resolved: 0 },
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error);
       } finally {
@@ -48,7 +95,7 @@ export const DashboardPage = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [user]);
 
   // Handle scrolling to request section when deep-linked from notification
   useEffect(() => {

@@ -30,9 +30,8 @@ export const RegistrationPage = ({ onClose }) => {
       newErrors.email = "Email is invalid";
     }
     if (!formData.pupId) newErrors.pupId = "PUP ID is required";
-    if (!formData.contactNumber) {
-      newErrors.contactNumber = "Contact Number is required";
-    } else if (
+    if (
+      formData.contactNumber &&
       !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
     ) {
       newErrors.contactNumber =
@@ -217,7 +216,7 @@ export const RegistrationPage = ({ onClose }) => {
           </div>
 
           <div className="form-group full-width">
-            <label htmlFor="contactNumber">Contact Number</label>
+            <label htmlFor="contactNumber">Contact Number (Optional)</label>
             <input
               type="tel"
               id="contactNumber"
@@ -261,7 +260,6 @@ export const RegistrationPage = ({ onClose }) => {
               </option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="Other">Other</option>
             </select>
             {errors.gender && (
               <span className="error-text">{errors.gender}</span>

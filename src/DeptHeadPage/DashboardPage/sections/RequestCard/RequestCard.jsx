@@ -57,12 +57,11 @@ export const RequestCard = ({
 
         // Filter requests based on role
         // ADMIN and STAFF see all requests, others see only their own
-        const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
+        const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
           ? filteredRequests
           : filteredRequests.filter(
               (req) => {
                 const match = req.userId === user.userId || req.userId === user.id;
-                console.log(`Request ${req.id}: userId=${req.userId}, user.userId=${user.userId}, user.id=${user.id}, match=${match}`);
                 return match;
               }
             );
@@ -148,7 +147,7 @@ export const RequestCard = ({
       const filteredRequests = requestsArray.filter(
         (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
-      const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
+      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
         ? filteredRequests
         : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
       setRequests(roleFilteredRequests.slice(0, 5));
@@ -186,7 +185,7 @@ export const RequestCard = ({
       const filteredRequests = requestsArray.filter(
         (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
-      const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
+      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
         ? filteredRequests
         : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
       setRequests(roleFilteredRequests.slice(0, 5));
@@ -229,7 +228,7 @@ export const RequestCard = ({
       <div className="request-card">
         <div className="request-card-header">
           <h2 className="request-card-title">
-            {['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
+            {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
           </h2>
         </div>
 
@@ -270,7 +269,7 @@ export const RequestCard = ({
                   </div>
                   <div className="table-cell status-col">
                     {request.status === "PENDING" &&
-                    ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) ? (
+                    ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) ? (
                       <div className="action-buttons">
                         <button
                           className="approve-btn"
