@@ -56,49 +56,102 @@ export const GlobalSearch = ({ onSearchChange }) => {
     return () => clearTimeout(searchTimeout);
   }, [searchQuery, onSearchChange]);
 
+  const isAdminOrStaff = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase());
+
   const performSearch = async (query) => {
     setIsSearching(true);
     setShowResults(true);
 
     try {
-      const [filesResponse, requestsResponse, usersResponse] = await Promise.allSettled([
-        filesAPI.search(query),
-        requestsAPI.getAll(),
-        user?.role === "ADMIN" ? usersAPI.getAll() : Promise.resolve({ data: { users: [] } }),
-      ]);
+      const lowerQuery = query.toLowerCase();
 
-      const files = filesResponse.status === "fulfilled"
-        ? (filesResponse.value.data.files || filesResponse.value.data || [])
-        : [];
+      if (isAdminOrStaff) {
+        // ADMIN/STAFF: search all files, all requests, and users (admin only)
+        const [filesResponse, requestsResponse, usersResponse] = await Promise.allSettled([
+          filesAPI.search(query),
+          requestsAPI.getAll(),
+          user?.role?.toUpperCase() === "ADMIN" ? usersAPI.getAll() : Promise.resolve({ data: { users: [] } }),
+        ]);
 
-      // Filter out archived files
-      let archivedIds = [];
-      try {
-        archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
-      } catch {}
-      const filteredFiles = files.filter((f) => !archivedIds.includes(String(f.id)));
+        const files = filesResponse.status === "fulfilled"
+          ? (filesResponse.value.data.files || filesResponse.value.data || [])
+          : [];
 
-      const allRequests = requestsResponse.status === "fulfilled"
-        ? (requestsResponse.value.data.requests || requestsResponse.value.data || [])
-        : [];
-      const requests = allRequests.filter(
-        (req) =>
-          req.title?.toLowerCase().includes(query.toLowerCase()) ||
-          req.description?.toLowerCase().includes(query.toLowerCase()) ||
-          req.id?.toString().includes(query)
-      );
+        // Filter out archived files
+        let archivedIds = [];
+        try {
+          archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+        } catch {}
+        const filteredFiles = files.filter((f) => !archivedIds.includes(String(f.id)));
 
-      const allUsers = usersResponse.status === "fulfilled"
-        ? (usersResponse.value.data.users || usersResponse.value.data || [])
-        : [];
-      const users = allUsers.filter(
-        (u) =>
-          u.name?.toLowerCase().includes(query.toLowerCase()) ||
-          u.email?.toLowerCase().includes(query.toLowerCase()) ||
-          u.userId?.toLowerCase().includes(query.toLowerCase())
-      );
+        const allRequests = requestsResponse.status === "fulfilled"
+          ? (requestsResponse.value.data.requests || requestsResponse.value.data || [])
+          : [];
+        const requests = allRequests.filter(
+          (req) =>
+            req.title?.toLowerCase().includes(lowerQuery) ||
+            req.description?.toLowerCase().includes(lowerQuery) ||
+            req.id?.toString().includes(query)
+        );
 
-      setSearchResults({ files: filteredFiles, requests, users });
+        const allUsers = usersResponse.status === "fulfilled"
+          ? (usersResponse.value.data.users || usersResponse.value.data || [])
+          : [];
+        const users = allUsers.filter(
+          (u) =>
+            u.name?.toLowerCase().includes(lowerQuery) ||
+            u.email?.toLowerCase().includes(lowerQuery) ||
+            u.userId?.toLowerCase().includes(lowerQuery)
+        );
+
+        setSearchResults({ files: filteredFiles, requests, users });
+      } else {
+        // FACULTY/STUDENT: only show files from their own approved soft-copy requests
+        const requestsResponse = await requestsAPI.getAll();
+        const allRequests = requestsResponse.data?.requests || requestsResponse.data || [];
+        const userId = user?.userId || user?.id;
+
+        // Filter to only this user's requests
+        const myRequests = Array.isArray(allRequests)
+          ? allRequests.filter(
+              (req) => String(req.userId) === String(userId)
+            )
+          : [];
+
+        // Files section: extract file info from approved soft-copy requests that match the query
+        const myApprovedSoftCopyFiles = myRequests
+          .filter(
+            (req) =>
+              (req.status === "APPROVED" || req.status === "Approved") &&
+              req.description?.includes("Soft Copy")
+          )
+          .filter((req) => {
+            const title = (req.title || "").toLowerCase();
+            const desc = (req.description || "").toLowerCase();
+            return title.includes(lowerQuery) || desc.includes(lowerQuery) || String(req.id).includes(query);
+          })
+          .map((req) => ({
+            id: req.fileId || req.id,
+            filename: req.title || "Unnamed file",
+            category: req.file?.category?.name || req.file?.category || "N/A",
+            department: req.file?.department || req.user?.department || "N/A",
+            _requestId: req.id,
+          }));
+
+        // Requests section: match the user's own requests
+        const matchedRequests = myRequests.filter(
+          (req) =>
+            req.title?.toLowerCase().includes(lowerQuery) ||
+            req.description?.toLowerCase().includes(lowerQuery) ||
+            req.id?.toString().includes(query)
+        );
+
+        setSearchResults({
+          files: myApprovedSoftCopyFiles,
+          requests: matchedRequests,
+          users: [],
+        });
+      }
     } catch (error) {
       console.error("Search error:", error);
       setSearchResults({ files: [], requests: [], users: [] });
@@ -113,10 +166,25 @@ export const GlobalSearch = ({ onSearchChange }) => {
 
     switch (type) {
       case "file":
-        navigate("/file-management", { state: { selectedFile: item } });
+        if (isAdminOrStaff) {
+          navigate("/file-management", { state: { selectedFile: item } });
+        } else {
+          // FACULTY/STUDENT: navigate to request page, open the specific request
+          navigate("/request", {
+            state: {
+              selectedRequestId: item._requestId || null,
+              requestFocusNonce: Date.now(),
+            },
+          });
+        }
         break;
       case "request":
-        navigate("/request", { state: { selectedRequest: item } });
+        navigate("/request", {
+          state: {
+            selectedRequestId: item.id,
+            requestFocusNonce: Date.now(),
+          },
+        });
         break;
       case "user":
         navigate("/user-management", { state: { selectedUser: item } });
@@ -151,7 +219,7 @@ export const GlobalSearch = ({ onSearchChange }) => {
         <input
           type="text"
           className="global-search-input"
-          placeholder="Search files, requests, users..."
+          placeholder={isAdminOrStaff ? "Search files, requests, users..." : "Search my requests and files..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery && setShowResults(true)}
@@ -173,7 +241,7 @@ export const GlobalSearch = ({ onSearchChange }) => {
 
           {searchResults.files.length > 0 && (
             <div className="search-results-section">
-              <h4 className="search-results-header">Files ({searchResults.files.length})</h4>
+              <h4 className="search-results-header">{isAdminOrStaff ? "Files" : "My Files"} ({searchResults.files.length})</h4>
               {searchResults.files.slice(0, 5).map((file) => (
                 <div
                   key={file.id}
@@ -204,7 +272,7 @@ export const GlobalSearch = ({ onSearchChange }) => {
 
           {searchResults.requests.length > 0 && (
             <div className="search-results-section">
-              <h4 className="search-results-header">Requests ({searchResults.requests.length})</h4>
+              <h4 className="search-results-header">{isAdminOrStaff ? "Requests" : "My Requests"} ({searchResults.requests.length})</h4>
               {searchResults.requests.slice(0, 5).map((request) => (
                 <div
                   key={request.id}

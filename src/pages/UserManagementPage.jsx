@@ -1010,7 +1010,7 @@ const UserFormModal = ({
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Contact Number</label>
+                        <label className="form-label">Contact Number (Optional)</label>
                         <input
                             type="text"
                             name="contactNumber"
