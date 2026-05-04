@@ -146,8 +146,11 @@ export const RequestCard = ({
   };
 
   const handleDecline = async (requestId) => {
+    const reason = window.prompt("Please enter the reason for declining this request:");
+    if (reason === null) return; // User cancelled the prompt
+
     try {
-      await requestsAPI.decline(requestId);
+      await requestsAPI.decline(requestId, reason);
 
       // Create notification for the user
       const request = requests.find((r) => r.id === requestId);
@@ -157,7 +160,7 @@ export const RequestCard = ({
             userId: request.userId,
             message: `Your request for ${
               request.fileName || "item"
-            } has been DECLINED.`,
+            } has been DECLINED. Reason: ${reason || "No reason provided."}`,
             type: "error",
             read: false,
           });

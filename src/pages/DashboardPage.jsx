@@ -89,6 +89,10 @@ export const DashboardPage = () => {
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount}</span>
               )}
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+              />
             </div>
           </div>
         </header>
@@ -240,12 +244,6 @@ export const DashboardPage = () => {
         <RequestCard
           selectedRequestId={location.state?.selectedRequestId ?? null}
           requestFocusNonce={location.state?.requestFocusNonce ?? null}
-        />
-
-        <NotificationDropdown
-
-          isOpen={isNotificationOpen}
-          onClose={() => setIsNotificationOpen(false)}
         />
       </div>
     </>

@@ -152,21 +152,31 @@ export const RegistrationPage = ({ onClose }) => {
       department: formData.department,
     });
 
-    const result = await register(registrationData);
-    setIsSubmitting(false);
+    try {
+      const result = await register(registrationData);
+      setIsSubmitting(false);
 
-    if (result.success) {
-      setSuccessMessage(result.message);
+      if (result.success) {
+        setSuccessMessage(result.message);
 
-      // Send a registration confirmation email to the new user
-      sendRegistrationConfirmationEmail({
-        toEmail: formData.email,
-        toName: formData.name,
-      });
+        // Send a registration confirmation email to the new user
+        sendRegistrationConfirmationEmail({
+          toEmail: formData.email,
+          toName: formData.name,
+        });
 
-      setTimeout(() => {
-        onClose();
-      }, 3000);
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+      } else {
+        // Explicitly handle failure cases from the API
+        const errorMsg = result.message || 'Registration failed. Please check your details.';
+        alert(errorMsg);
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error('Registration error:', error);
+      alert('The server is currently unavailable. Please try again later.');
     }
   };
 
@@ -189,8 +199,13 @@ export const RegistrationPage = ({ onClose }) => {
       )}
 
       {successMessage && (
-        <div className="registration-success" role="alert">
-          <span>{successMessage}</span>
+        <div className="registration-success-overlay">
+          <div className="success-content">
+            <div className="success-icon">✓</div>
+            <h3>Registration Submitted!</h3>
+            <p>{successMessage}</p>
+            <p className="success-note">Closing in 3 seconds...</p>
+          </div>
         </div>
       )}
 

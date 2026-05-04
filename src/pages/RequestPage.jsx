@@ -198,14 +198,41 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             return;
         }
 
-        if (
-            formData.copyType === "original" &&
-            (!formData.returnDate || !formData.priority)
-        ) {
-            alert(
-                "Please select return date and priority for original copy requests"
-            );
+        // Check for duplicate pending requests
+        const isDuplicate = requests.some(
+            (req) => 
+                req.fileId === formData.fileId && 
+                (req.status === "PENDING" || req.status === "Pending")
+        );
+
+        if (isDuplicate) {
+            alert("You already have a pending request for this file. Please wait for it to be processed.");
             return;
+        }
+
+        // Validate return date for original copies (1-3 days limit)
+        if (formData.copyType === "original") {
+            if (!formData.returnDate) {
+                alert("Please select a return date for original copy requests");
+                return;
+            }
+            if (!formData.priority) {
+                alert("Please select priority for original copy requests");
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const returnDate = new Date(formData.returnDate);
+            returnDate.setHours(0, 0, 0, 0);
+            
+            const diffTime = Math.abs(returnDate - today);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 1 || diffDays > 3) {
+                alert("For original copies, the return date must be between 1 and 3 days from today.");
+                return;
+            }
         }
 
         setShowSubmitModal(true);
@@ -1117,7 +1144,7 @@ const RequestCard = ({
                             <span className="file-info-value">
                                 {isSoftCopy(selectedRequestForDetails.description)
                                     ? "Soft Copy"
-                                    : "Hard Copy"}
+                                    : "Original Copy"}
                             </span>
                         </div>
                         <div className="details-row">
@@ -1150,6 +1177,20 @@ const RequestCard = ({
                                     : "N/A"}
                             </span>
                         </div>
+                        <div className="details-row">
+                            <span className="file-info-label">Status:</span>
+                            <span className={`file-info-value status-text ${getStatusClass(selectedRequestForDetails.status)}`}>
+                                {getStatusLabel(selectedRequestForDetails.status)}
+                            </span>
+                        </div>
+                        {selectedRequestForDetails.status === "DECLINED" && selectedRequestForDetails.rejectionReason && (
+                            <div className="details-row rejection-row">
+                                <span className="file-info-label">Rejection Reason:</span>
+                                <span className="file-info-value rejection-reason">
+                                    {selectedRequestForDetails.rejectionReason}
+                                </span>
+                            </div>
+                        )}
                         <div className="details-row">
                             <span className="file-info-label">Purpose:</span>
                             <span className="file-info-value purpose">
@@ -1418,6 +1459,7 @@ export const RequestPage = () => {
                             <div className="notification-button-wrapper" onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
                                 <img className="notification-button" alt="Notification button" src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png" />
                                 {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+                                <NotificationDropdown isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
                             </div>
                         </div>
                     </header>
@@ -1442,7 +1484,7 @@ export const RequestPage = () => {
                         qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"} 
                         userName={currentUser?.name || "User"} 
                     />
-                    <NotificationDropdown isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+
                 </div>
             </div>
         </>
