@@ -19,6 +19,18 @@ import { sanitizeData } from "../utils/sanitization";
 const normalizeId = (value) =>
     value === null || value === undefined ? null : String(value);
 
+const toText = (value, fallback = "") => {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+    }
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return fallback;
+    }
+};
+
 const belongsToUser = (request, currentUser) => {
     const requestUserIds = [request?.userId, request?.user?.userId, request?.user?.id]
         .map(normalizeId)
@@ -29,6 +41,7 @@ const belongsToUser = (request, currentUser) => {
 
     return currentUserIds.some((userId) => requestUserIds.includes(userId));
 };
+
 const ConfirmModal = ({
     isOpen,
     onClose,
@@ -74,7 +87,7 @@ const ConfirmModal = ({
     );
 };
 
-const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
+const QRModal = ({ isOpen, onClose, userName, qrValue }) => {
     if (!isOpen) return null;
 
     return (
@@ -85,19 +98,7 @@ const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
                 </button>
                 <h2 className="qr-modal-title">Your QR Code</h2>
                 <div className="qr-modal-code">
-                    {qrCodeUrl ? (
-                        <img
-                            src={qrCodeUrl}
-                            alt="QR Code"
-                            style={{
-                                width: "300px",
-                                height: "300px",
-                                objectFit: "contain",
-                            }}
-                        />
-                    ) : (
-                        <QRCodeSVG value={qrValue} size={300} level="H" />
-                    )}
+                    <QRCodeSVG value={qrValue} size={300} level="H" />
                 </div>
                 <p className="qr-modal-user">{userName}</p>
             </div>
@@ -105,9 +106,9 @@ const QRModal = ({ isOpen, onClose, qrCodeUrl, userName, qrValue }) => {
     );
 };
 
-const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
+const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
     const { user } = useAuth();
-    const isRestrictedRole = ["ADMIN", "STAFF", "STUDENT"].includes(user?.role);
+    const isRestrictedRole = ["FACULTY", "STUDENT"].includes(user?.role?.toUpperCase());
 
     const [formData, setFormData] = useState({
         fileName: "",
@@ -131,7 +132,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
         "Mechanical Engineering",
         "Computer Engineering",
         "Electrical Engineering",
-        "Railway Engineering",
+        "Railway Engineering Management",
     ];
 
     const categories = [
@@ -156,7 +157,6 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
     };
 
     const handleFileSelect = (fileInfo) => {
-        // category may come as an object {name:...} or a plain string
         const rawCategory = fileInfo.fileCategory;
         const resolvedCategory =
             rawCategory && typeof rawCategory === "object"
@@ -192,13 +192,11 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             return;
         }
 
-        // Check if user already has an active original file
         if (formData.copyType === "original" && hasActiveOriginalFile) {
             setShowFileLimitModal(true);
             return;
         }
 
-        // Check for duplicate pending requests
         const isDuplicate = requests.some(
             (req) => 
                 req.fileId === formData.fileId && 
@@ -210,7 +208,6 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             return;
         }
 
-        // Validate return date for original copies (1-3 days limit)
         if (formData.copyType === "original") {
             if (!formData.returnDate) {
                 alert("Please select a return date for original copy requests");
@@ -256,7 +253,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             description: descriptionParts.join("\n"),
             type: "FILE_ACCESS",
             priority: formData.priority || "normal",
-            fileId: formData.fileId, // Include file ID in request
+            fileId: formData.fileId,
         });
 
         try {
@@ -280,16 +277,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
     };
 
     const handleConfirmClear = () => {
-        setFormData({
-            fileName: "",
-            department: "",
-            fileCategory: "",
-            purpose: "",
-            copyType: isRestrictedRole ? "original" : "soft",
-            returnDate: "",
-            priority: "",
-            fileId: null,
-        });
+        handleClear();
         setShowClearModal(false);
     };
 
@@ -327,7 +315,6 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
                         onChange={(e) => handleChange("department", e.target.value)}
                     >
                         <option value="">Department</option>
-                        {/* Include auto-filled value if not in the hardcoded list */}
                         {formData.department && !departments.includes(formData.department) && (
                             <option key={formData.department} value={formData.department}>
                                 {formData.department}
@@ -348,7 +335,6 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
                         onChange={(e) => handleChange("fileCategory", e.target.value)}
                     >
                         <option value="">File Category</option>
-                        {/* Include auto-filled value if not in the hardcoded list */}
                         {formData.fileCategory && !categories.includes(formData.fileCategory) && (
                             <option key={formData.fileCategory} value={formData.fileCategory}>
                                 {formData.fileCategory}
@@ -543,10 +529,8 @@ const QRCard = ({
     userId = "USER-001",
     assignedFile = null,
     onQRCodeClick,
-    qrCodeUrl = null,
 }) => {
     const [showDownloadModal, setShowDownloadModal] = useState(false);
-    const [imageLoadError, setImageLoadError] = useState(false);
     const qrValue = userId || "USER-UNKNOWN";
 
     const handleDownloadQROnly = () => {
@@ -580,10 +564,7 @@ const QRCard = ({
         if (!qrCardElement) return;
 
         try {
-            // Hide the download button before capturing
-            if (downloadButton) {
-                downloadButton.style.display = 'none';
-            }
+            if (downloadButton) downloadButton.style.display = 'none';
 
             const canvas = await html2canvas(qrCardElement, {
                 backgroundColor: "#ffffff",
@@ -602,10 +583,7 @@ const QRCard = ({
             console.error("Failed to download QR with details:", error);
             alert("Failed to download. Please try again.");
         } finally {
-            // Show the download button again
-            if (downloadButton) {
-                downloadButton.style.display = 'flex';
-            }
+            if (downloadButton) downloadButton.style.display = 'flex';
         }
     };
 
@@ -630,16 +608,7 @@ const QRCard = ({
                         minWidth: "220px",
                     }}
                 >
-                    {/* Always render QRCodeSVG, ignore qrCodeUrl from backend */}
-                    <div
-                        style={{
-                            width: "180px",
-                            height: "180px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
+                    <div style={{ width: "180px", height: "180px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <QRCodeSVG
                             id="qr-code-svg"
                             value={qrValue}
@@ -656,27 +625,9 @@ const QRCard = ({
                     onClick={() => setShowDownloadModal(true)}
                 >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path
-                            d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="M4.66669 6.66669L8.00002 10L11.3334 6.66669"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="M8 10V2"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
+                        <path d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M4.66669 6.66669L8.00002 10L11.3334 6.66669" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M8 10V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     Download
                 </button>
@@ -715,7 +666,6 @@ const QRCard = ({
                 )}
             </div>
 
-            {/* Download Options Modal */}
             <ConfirmModal
                 isOpen={showDownloadModal}
                 onClose={() => setShowDownloadModal(false)}
@@ -724,51 +674,20 @@ const QRCard = ({
                 confirmText=""
                 cancelText="Cancel"
             >
-                <p style={{
-                    fontFamily: 'Poppins, Helvetica',
-                    fontSize: '14px',
-                    marginBottom: '1rem',
-                    textAlign: 'center'
-                }}>
+                <p style={{ fontFamily: 'Poppins, Helvetica', fontSize: '14px', marginBottom: '1rem', textAlign: 'center' }}>
                     Choose download option:
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <button
                         onClick={handleDownloadQROnly}
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            backgroundColor: '#800000',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontFamily: 'Poppins, Helvetica',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
+                        style={{ padding: '0.75rem 1.5rem', backgroundColor: '#800000', color: 'white', border: 'none', borderRadius: '12px', fontFamily: 'Poppins, Helvetica', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
                     >
                         Download QR Code Only
                     </button>
                     {assignedFile && (
                         <button
                             onClick={handleDownloadWithDetails}
-                            style={{
-                                padding: '0.75rem 1.5rem',
-                                backgroundColor: '#800000',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontFamily: 'Poppins, Helvetica',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#a00000'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#800000'}
+                            style={{ padding: '0.75rem 1.5rem', backgroundColor: '#800000', color: 'white', border: 'none', borderRadius: '12px', fontFamily: 'Poppins, Helvetica', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
                         >
                             Download with File Details
                         </button>
@@ -844,9 +763,7 @@ const RequestCard = ({
     }, [openMenuId]);
 
     useEffect(() => {
-        if (selectedRequestId === null || selectedRequestId === undefined) {
-            return;
-        }
+        if (selectedRequestId === null || selectedRequestId === undefined) return;
 
         const matchedRequest = requests.find(
             (request) => String(request.id) === String(selectedRequestId)
@@ -859,10 +776,7 @@ const RequestCard = ({
     }, [requests, selectedRequestId, requestFocusNonce]);
 
     const handleShowDetails = (request, e) => {
-        if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
-            return;
-        }
-
+        if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) return;
         setSelectedRequestForDetails(request);
         setShowDetailsModal(true);
     };
@@ -874,9 +788,9 @@ const RequestCard = ({
 
     const handleCancelClick = (request, e) => {
         e.stopPropagation();
-        setOpenMenuId(null);
         setRequestToCancel(request);
         setShowCancelModal(true);
+        setOpenMenuId(null);
     };
 
     const handleConfirmCancel = async () => {
@@ -987,54 +901,18 @@ const RequestCard = ({
                                             <div style={{ position: "relative", display: "inline-block" }} className="three-dot-menu">
                                                 <button
                                                     onClick={(e) => toggleMenu(request.id, e)}
-                                                    style={{
-                                                        background: "none",
-                                                        border: "none",
-                                                        cursor: "pointer",
-                                                        fontSize: "20px",
-                                                        padding: "4px 8px",
-                                                    }}
+                                                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", padding: "4px 8px" }}
                                                 >
                                                     ⋯
                                                 </button>
                                                 {openMenuId === request.id && (
                                                     <div
-                                                        style={{
-                                                            position: "absolute",
-                                                            right: 0,
-                                                            top: "100%",
-                                                            backgroundColor: "white",
-                                                            border: "1px solid #ddd",
-                                                            borderRadius: "4px",
-                                                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                                                            zIndex: 1000,
-                                                            minWidth: "120px",
-                                                        }}
+                                                        style={{ position: "absolute", right: 0, top: "100%", backgroundColor: "white", border: "1px solid #ddd", borderRadius: "4px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", zIndex: 1000, minWidth: "120px" }}
                                                     >
                                                         <button
-                                                            onClick={
-                                                                request.status === "PENDING"
-                                                                    ? (e) => handleCancelClick(request, e)
-                                                                    : undefined
-                                                            }
+                                                            onClick={request.status === "PENDING" ? (e) => handleCancelClick(request, e) : undefined}
                                                             disabled={request.status !== "PENDING"}
-                                                            style={{
-                                                                width: "100%",
-                                                                padding: "8px 16px",
-                                                                border: "none",
-                                                                background: "none",
-                                                                textAlign: "left",
-                                                                cursor: request.status === "PENDING" ? "pointer" : "not-allowed",
-                                                                color: request.status === "PENDING" ? "#d32f2f" : "#999",
-                                                                opacity: request.status === "PENDING" ? 1 : 0.5,
-                                                            }}
-                                                            onMouseEnter={(e) =>
-                                                                request.status === "PENDING" &&
-                                                                (e.target.style.backgroundColor = "#f5f5f5")
-                                                            }
-                                                            onMouseLeave={(e) =>
-                                                                (e.target.style.backgroundColor = "transparent")
-                                                            }
+                                                            style={{ width: "100%", padding: "8px 16px", border: "none", background: "none", textAlign: "left", cursor: request.status === "PENDING" ? "pointer" : "not-allowed", color: request.status === "PENDING" ? "#d32f2f" : "#999", opacity: request.status === "PENDING" ? 1 : 0.5 }}
                                                         >
                                                             Cancel
                                                         </button>
@@ -1050,14 +928,11 @@ const RequestCard = ({
                 </div>
             </div>
 
-            {/* PDF Viewer Modal */}
             <Modal
                 isOpen={showPDFModal}
                 onClose={() => {
                     setShowPDFModal(false);
-                    if (pdfUrl) {
-                        window.URL.revokeObjectURL(pdfUrl);
-                    }
+                    if (pdfUrl) window.URL.revokeObjectURL(pdfUrl);
                     setPdfUrl(null);
                     setPdfLoading(false);
                 }}
@@ -1068,9 +943,7 @@ const RequestCard = ({
                         <div className="file-info">
                             <div className="file-info-row">
                                 <span className="file-info-label">File Name:</span>
-                                <span className="file-info-value">
-                                    {selectedRequest.fileName}
-                                </span>
+                                <span className="file-info-value">{selectedRequest.fileName}</span>
                             </div>
                             <div className="file-info-row">
                                 <span className="file-info-label">Request ID:</span>
@@ -1078,48 +951,23 @@ const RequestCard = ({
                             </div>
                             <div className="file-info-row">
                                 <span className="file-info-label">Date Requested:</span>
-                                <span className="file-info-value">
-                                    {selectedRequest.dateRequested}
-                                </span>
+                                <span className="file-info-value">{selectedRequest.dateRequested}</span>
                             </div>
                         </div>
                         {pdfLoading && (
-                            <div
-                                className="pdf-preview"
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    minHeight: "400px",
-                                    border: "1px solid #e0e0e0",
-                                    borderRadius: "8px",
-                                    marginTop: "20px",
-                                    backgroundColor: "#f5f5f5",
-                                }}
-                            >
+                            <div className="pdf-preview" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "400px", border: "1px solid #e0e0e0", borderRadius: "8px", marginTop: "20px", backgroundColor: "#f5f5f5" }}>
                                 <p style={{ color: "#666" }}>Loading PDF...</p>
                             </div>
                         )}
                         {!pdfLoading && pdfUrl && (
                             <div className="pdf-preview">
-                                <iframe
-                                    src={pdfUrl}
-                                    title="PDF Preview"
-                                    width="100%"
-                                    height="600px"
-                                    style={{
-                                        border: "1px solid #e0e0e0",
-                                        borderRadius: "8px",
-                                        marginTop: "20px",
-                                    }}
-                                />
+                                <iframe src={pdfUrl} title="PDF Preview" width="100%" height="600px" style={{ border: "1px solid #e0e0e0", borderRadius: "8px", marginTop: "20px" }} />
                             </div>
                         )}
                     </>
                 )}
             </Modal>
 
-            {/* Request Details Modal */}
             <Modal
                 isOpen={showDetailsModal}
                 onClose={() => setShowDetailsModal(false)}
@@ -1129,29 +977,21 @@ const RequestCard = ({
                     <div className="request-details-modal-content">
                         <div className="details-row">
                             <span className="file-info-label">Request ID:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.id}
-                            </span>
+                            <span className="file-info-value">{selectedRequestForDetails.id}</span>
                         </div>
                         <div className="details-row">
                             <span className="file-info-label">File Name:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.fileName}
-                            </span>
+                            <span className="file-info-value">{selectedRequestForDetails.fileName}</span>
                         </div>
                         <div className="details-row">
                             <span className="file-info-label">Copy Type:</span>
                             <span className="file-info-value">
-                                {isSoftCopy(selectedRequestForDetails.description)
-                                    ? "Soft Copy"
-                                    : "Original Copy"}
+                                {isSoftCopy(selectedRequestForDetails.description) ? "Soft Copy" : "Original Copy"}
                             </span>
                         </div>
                         <div className="details-row">
                             <span className="file-info-label">Date Submitted:</span>
-                            <span className="file-info-value">
-                                {selectedRequestForDetails.dateRequested}
-                            </span>
+                            <span className="file-info-value">{selectedRequestForDetails.dateRequested}</span>
                         </div>
                         {(() => {
                             const desc = selectedRequestForDetails.description || "";
@@ -1172,9 +1012,7 @@ const RequestCard = ({
                         <div className="details-row">
                             <span className="file-info-label">Returned Date:</span>
                             <span className="file-info-value">
-                                {selectedRequestForDetails.returnedAt
-                                    ? new Date(selectedRequestForDetails.returnedAt).toLocaleDateString()
-                                    : "N/A"}
+                                {selectedRequestForDetails.returnedAt ? new Date(selectedRequestForDetails.returnedAt).toLocaleDateString() : "N/A"}
                             </span>
                         </div>
                         <div className="details-row">
@@ -1186,9 +1024,7 @@ const RequestCard = ({
                         {selectedRequestForDetails.status === "DECLINED" && selectedRequestForDetails.rejectionReason && (
                             <div className="details-row rejection-row">
                                 <span className="file-info-label">Rejection Reason:</span>
-                                <span className="file-info-value rejection-reason">
-                                    {selectedRequestForDetails.rejectionReason}
-                                </span>
+                                <span className="file-info-value rejection-reason">{selectedRequestForDetails.rejectionReason}</span>
                             </div>
                         )}
                         <div className="details-row">
@@ -1209,7 +1045,6 @@ const RequestCard = ({
                 )}
             </Modal>
 
-            {/* Cancel Confirmation Modal */}
             <ConfirmModal
                 isOpen={showCancelModal}
                 onClose={() => {
@@ -1246,7 +1081,6 @@ export const RequestPage = () => {
     const { user: currentUser } = useAuth();
     const { unreadCount } = useNotifications();
 
-    // Fetch requests from API on mount
     useEffect(() => {
         const fetchRequests = async () => {
             if (!currentUser?.userId && !currentUser?.id) {
@@ -1267,7 +1101,6 @@ export const RequestPage = () => {
                     .filter((req) => req.status !== "CANCELLED")
                     .filter((req) => belongsToUser(req, currentUser));
 
-                // Check if any approved original requests need enrichment
                 const hasApprovedOriginal = filteredRequests.some(
                     (req) =>
                         (req.status === "APPROVED" || req.status === "Approved") &&
@@ -1355,7 +1188,6 @@ export const RequestPage = () => {
         fetchRequests();
     }, [currentUser]);
 
-    // Send return reminders
     useEffect(() => {
         if (!requests.length || !currentUser) return;
         const REMINDER_DAYS = 1;
@@ -1432,7 +1264,7 @@ export const RequestPage = () => {
     };
 
     const assignedFile = buildAssignedFile();
-    const filesAssigned = requests.filter(req => req.status === "APPROVED" && isOriginalCopy(req)).length;
+    const filesAssigned = requests.filter(req => (req.status === "APPROVED" || req.status === "Approved") && isOriginalCopy(req)).length;
     const filesToReturn = requests.filter(req => (req.status === "BORROWED" || req.status === "Borrowed") && isOriginalCopy(req)).length;
     const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
     
@@ -1464,7 +1296,7 @@ export const RequestPage = () => {
                         </div>
                     </header>
                     <div className="request-page-container">
-                        <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} />
+                        <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} requests={requests} />
                         <QRCard 
                             userName={currentUser?.name || "User"} 
                             userId={currentUser?.userId || "ID"} 
@@ -1484,10 +1316,8 @@ export const RequestPage = () => {
                         qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"} 
                         userName={currentUser?.name || "User"} 
                     />
-
                 </div>
             </div>
         </>
     );
 };
-// End of RequestPage component

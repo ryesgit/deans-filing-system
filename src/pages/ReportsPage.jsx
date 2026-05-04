@@ -98,21 +98,22 @@ export const ReportsPage = () => {
                         return belongsToUser(request, user);
                     });
 
-                setReportsData({
+                setReportsData((prev) => ({
+                    ...prev,
                     request: userRequests.filter(
                         (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
                     ),
                     borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
                     returned: userRequests.filter((request) => isReturnedRequest(request)),
-                });
+                }));
             } catch (error) {
                 console.error("Failed to fetch reports:", error);
-                setReportsData({
+                setReportsData((prev) => ({
+                    ...prev,
                     request: [],
                     borrowed: [],
                     returned: [],
-                    validityDue: [],
-                });
+                }));
             } finally {
                 setLoading(false);
             }
@@ -160,26 +161,27 @@ export const ReportsPage = () => {
                     archivedIds = [];
                 }
 
-                const validityDue = allFiles
-                    .filter((file) => {
-                        const fileId = String(file.id);
-                        if (archivedIds.includes(fileId)) return false;
-                        const validityDate = validityMap[fileId];
-                        if (validityDate) {
-                            file.validUntil = validityDate;
-                            file.folderName = folderMap[file.categoryId] || folderMap[file.category?.id] || 'N/A';
-                            return true;
-                        }
-                        return false;
-                    })
-                    .sort((a, b) => new Date(a.validUntil) - new Date(b.validUntil));
+                const allFilesWithDetails = allFiles.map((file) => ({
+                    ...file,
+                    validUntil: file.validUntil || validityMap[file.id] || null,
+                    folderName: folderMap[file.categoryId] || folderMap[file.category_id] || null,
+                }));
 
+                const filesWithValidity = allFilesWithDetails
+                    .filter((file) => file.validUntil && !archivedIds.includes(String(file.id)))
+                    .sort((left, right) => new Date(left.validUntil) - new Date(right.validUntil));
+
+                const archivedFilesList = allFilesWithDetails
+                    .filter((file) => archivedIds.includes(String(file.id)))
+                    .sort((left, right) => new Date(right.validUntil || 0) - new Date(left.validUntil || 0));
+
+                setArchivedFiles(archivedFilesList);
                 setReportsData((prev) => ({
                     ...prev,
-                    validityDue: validityDue,
+                    validityDue: filesWithValidity,
                 }));
             } catch (error) {
-                console.error("Failed to fetch validity files:", error);
+                console.error("Failed to fetch files for validity:", error);
             }
         };
 
@@ -188,32 +190,64 @@ export const ReportsPage = () => {
     }, [user]);
 
     const handleExport = () => {
-        const data = reportsData[activeTab];
-        if (!data || data.length === 0) {
-            alert("No data to export");
+        if (activeTab === "validityDue") {
+            const data = Array.isArray(reportsData.validityDue) ? reportsData.validityDue : [];
+            const headers = ["File ID", "File Name", "Department", "Category", "Valid Until", "Status"];
+            let csv = headers.join(",") + "\n";
+            const now = new Date();
+
+            data.forEach((file) => {
+                const validDate = new Date(file.validUntil);
+                const daysLeft = Math.ceil((validDate - now) / (1000 * 60 * 60 * 24));
+                const status = daysLeft < 0 ? "Expired" : daysLeft <= 30 ? "Due Soon" : "Valid";
+                const values = [
+                    file.id,
+                    file.filename || file.name || "N/A",
+                    file.user?.department || file.department || "N/A",
+                    file.category?.name || file.category || "N/A",
+                    new Date(file.validUntil).toLocaleDateString(),
+                    status,
+                ];
+                csv += values.join(",") + "\n";
+            });
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `validity_due_report_${new Date().toISOString().split("T")[0]}.csv`;
+            link.click();
             return;
         }
 
-        const headers = activeTab === "validityDue" 
-            ? ["File ID", "File Name", "Folder", "Department", "Valid Until"]
-            : ["Request ID", "File Name", "Date", "Status"];
+        const data = Array.isArray(reportsData[activeTab]) ? reportsData[activeTab] : [];
+        const headers =
+            activeTab === "request"
+                ? ["Request ID", "File Name", "Date Submitted", "Status"]
+                : [
+                    "Request ID",
+                    "File Name",
+                    `Date ${activeTab === "borrowed" ? "Borrowed" : "Returned"}`,
+                ];
 
-        const csvRows = [headers.join(",")];
-
+        let csv = headers.join(",") + "\n";
         data.forEach((row) => {
-            const rowData = activeTab === "validityDue"
-                ? [row.id, row.filename || row.name, row.folderName, row.department || "N/A", row.validUntil]
-                : [row.id, getFileName(row), new Date(getRequestDate(activeTab, row)).toLocaleDateString(), row.status];
-            csvRows.push(rowData.map(v => `"${v}"`).join(","));
+            const dateField = getRequestDate(activeTab, row);
+            const values = [
+                row.id,
+                getFileName(row),
+                dateField ? new Date(dateField).toLocaleDateString() : "N/A",
+                ...(activeTab === "request" ? [row.status || "N/A"] : []),
+            ];
+            csv += values.join(",") + "\n";
         });
 
-        const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+        const blob = new Blob([csv], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `reports_${activeTab}_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${activeTab}_report_${new Date().toISOString().split("T")[0]}.csv`;
+        link.click();
     };
 
     const handleShowDetails = (transaction) => {

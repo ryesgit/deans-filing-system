@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "./NotificationContext";
 import { useAuth } from "../Modal/AuthContext";
@@ -6,6 +6,18 @@ import "./style.css";
 
 const ADMIN_REQUEST_ROLES = ["ADMIN", "STAFF", "FACULTY"];
 const REQUEST_LINK_PATTERN = /^\/requests?\/(\d+)\/?$/i;
+const toText = (value, fallback = "") => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (value instanceof Error) return value.message || fallback;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
 
 const getNotificationTarget = (notification, userRole) => {
   const link = notification?.link?.trim();
@@ -34,6 +46,15 @@ const getNotificationTarget = (notification, userRole) => {
     return { pathname: "/dashboard" };
   }
 
+  if (link === "/user-management" || link === "/user-management/") {
+    return {
+      pathname: "/user-management",
+      state: {
+        selectedUserId: notification?._syntheticPendingUserId || null,
+      },
+    };
+  }
+
   return { pathname: link };
 };
 
@@ -58,6 +79,36 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const userRole = user?.role?.toUpperCase() || "";
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside (without blocking navigation)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event) => {
+      // If click is inside the dropdown, don't close
+      if (dropdownRef.current && dropdownRef.current.contains(event.target)) {
+        return;
+      }
+      // If click is on the notification bell wrapper, let the toggle handle it
+      const bellWrapper = event.target.closest('.notification-button-wrapper');
+      if (bellWrapper) {
+        return;
+      }
+      // Otherwise close the dropdown (click was outside)
+      onClose();
+    };
+
+    // Use setTimeout to avoid the current click event triggering the listener
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
@@ -72,14 +123,12 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
         const target = getNotificationTarget(notification, userRole);
         
         if (target) {
-            navigate(target.pathname, target.state
-                ? {
-                    state: {
-                        ...target.state,
-                        requestFocusNonce: Date.now(),
-                    },
-                }
-                : undefined);
+            navigate(target.pathname, {
+                state: {
+                    ...(target.state || {}),
+                    requestFocusNonce: Date.now(),
+                },
+            });
             onClose();
         } else {
             // Fallback: Infer destination based on message content if target/link is missing
@@ -111,66 +160,61 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
     };
 
     return (
-        <>
-            <div className="notification-backdrop" onClick={onClose} />
-            <div className="notification-dropdown">
-                <div className="notification-header">
-                    <h3>Notifications</h3>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span className="notification-count">{unreadCount} new</span>
-                        {unreadCount > 0 && (
-                            <button
-                                onClick={handleMarkAllAsRead}
-                                style={{
-                                    background: "none",
-                                    border: "none",
-                                    color: "#8B0000",
-                                    cursor: "pointer",
-                                    fontSize: "12px",
-                                    textDecoration: "underline",
-                                    padding: "0",
-                                }}
-                            >
-                                Mark all read
-                            </button>
-                        )}
-                    </div>
-                </div>
-                <div className="notification-list">
-                    {notificationList.length === 0 ? (
-                        <div className="notification-item">
-                            <p className="notification-message" style={{ textAlign: "center", color: "#999" }}>
-                                No notifications yet
-                            </p>
-                        </div>
-                    ) : (
-                        notificationList.map((notification) => {
-                            const target = getNotificationTarget(notification, userRole);
-                            const hasLink = !!target || !!notification.link; // Simplified check for cursor
-                            
-                            return (
-                                <div
-                                    key={notification.id}
-                                    className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
-                                    onClick={() => handleNotificationClick(notification)}
-                                    style={{
-                                        cursor: hasLink ? "pointer" : "default",
-                                    }}
-                                >
-                                    {notification.title && (
-                                        <h4 className="notification-title">{notification.title}</h4>
-                                    )}
-                                    <p className="notification-message">{notification.message}</p>
-                                    <span className="notification-time">
-                                        {formatTime(notification.createdAt || notification.time)}
-                                    </span>
-                                </div>
-                            );
-                        })
+        <div className="notification-dropdown" ref={dropdownRef}>
+            <div className="notification-header">
+                <h3>Notifications</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span className="notification-count">{unreadCount} new</span>
+                    {unreadCount > 0 && (
+                        <button
+                            onClick={handleMarkAllAsRead}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                color: "#8B0000",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                textDecoration: "underline",
+                                padding: "0",
+                            }}
+                        >
+                            Mark all read
+                        </button>
                     )}
                 </div>
             </div>
-        </>
+            <div className="notification-list">
+                {notificationList.length === 0 ? (
+                    <div className="notification-item">
+                        <p className="notification-message" style={{ textAlign: "center", color: "#999" }}>
+                            No notifications yet
+                        </p>
+                    </div>
+                ) : (
+                    notificationList.map((notification) => {
+                        const target = getNotificationTarget(notification, userRole);
+                        return (
+                            <div
+                                key={notification.id}
+                                className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
+                                onClick={() => handleNotificationClick(notification)}
+                                style={{
+                                    cursor: target ? "pointer" : "default",
+                                }}
+                            >
+                                {notification.title && (
+                                    <h4 className="notification-title">{toText(notification.title)}</h4>
+                                )}
+                                <p className="notification-message">{toText(notification.message, "No details available")}</p>
+                                <span className="notification-time">
+                                    {formatTime(notification.createdAt || notification.time)}
+                                </span>
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+        </div>
     );
 };
 

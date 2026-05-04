@@ -8,6 +8,18 @@ import {
 import { Modal } from "../../../../components/Modal/Modal";
 import "./style.css";
 
+const toText = (value, fallback = "") => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
+
 export const RequestCard = ({
   selectedRequestId = null,
   requestFocusNonce = null,
@@ -45,12 +57,11 @@ export const RequestCard = ({
 
         // Filter requests based on role
         // ADMIN and STAFF see all requests, others see only their own
-        const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
+        const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
           ? filteredRequests
           : filteredRequests.filter(
               (req) => {
                 const match = req.userId === user.userId || req.userId === user.id;
-                console.log(`Request ${req.id}: userId=${req.userId}, user.userId=${user.userId}, user.id=${user.id}, match=${match}`);
                 return match;
               }
             );
@@ -136,7 +147,7 @@ export const RequestCard = ({
       const filteredRequests = requestsArray.filter(
         (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
-      const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
+      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
         ? filteredRequests
         : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
       setRequests(roleFilteredRequests.slice(0, 5));
@@ -177,7 +188,7 @@ export const RequestCard = ({
       const filteredRequests = requestsArray.filter(
         (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
       );
-      const roleFilteredRequests = ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase())
+      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
         ? filteredRequests
         : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
       setRequests(roleFilteredRequests.slice(0, 5));
@@ -220,7 +231,7 @@ export const RequestCard = ({
       <div className="request-card">
         <div className="request-card-header">
           <h2 className="request-card-title">
-            {['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
+            {['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) ? 'Recent Requests' : 'My Requests'}
           </h2>
         </div>
 
@@ -246,10 +257,10 @@ export const RequestCard = ({
                 >
                   <div className="table-cell request-id-col">{request.id}</div>
                   <div className="table-cell faculty-name-col">
-                    {request.user?.name || "N/A"}
+                    {toText(request.user?.name, "N/A")}
                   </div>
                   <div className="table-cell file-name-col">
-                    {request.title}
+                    {toText(request.title, "Untitled request")}
                   </div>
                   <div className="table-cell copy-type-col">
                     {isSoftCopy(request.description)
@@ -261,7 +272,7 @@ export const RequestCard = ({
                   </div>
                   <div className="table-cell status-col">
                     {request.status === "PENDING" &&
-                    ['ADMIN', 'STAFF', 'FACULTY'].includes(user?.role?.toUpperCase()) ? (
+                    ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase()) ? (
                       <div className="action-buttons">
                         <button
                           className="approve-btn"
@@ -325,7 +336,7 @@ export const RequestCard = ({
             <div className="file-info">
               <div className="file-info-row">
                 <span className="file-info-label">File Name:</span>
-                <span className="file-info-value">{selectedRequest.title}</span>
+                <span className="file-info-value">{toText(selectedRequest.title, "Untitled request")}</span>
               </div>
               <div className="file-info-row">
                 <span className="file-info-label">Request ID:</span>
@@ -399,19 +410,19 @@ export const RequestCard = ({
             <div className="details-row">
               <span className="file-info-label">Name:</span>
               <span className="file-info-value">
-                {selectedRequestForDetails.user?.name || "N/A"}
+                {toText(selectedRequestForDetails.user?.name, "N/A")}
               </span>
             </div>
             <div className="details-row">
               <span className="file-info-label">Department:</span>
               <span className="file-info-value">
-                {selectedRequestForDetails.user?.department || "N/A"}
+                {toText(selectedRequestForDetails.user?.department, "N/A")}
               </span>
             </div>
             <div className="details-row">
               <span className="file-info-label">File Name:</span>
               <span className="file-info-value">
-                {selectedRequestForDetails.title}
+                {toText(selectedRequestForDetails.title, "Untitled request")}
               </span>
             </div>
             <div className="details-row">

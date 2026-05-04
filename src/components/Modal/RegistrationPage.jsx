@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendRegistrationConfirmationEmail } from "../../utils/email";
 import { sanitizeData } from "../../utils/sanitization";
+import { notificationsAPI } from "../../services/api";
 import "./RegistrationPage.css";
 
 export const RegistrationPage = ({ onClose }) => {
@@ -34,7 +35,6 @@ export const RegistrationPage = ({ onClose }) => {
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-
     if (!formData.pupId) {
       newErrors.pupId = "PUP ID is required";
     } else if (!/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.pupId)) {
@@ -165,6 +165,19 @@ export const RegistrationPage = ({ onClose }) => {
           toName: formData.name,
         });
 
+        // Notify all admin/staff users that a new registration is pending their review
+        notificationsAPI
+          .notifyAdmins({
+            title: "New User Registration",
+            message: `${formData.name} (${formData.role}) has registered and is awaiting approval.`,
+            type: "info",
+            link: "/users",
+            read: false,
+          })
+          .catch((err) =>
+            console.error("Failed to send admin registration notification:", err)
+          );
+
         setTimeout(() => {
           onClose();
         }, 3000);
@@ -187,7 +200,7 @@ export const RegistrationPage = ({ onClose }) => {
     "Mechanical Engineering",
     "Computer Engineering",
     "Electrical Engineering",
-    "Railway Engineering",
+    "Railway Engineering Management",
   ];
 
   return (
@@ -252,7 +265,7 @@ export const RegistrationPage = ({ onClose }) => {
           </div>
 
           <div className="form-group full-width">
-            <label htmlFor="contactNumber">Contact Number</label>
+            <label htmlFor="contactNumber">Contact Number (Optional)</label>
             <input
               type="tel"
               id="contactNumber"
@@ -296,7 +309,6 @@ export const RegistrationPage = ({ onClose }) => {
               </option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="Other">Other</option>
             </select>
             {errors.gender && (
               <span className="error-text">{errors.gender}</span>

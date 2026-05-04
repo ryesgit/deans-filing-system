@@ -38,7 +38,6 @@ export const Modal = ({
         )}
         <div className="modal-body">{children}</div>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 };

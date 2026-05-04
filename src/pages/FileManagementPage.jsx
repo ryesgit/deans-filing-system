@@ -8,6 +8,18 @@ import { RequestCard } from "../DeptHeadPage/DashboardPage/sections/RequestCard/
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { filesAPI, categoriesAPI } from "../services/api";
 
+const toText = (value, fallback = "") => {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+    }
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return fallback;
+    }
+};
+
 // Helper functions for file details localStorage persistence
 const getFileDetailsMap = () => {
     try {
@@ -59,7 +71,7 @@ const departments = [
     "Mechanical Engineering",
     "Computer Engineering",
     "Electrical Engineering",
-    "Railway Engineering",
+    "Railway Engineering Management",
 ];
 
 // Helper to get archived file IDs from localStorage
@@ -718,9 +730,9 @@ export const FileManagementPage = () => {
                                         alt="Folder icon"
                                         src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/folder-01-icon.svg"
                                     />
-                                    <div className="text-wrapper-27">{folder.name}</div>
+                                    <div className="text-wrapper-27">{toText(folder.name, "Unnamed folder")}</div>
                                     <div className="text-wrapper-28">
-                                        {folder.files ? filterArchivedFiles(folder.files).length : (folder.fileCount || 0)} files
+                                        {toText(folder.files ? filterArchivedFiles(folder.files).length : (folder.fileCount || 0), 0)} files
                                     </div>
                                 </div>
                             ))}
@@ -764,20 +776,20 @@ export const FileManagementPage = () => {
                                 <div className="files-list-content">
                                     {filterArchivedFiles(selectedFolder.files).map((file) => (
                                         <div key={file.id} className="file-row">
-                                            <div data-label="File ID">{file.id}</div>
+                                            <div data-label="File ID">{toText(file.id, "N/A")}</div>
                                             <div data-label="File Name">
                                                 <img
                                                     className="file-icon-cell"
                                                     alt="File icon"
                                                     src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/file-icon-05.svg"
                                                 />
-                                                {file.filename || file.name || 'N/A'}
+                                                {toText(file.filename || file.name, 'N/A')}
                                             </div>
                                             <div data-label="Date Added">
                                                 {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : (file.dateAdded || 'N/A')}
                                             </div>
-                                            <div data-label="Department">{file.user?.department || file.department || 'N/A'}</div>
-                                            <div data-label="Category">{file.category?.name || file.category || 'N/A'}</div>
+                                            <div data-label="Department">{toText(file.user?.department || file.department, 'N/A')}</div>
+                                            <div data-label="Category">{toText(file.category?.name || file.category, 'N/A')}</div>
                                             <div data-label="Actions" className="file-actions">
                                                 <button
                                                     className="file-action-btn view"

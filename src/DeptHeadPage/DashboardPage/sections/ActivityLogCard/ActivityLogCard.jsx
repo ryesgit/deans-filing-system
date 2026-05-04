@@ -3,6 +3,18 @@ import { statsAPI } from "../../../../services/api";
 import { API_BASE_URL } from "../../../../config/apiBaseUrl";
 import "./style.css";
 
+const toText = (value, fallback = "") => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
+
 const getInitials = (name) => {
   if (!name) return "?";
   const parts = name.trim().split(/\s+/);
@@ -100,16 +112,16 @@ export const ActivityLogCard = () => {
               <div className="text-content">
                 <p className="p">
                   <span className="span">
-                    {activity.userName} {formatActivityType(activity.type)}{" "}
+                    {toText(activity.userName, "Unknown user")} {toText(formatActivityType(activity.type), "did something")}{" "}
                   </span>
-                  <span className="text-wrapper-27">{activity.filename}</span>
+                  <span className="text-wrapper-27">{toText(activity.filename, "Unnamed file")}</span>
                 </p>
 
                 <p className="due-oct">
                   <span className="text-wrapper-28">Time:</span>
                   <span className="text-wrapper-29">
                     {" "}
-                    {new Date(activity.timestamp).toLocaleString()}
+                    {activity.timestamp ? new Date(activity.timestamp).toLocaleString() : "N/A"}
                   </span>
                 </p>
               </div>

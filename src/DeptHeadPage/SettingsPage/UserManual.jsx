@@ -114,12 +114,74 @@ const AdminManual = () => (
 
     <details className="collapsible-section">
       <summary className="collapsible-title">
+        How to Manage File Requests
+      </summary>
+      <div className="collapsible-content">
+        <p>
+          Administrators oversee the lifecycle of file borrowing and access
+          requests.
+        </p>
+        <ul>
+          <li>
+            <strong>Review Pending Requests:</strong> On the{" "}
+            <strong>Dashboard</strong>, the <strong>Recent Requests</strong>{" "}
+            table displays all active requests.
+          </li>
+          <li>
+            <strong>Approve or Decline:</strong> Review the purpose and copy
+            type. Click <strong>Approve</strong> to grant access or{" "}
+            <strong>Decline</strong> if the request is invalid. When declining,
+            you will be asked to provide a reason for the user's notification.
+          </li>
+          <li>
+            <strong>Process Borrowing:</strong> For <strong>Original Copy</strong>{" "}
+            requests, use the user's <strong>QR Code</strong> to verify their
+            identity during pickup and return. This ensures real-time tracking
+            of physical documents.
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details className="collapsible-section">
+      <summary className="collapsible-title">
+        How to Manage Document Validity and Archives
+      </summary>
+      <div className="collapsible-content">
+        <p>
+          Maintaining the repository involves tracking document validity and
+          properly archiving old records.
+        </p>
+        <ul>
+          <li>
+            <strong>Validity Tracking:</strong> In the{" "}
+            <strong>Reports & Logs</strong> page, the{" "}
+            <strong>Validity Due</strong> tab highlights files that are expiring
+            soon or have already expired.
+          </li>
+          <li>
+            <strong>Archive Records:</strong> When a document is no longer
+            valid, click <strong>Archive</strong>. This hides the file from the
+            general system and moves it to the <strong>Archives</strong> tab.
+            Always remember to remove the physical copy from the cabinet as
+            prompted.
+          </li>
+          <li>
+            <strong>Export Reports:</strong> Generate CSV reports for validity
+            data or archived records to maintain official audit trails.
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details className="collapsible-section">
+      <summary className="collapsible-title">
         How to Manage Your Account
       </summary>
       <div className="collapsible-content">
         <p>
           The <strong>Settings</strong> page allows you to manage your personal
-          profile.
+          profile and security.
         </p>
         <ul>
           <li>
@@ -128,7 +190,7 @@ const AdminManual = () => (
           </li>
           <li>
             <strong>Reset Password:</strong> Use the "Reset Password" button to
-            change your account password for security.
+            update your security credentials.
           </li>
         </ul>
       </div>
@@ -205,12 +267,68 @@ const StaffManual = () => (
 
     <details className="collapsible-section">
       <summary className="collapsible-title">
+        How to Manage File Requests
+      </summary>
+      <div className="collapsible-content">
+        <p>
+          Staff members play a key role in processing document access and
+          borrowing requests.
+        </p>
+        <ul>
+          <li>
+            <strong>Dashboard Requests:</strong> Navigate to the{" "}
+            <strong>Dashboard</strong> to see the{" "}
+            <strong>Recent Requests</strong> list.
+          </li>
+          <li>
+            <strong>Take Action:</strong> Review the details of each request.
+            Click <strong>Approve</strong> to authorize the request or{" "}
+            <strong>Decline</strong> if necessary, providing a clear reason for
+            the user.
+          </li>
+          <li>
+            <strong>QR Code Scanning:</strong> When a user arrives to borrow or
+            return a physical document, scan their personal{" "}
+            <strong>QR Code</strong> to accurately update the system's borrowing
+            logs.
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details className="collapsible-section">
+      <summary className="collapsible-title">
+        Document Validity and Archives
+      </summary>
+      <div className="collapsible-content">
+        <p>
+          Assist in maintaining the integrity of the digital repository by
+          monitoring file validity.
+        </p>
+        <ul>
+          <li>
+            <strong>Validity Checks:</strong> Use the{" "}
+            <strong>Reports & Logs</strong> page to view the{" "}
+            <strong>Validity Due</strong> tab. Monitor for "Expired" or "Due
+            Soon" statuses.
+          </li>
+          <li>
+            <strong>Archiving:</strong> Help keep the file list clean by
+            archiving expired documents. Ensure that physical documents are
+            accounted for when archived.
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details className="collapsible-section">
+      <summary className="collapsible-title">
         How to Manage Your Account
       </summary>
       <div className="collapsible-content">
         <p>
           The <strong>Settings</strong> page is where you can manage your
-          personal profile.
+          personal profile and account security.
         </p>
         <ul>
           <li>
@@ -245,25 +363,34 @@ const FacultyManual = () => (
         </p>
         <ol>
           <li>
-            <strong>Find Your Document:</strong> Use the{" "}
-            <strong>Search for a file...</strong> input to locate the document
-            you need.
+            <strong>Locate Your Document:</strong> Use the{" "}
+            <strong>"Search for a file..."</strong> input to find the specific
+            document you need.
           </li>
           <li>
-            <strong>Complete the Form:</strong> Fill in the purpose of your
-            request. The department and category fields will often auto-fill
-            when you select a file.
+            <strong>Complete the Form:</strong> Briefly state the{" "}
+            <strong>Purpose</strong> of your request. The department and
+            category fields will automatically populate once a file is selected.
           </li>
           <li>
-            <strong>Select Copy Type:</strong> Choose between a{" "}
-            <strong>Soft Copy</strong> (digital PDF) or an{" "}
-            <strong>Original Copy</strong> (physical document). For original
-            copies, you must also specify a return date and priority level.
+            <strong>Select Copy Type:</strong>
+            <ul>
+              <li>
+                <strong>Soft Copy (Digital PDF):</strong> Choose this for
+                instant digital access upon approval.
+              </li>
+              <li>
+                <strong>Original Copy (Physical Document):</strong> Select this
+                to borrow the physical file. You must also specify a{" "}
+                <strong>Planned Return Date</strong> and a{" "}
+                <strong>Priority Level</strong>.
+              </li>
+            </ul>
           </li>
           <li>
-            <strong>Submit and Track:</strong> Click the <strong>Submit</strong>{" "}
-            button. You can monitor the progress of your request in the{" "}
-            <strong>Request Status</strong> table on the same page.
+            <strong>Submit and Track:</strong> Click <strong>Submit</strong>.
+            You can monitor the progress of your request (Pending, Approved, or
+            Declined) in the <strong>Request Status</strong> table below.
           </li>
         </ol>
         <div className="manual-callout callout-tip">
@@ -285,24 +412,37 @@ const FacultyManual = () => (
       </summary>
       <div className="collapsible-content">
         <p>
-          Your personal QR code, found on the <strong>Request a File</strong>{" "}
-          page, is your digital key for physical items. An administrator will
-          scan it to quickly and securely log when you borrow or return an{" "}
-          <strong>Original Copy</strong>, ensuring all transactions are
-          accurately tracked.
+          Your personal QR code, located on the{" "}
+          <strong>Request a File</strong> page, serves as your unique digital
+          identifier for physical items. When you pick up or return an{" "}
+          <strong>Original Copy</strong>, an Administrator or Staff member will
+          scan this code to verify your identity and update the system records
+          instantly, ensuring all transactions are accurately tracked.
         </p>
       </div>
     </details>
 
     <details className="collapsible-section">
-      <summary className="collapsible-title">How to View Your Reports</summary>
+      <summary className="collapsible-title">How to View Your History</summary>
       <div className="collapsible-content">
         <p>
           The <strong>Reports & Logs</strong> page contains a complete history
-          of your activity. You can filter your transactions by type (Request,
-          Borrowed, Returned) and export the data as a CSV file for your
-          records.
+          of your personal activity.
         </p>
+        <ul>
+          <li>
+            <strong>Track Transactions:</strong> View all your requests,
+            including their current status and history.
+          </li>
+          <li>
+            <strong>Filter by Type:</strong> Easily sort through your borrowed
+            items, returned files, and general requests.
+          </li>
+          <li>
+            <strong>Export Data:</strong> Use the <strong>Export</strong> button
+            to download your activity log as a CSV file for personal record-keeping.
+          </li>
+        </ul>
       </div>
     </details>
 
@@ -348,35 +488,37 @@ const StudentManual = () => (
       <div className="collapsible-content">
         <p>
           Navigate to the <strong>Request a File</strong> page to get started.
-          The process is simple:
+          The process is designed to be straightforward:
         </p>
         <ol>
           <li>
-            <strong>Find the File:</strong> Use the{" "}
-            <strong>Search for a file...</strong> bar to find the document you
-            need.
+            <strong>Locate the File:</strong> Use the{" "}
+            <strong>"Search for a file..."</strong> bar to find the specific
+            document you need.
           </li>
           <li>
-            <strong>Fill Out the Form:</strong> Clearly state the{" "}
-            <strong>Purpose</strong> of your request.
+            <strong>Provide a Purpose:</strong> Clearly state the{" "}
+            <strong>Purpose</strong> of your request in the provided field.
           </li>
           <li>
             <strong>Choose Your Copy Type:</strong>
             <ul>
               <li>
-                Select <strong>Soft Copy</strong> for digital access. If
-                approved, you can view the PDF directly from the status table.
+                <strong>Soft Copy (Digital PDF):</strong> Select this for
+                instant digital access. Once approved, you can view the PDF
+                directly from the <strong>Request Status</strong> table.
               </li>
               <li>
-                Select <strong>Original Copy</strong> to borrow the physical
-                item. You must also set a planned <strong>Return Date</strong>.
+                <strong>Original Copy (Physical Document):</strong> Select this
+                to borrow the physical item. You must set a planned{" "}
+                <strong>Return Date</strong> and <strong>Priority Level</strong>.
               </li>
             </ul>
           </li>
           <li>
             <strong>Submit and Monitor:</strong> Click <strong>Submit</strong>{" "}
-            and watch the <strong>Request Status</strong> table for updates on
-            your request.
+            and track the <strong>Request Status</strong> table for real-time
+            updates on your request.
           </li>
         </ol>
         <div className="manual-callout callout-important">
@@ -385,7 +527,8 @@ const StudentManual = () => (
           </div>
           <p>
             You may only borrow <strong>one Original Copy</strong> at a time.
-            Please return your current item before requesting a new one.
+            Please return your current item before requesting a new physical
+            document.
           </p>
         </div>
       </div>
@@ -395,9 +538,11 @@ const StudentManual = () => (
       <summary className="collapsible-title">Your Personal QR Code</summary>
       <div className="collapsible-content">
         <p>
-          The QR code on the <strong>Request a File</strong> page is your unique
-          ID for borrowing physical documents. An administrator will scan it
-          during pickup and return to ensure your account is updated correctly.
+          Your personal QR code, found on the <strong>Request a File</strong>{" "}
+          page, is your unique digital identifier for borrowing physical
+          documents. An Administrator will scan this code during pickup and
+          return to verify your account and ensure your borrowing history is
+          accurately updated.
         </p>
       </div>
     </details>
@@ -407,9 +552,22 @@ const StudentManual = () => (
       <div className="collapsible-content">
         <p>
           Go to the <strong>Reports & Logs</strong> page to see a full history
-          of your file requests, borrowed items, and returns. You can also
-          export this log to a CSV file.
+          of your file requests, borrowed items, and returns.
         </p>
+        <ul>
+          <li>
+            <strong>Monitor Requests:</strong> See if your requests are pending,
+            approved, or declined.
+          </li>
+          <li>
+            <strong>Borrowing History:</strong> Keep track of what you've
+            borrowed and when you've returned them.
+          </li>
+          <li>
+            <strong>Export to CSV:</strong> Download your logs anytime for your
+            academic records.
+          </li>
+        </ul>
       </div>
     </details>
 
