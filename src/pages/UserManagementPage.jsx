@@ -846,12 +846,12 @@ const UserFormModal = ({
 
         if (!formData.idNumber?.trim()) {
             // Optional
-        } else if (!/^\d{4}-\d{4}-MN-\d{1}$/.test(formData.idNumber.trim())) {
-            newErrors.idNumber = "ID Number must follow the format YYYY-XXXX-MN-X";
+        } else if (!/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.idNumber.trim())) {
+            newErrors.idNumber = "ID Number must follow the format YYYY-XXXX(X)-MN-X";
         }
 
-        if (mode === "add" && formData.username.trim() && !/^\d{4}-\d{4}-MN-\d{1}$/.test(formData.username.trim())) {
-            newErrors.username = "User ID must follow the format YYYY-XXXX-MN-X";
+        if (mode === "add" && formData.username.trim() && !/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.username.trim())) {
+            newErrors.username = "User ID must follow the format YYYY-XXXX(X)-MN-X";
         }
 
         if (!formData.role) newErrors.role = "Role is required";
