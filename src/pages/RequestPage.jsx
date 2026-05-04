@@ -753,62 +753,50 @@ const QRCard = ({
 };
 
 const RequestCard = ({
-  requests = [],
-  onRequestCancelled,
-  selectedRequestId = null,
-  requestFocusNonce = null,
+    requests = [],
+    onRequestCancelled,
+    selectedRequestId = null,
+    requestFocusNonce = null,
 }) => {
-  const [showPDFModal, setShowPDFModal] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedRequestForDetails, setSelectedRequestForDetails] =
-    useState(null);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [requestToCancel, setRequestToCancel] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const { user } = useAuth();
+    const [showPDFModal, setShowPDFModal] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState(null);
+    const [pdfLoading, setPdfLoading] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedRequestForDetails, setSelectedRequestForDetails] = useState(null);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [requestToCancel, setRequestToCancel] = useState(null);
+    const [openMenuId, setOpenMenuId] = useState(null);
+    const { user } = useAuth();
 
-  // Check if request is for soft copy based on description
-  const isSoftCopy = (description) => {
-    return description?.includes("Soft Copy Only");
-  };
-
-  // Handle View PDF click
-  const handleViewPDF = async (request) => {
-    if (!request.fileId) {
-      alert("File not available. Please contact support.");
-      return;
-    }
-
-    setSelectedRequest(request);
-    setShowPDFModal(true);
-    setPdfLoading(true);
-    setPdfUrl(null);
-
-    try {
-      const response = await filesAPI.download(request.fileId);
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      setPdfUrl(url);
-    } catch (error) {
-      console.error("Failed to load PDF:", error);
-      alert("Failed to load PDF. Please try again or contact support.");
-    } finally {
-      setPdfLoading(false);
-    }
-  };
-
-  // Clean up PDF URL when modal closes
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        window.URL.revokeObjectURL(pdfUrl);
-      }
+    const isSoftCopy = (description) => {
+        return description?.includes("Soft Copy Only");
     };
 
-    // Clean up PDF URL when modal closes
+    const handleViewPDF = async (request) => {
+        if (!request.fileId) {
+            alert("File not available. Please contact support.");
+            return;
+        }
+
+        setSelectedRequest(request);
+        setShowPDFModal(true);
+        setPdfLoading(true);
+        setPdfUrl(null);
+
+        try {
+            const response = await filesAPI.download(request.fileId);
+            const blob = new Blob([response.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            setPdfUrl(url);
+        } catch (error) {
+            console.error("Failed to load PDF:", error);
+            alert("Failed to load PDF. Please try again or contact support.");
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     useEffect(() => {
         return () => {
             if (pdfUrl) {
@@ -818,8 +806,8 @@ const RequestCard = ({
     }, [pdfUrl]);
 
     useEffect(() => {
-        const handleClickOutside = () => {
-            if (openMenuId) {
+        const handleClickOutside = (event) => {
+            if (openMenuId && !event.target.closest(".three-dot-menu")) {
                 setOpenMenuId(null);
             }
         };
@@ -827,6 +815,21 @@ const RequestCard = ({
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, [openMenuId]);
+
+    useEffect(() => {
+        if (selectedRequestId === null || selectedRequestId === undefined) {
+            return;
+        }
+
+        const matchedRequest = requests.find(
+            (request) => String(request.id) === String(selectedRequestId)
+        );
+
+        if (matchedRequest) {
+            setSelectedRequestForDetails(matchedRequest);
+            setShowDetailsModal(true);
+        }
+    }, [requests, selectedRequestId, requestFocusNonce]);
 
     const handleShowDetails = (request, e) => {
         if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
@@ -849,73 +852,20 @@ const RequestCard = ({
         setShowCancelModal(true);
     };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [openMenuId]);
+    const handleConfirmCancel = async () => {
+        if (!requestToCancel) return;
 
-  useEffect(() => {
-    if (selectedRequestId === null || selectedRequestId === undefined) {
-      return;
-    }
-
-    const matchedRequest = requests.find(
-      (request) => String(request.id) === String(selectedRequestId)
-    );
-
-    if (matchedRequest) {
-      setSelectedRequestForDetails(matchedRequest);
-      setShowDetailsModal(true);
-    }
-  }, [requests, selectedRequestId, requestFocusNonce]);
-
-  const handleShowDetails = (request, e) => {
-    if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
-      return;
-    }
-
-    setSelectedRequestForDetails(request);
-    setShowDetailsModal(true);
-  };
-
-  const toggleMenu = (id, e) => {
-    e.stopPropagation();
-    setOpenMenuId(openMenuId === id ? null : id);
-  };
-
-  const handleCancelClick = (request, e) => {
-    e.stopPropagation();
-    setOpenMenuId(null);
-    setRequestToCancel(request);
-    setShowCancelModal(true);
-  };
-
-  const handleConfirmCancel = async () => {
-    if (!requestToCancel) return;
-
-    try {
-      await requestsAPI.delete(requestToCancel.id);
-      setShowCancelModal(false);
-      setRequestToCancel(null);
-      if (onRequestCancelled) {
-        onRequestCancelled(requestToCancel.id);
-      }
-    } catch (error) {
-      console.error("Failed to cancel request:", error);
-      alert("Failed to cancel request. Please try again.");
-    }
-  };
-
-  const getStatusClass = (status) => {
-    const statusMap = {
-      PENDING: "status-pending",
-      APPROVED: "status-approved",
-      DECLINED: "status-declined",
-      CANCELLED: "status-cancelled",
-      Pending: "status-pending",
-      Approved: "status-approved",
-      Borrowed: "status-borrowed",
-      Returned: "status-returned",
-      Declined: "status-declined",
+        try {
+            await requestsAPI.delete(requestToCancel.id);
+            setShowCancelModal(false);
+            setRequestToCancel(null);
+            if (onRequestCancelled) {
+                onRequestCancelled(requestToCancel.id);
+            }
+        } catch (error) {
+            console.error("Failed to cancel request:", error);
+            alert("Failed to cancel request. Please try again.");
+        }
     };
 
     const getStatusClass = (status) => {
@@ -924,10 +874,10 @@ const RequestCard = ({
             APPROVED: "status-approved",
             DECLINED: "status-declined",
             CANCELLED: "status-cancelled",
-            Pending: "status-pending",
-            Approved: "status-approved",
             Borrowed: "status-borrowed",
             Returned: "status-returned",
+            Pending: "status-pending",
+            Approved: "status-approved",
             Declined: "status-declined",
         };
         return statusMap[status] || "status-pending";
@@ -939,8 +889,10 @@ const RequestCard = ({
             APPROVED: "Approved",
             DECLINED: "Declined",
             CANCELLED: "Cancelled",
+            BORROWED: "Borrowed",
+            RETURNED: "Returned",
         };
-        return labelMap[status] || status;
+        return labelMap[status?.toUpperCase()] || status;
     };
 
     return (
@@ -985,7 +937,10 @@ const RequestCard = ({
                                                 user?.role !== "STAFF" ? (
                                                 <span
                                                     className="status-badge status-view-pdf"
-                                                    onClick={() => handleViewPDF(request)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewPDF(request);
+                                                    }}
                                                     title="Click to view PDF"
                                                     style={{ cursor: "pointer" }}
                                                 >
@@ -1108,22 +1063,14 @@ const RequestCard = ({
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    minHeight: "600px",
+                                    minHeight: "400px",
                                     border: "1px solid #e0e0e0",
                                     borderRadius: "8px",
                                     marginTop: "20px",
                                     backgroundColor: "#f5f5f5",
                                 }}
                             >
-                                <p
-                                    style={{
-                                        fontFamily: "Poppins, Helvetica",
-                                        fontSize: "16px",
-                                        color: "#666",
-                                    }}
-                                >
-                                    Loading PDF...
-                                </p>
+                                <p style={{ color: "#666" }}>Loading PDF...</p>
                             </div>
                         )}
                         {!pdfLoading && pdfUrl && (
@@ -1179,9 +1126,9 @@ const RequestCard = ({
                                 {selectedRequestForDetails.dateRequested}
                             </span>
                         </div>
-                        {/* Expected Return Date — parsed from description */}
                         {(() => {
-                            const returnDateMatch = selectedRequestForDetails.description?.match(/Return Date:\s*(.+)/);
+                            const desc = selectedRequestForDetails.description || "";
+                            const returnDateMatch = desc.match(/Return Date:\s*(.+)/);
                             const expectedDate = selectedRequestForDetails.returnDate || selectedRequestForDetails.returnDue || (returnDateMatch ? returnDateMatch[1].trim() : null);
                             if (expectedDate && expectedDate !== "N/A") {
                                 return (
@@ -1195,14 +1142,11 @@ const RequestCard = ({
                             }
                             return null;
                         })()}
-                        {/* Actual Returned Date — from returnedAt field */}
                         <div className="details-row">
                             <span className="file-info-label">Returned Date:</span>
                             <span className="file-info-value">
                                 {selectedRequestForDetails.returnedAt
-                                    ? new Date(
-                                        selectedRequestForDetails.returnedAt
-                                    ).toLocaleDateString()
+                                    ? new Date(selectedRequestForDetails.returnedAt).toLocaleDateString()
                                     : "N/A"}
                             </span>
                         </div>
@@ -1211,22 +1155,12 @@ const RequestCard = ({
                             <span className="file-info-value purpose">
                                 {(() => {
                                     const desc = selectedRequestForDetails.description || "No description";
-                                    // Extract only the actual purpose, stripping redundant metadata
                                     const purposeMatch = desc.match(/Purpose:\s*(.+)/);
-                                    if (purposeMatch) {
-                                        return purposeMatch[1].trim();
-                                    }
-                                    return desc
-                                        .split('\n')
-                                        .filter(line => {
-                                            const trimmed = line.trim();
-                                            return !trimmed.startsWith('Department:') &&
-                                                   !trimmed.startsWith('Category:') &&
-                                                   !trimmed.startsWith('Copy Type:') &&
-                                                   !trimmed.startsWith('Return Date:');
-                                        })
-                                        .join('\n')
-                                        .trim() || "No description";
+                                    if (purposeMatch) return purposeMatch[1].trim();
+                                    return desc.split('\n').filter(line => {
+                                        const t = line.trim();
+                                        return !t.startsWith('Department:') && !t.startsWith('Category:') && !t.startsWith('Copy Type:') && !t.startsWith('Return Date:');
+                                    }).join('\n').trim() || "No description";
                                 })()}
                             </span>
                         </div>
@@ -1263,36 +1197,21 @@ const RequestCard = ({
 };
 
 export const RequestPage = () => {
-  const location = useLocation();
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  const { user: currentUser } = useAuth();
+    const location = useLocation();
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+    const { user: currentUser } = useAuth();
+    const { unreadCount } = useNotifications();
 
-  const { notifications, unreadCount } = useNotifications();
-
-  // Fetch requests from API on mount
-  useEffect(() => {
-    const fetchRequests = async () => {
-      if (!currentUser?.userId && !currentUser?.id) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await requestsAPI.getAll();
-        const requestsData = response.data.requests || response.data;
-
-        if (!Array.isArray(requestsData)) {
-          setRequests([]);
-          return;
-        }
-
-        const filteredRequests = requestsData
-          .filter((req) => req.status !== "CANCELLED")
-          .filter((req) => belongsToUser(req, currentUser));
+    // Fetch requests from API on mount
+    useEffect(() => {
+        const fetchRequests = async () => {
+            if (!currentUser?.userId && !currentUser?.id) {
+                setLoading(false);
+                return;
+            }
 
             try {
                 const response = await requestsAPI.getAll();
@@ -1318,15 +1237,13 @@ export const RequestPage = () => {
                 let filesById = new Map();
                 let allCategories = [];
                 if (hasApprovedOriginal) {
-                    // Always fetch categories for folder details
                     try {
                         const catResponse = await categoriesAPI.getAll();
                         allCategories = catResponse.data?.categories || catResponse.data || [];
                     } catch (error) {
-                        console.error("Failed to fetch categories for file details:", error);
+                        console.error("Failed to fetch categories:", error);
                     }
 
-                    // Fetch all files for lookup when some requests don't have file data
                     const needsFileLookup = filteredRequests.some(
                         (req) =>
                             (req.status === "APPROVED" || req.status === "Approved") &&
@@ -1340,7 +1257,7 @@ export const RequestPage = () => {
                             const allFiles = fileResponse.data.files || fileResponse.data || [];
                             filesById = new Map(allFiles.map((file) => [file.id, file]));
                         } catch (error) {
-                            console.error("Failed to fetch file details for requests:", error);
+                            console.error("Failed to fetch files:", error);
                         }
                     }
                 }
@@ -1350,12 +1267,8 @@ export const RequestPage = () => {
                         const baseRequest = {
                             id: req.id,
                             fileName: req.title,
-                            dateRequested: req.createdAt
-                                ? new Date(req.createdAt).toLocaleDateString()
-                                : "N/A",
-                            returnDue: req.approvedAt
-                                ? new Date(req.approvedAt).toLocaleDateString()
-                                : "N/A",
+                            dateRequested: req.createdAt ? new Date(req.createdAt).toLocaleDateString() : "N/A",
+                            returnDue: req.approvedAt ? new Date(req.approvedAt).toLocaleDateString() : "N/A",
                             status: req.status,
                             copyType: req.type,
                             fileId: req.fileId,
@@ -1366,34 +1279,16 @@ export const RequestPage = () => {
                             returnedAt: req.returnedAt,
                         };
 
-                        const isApprovedOriginal =
-                            (req.status === "APPROVED" || req.status === "Approved") &&
-                            req.description?.includes("Original Copy") &&
-                            req.fileId;
-
-                        if (isApprovedOriginal) {
-                            // If file is missing, look it up
+                        if ((req.status === "APPROVED" || req.status === "Approved") && req.description?.includes("Original Copy") && req.fileId) {
                             if (!baseRequest.file) {
                                 const fileDetails = filesById.get(req.fileId);
-                                if (fileDetails) {
-                                    baseRequest.file = { ...fileDetails };
-                                }
+                                if (fileDetails) baseRequest.file = { ...fileDetails };
                             }
 
-                            // Enrich file with folder/category details
                             if (baseRequest.file && allCategories.length > 0) {
                                 const catId = baseRequest.file.categoryId || baseRequest.file.category?.id;
-                                const catName = typeof baseRequest.file.category === 'string'
-                                    ? baseRequest.file.category
-                                    : baseRequest.file.category?.name;
-
-                                let matchedCategory = null;
-                                if (catId) {
-                                    matchedCategory = allCategories.find((c) => c.id === catId);
-                                }
-                                if (!matchedCategory && catName) {
-                                    matchedCategory = allCategories.find((c) => c.name === catName);
-                                }
+                                const catName = typeof baseRequest.file.category === 'string' ? baseRequest.file.category : baseRequest.file.category?.name;
+                                let matchedCategory = allCategories.find((c) => c.id === catId) || allCategories.find((c) => c.name === catName);
 
                                 if (matchedCategory) {
                                     baseRequest.file.category = matchedCategory;
@@ -1404,7 +1299,6 @@ export const RequestPage = () => {
                                 }
                             }
                         }
-
                         return baseRequest;
                     })
                 );
@@ -1420,22 +1314,16 @@ export const RequestPage = () => {
         fetchRequests();
     }, [currentUser]);
 
-    // Check return dates and send reminder emails when requests load
+    // Send return reminders
     useEffect(() => {
         if (!requests.length || !currentUser) return;
-
-        const REMINDER_DAYS = 1; // Send reminder if due within this many days
+        const REMINDER_DAYS = 1;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         requests.forEach((req) => {
-            // Only check approved original copy requests
-            if (
-                (req.status !== "APPROVED" && req.status !== "Approved") ||
-                !req.description?.includes("Original Copy")
-            ) return;
+            if ((req.status !== "APPROVED" && req.status !== "Approved") || !req.description?.includes("Original Copy")) return;
 
-            // Extract return date from description
             const returnDateMatch = req.description?.match(/Return Date:\s*(.+)/);
             if (!returnDateMatch) return;
 
@@ -1444,34 +1332,22 @@ export const RequestPage = () => {
             returnDate.setHours(0, 0, 0, 0);
 
             const daysLeft = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
-
-            // Only send if within reminder window and not already overdue
             if (daysLeft < 0 || daysLeft > REMINDER_DAYS) return;
 
-            // Check localStorage to avoid sending duplicate reminders (once per day per request)
             const reminderKey = `return_reminder_${req.id}_${returnDate.toISOString().split('T')[0]}_day${daysLeft}`;
             if (localStorage.getItem(reminderKey)) return;
 
-            // Get user email — try multiple possible fields
             const userEmail = currentUser?.email || currentUser?.emailAddress || "";
-            const userName = currentUser?.name || currentUser?.fullName || "User";
-            const fileName = req.fileName || "your borrowed file";
-            const returnDateStr = returnDate.toLocaleDateString("en-US", {
-                year: "numeric", month: "long", day: "numeric"
-            });
-
             if (!userEmail) return;
 
-            // Send reminder and mark as sent
             sendReturnDateReminderEmail({
                 toEmail: userEmail,
-                toName: userName,
-                fileName,
-                returnDate: returnDateStr,
+                toName: currentUser?.name || "User",
+                fileName: req.fileName || "your borrowed file",
+                returnDate: returnDate.toLocaleDateString(),
                 daysLeft,
             }).then(() => {
                 localStorage.setItem(reminderKey, "sent");
-                console.log(`Return reminder sent for request ${req.id}, ${daysLeft} day(s) left`);
             });
         });
     }, [requests, currentUser]);
@@ -1480,12 +1356,8 @@ export const RequestPage = () => {
         const mappedRequest = {
             id: newRequest.id,
             fileName: newRequest.title,
-            dateRequested: newRequest.createdAt
-                ? new Date(newRequest.createdAt).toLocaleDateString()
-                : new Date().toLocaleDateString(),
-            returnDue: newRequest.approvedAt
-                ? new Date(newRequest.approvedAt).toLocaleDateString()
-                : "N/A",
+            dateRequested: new Date().toLocaleDateString(),
+            returnDue: "N/A",
             status: newRequest.status,
             copyType: newRequest.type,
             fileId: newRequest.fileId,
@@ -1499,125 +1371,81 @@ export const RequestPage = () => {
         setRequests((prev) => prev.filter((req) => req.id !== requestId));
     };
 
-    // Helper function to check if request is for original copy
-    const isOriginalCopy = (req) => {
-        return req.description?.includes("Original Copy");
-    };
+    const isOriginalCopy = (req) => req.description?.includes("Original Copy");
 
-    // Get the first approved original copy request with file details
-    const approvedOriginalRequest = requests.find(
-        (req) =>
-            (req.status === "APPROVED" || req.status === "Approved") &&
-            !["COMPLETED", "Completed"].includes(req.status) &&
-            isOriginalCopy(req)
-    );
-
-    // Extract assigned file details
     const buildAssignedFile = () => {
-        if (!approvedOriginalRequest?.file && !approvedOriginalRequest?.fileId) return null;
+        const approvedOriginalRequest = requests.find(req => (req.status === "APPROVED" || req.status === "Approved") && !["COMPLETED", "Completed"].includes(req.status) && isOriginalCopy(req));
+        if (!approvedOriginalRequest) return null;
 
         const file = approvedOriginalRequest.file || {};
-        const desc = approvedOriginalRequest.description || "";
-
-        // Extract return date from description (format: "Return Date: YYYY-MM-DD" or "Return Date: MM/DD/YYYY")
-        const returnDateMatch = desc.match(/Return Date:\s*(.+)/);
-        const returnDate = returnDateMatch ? returnDateMatch[1].trim() : approvedOriginalRequest.returnDue || "N/A";
-
-        // Try multiple property names for folder details
-        const folderName = file.folderName || file.category?.name || file.categoryName || "N/A";
-        const folderNumber = file.folderNumber || file.category?.folderNumber || "N/A";
-        const row = file.rowPosition || file.row || file.category?.row || "N/A";
-        const column = file.columnPosition || file.column || file.category?.column || "N/A";
-        const fileName = file.filename || file.name || approvedOriginalRequest.fileName || "N/A";
-
+        const returnDateMatch = (approvedOriginalRequest.description || "").match(/Return Date:\s*(.+)/);
+        
         return {
-            fileName,
-            folderNumber,
-            folderName,
-            column,
-            row,
-            returnDate,
+            fileName: file.filename || file.name || approvedOriginalRequest.fileName || "N/A",
+            folderNumber: file.folderNumber || file.category?.folderNumber || "N/A",
+            folderName: file.folderName || file.category?.name || "N/A",
+            column: file.columnPosition || file.column || "N/A",
+            row: file.rowPosition || file.row || "N/A",
+            returnDate: returnDateMatch ? returnDateMatch[1].trim() : "N/A",
         };
     };
-  };
 
-  const assignedFile = buildAssignedFile();
+    const assignedFile = buildAssignedFile();
+    const filesAssigned = requests.filter(req => req.status === "APPROVED" && isOriginalCopy(req)).length;
+    const filesToReturn = requests.filter(req => (req.status === "BORROWED" || req.status === "Borrowed") && isOriginalCopy(req)).length;
+    const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
+    
+    const selectedRequestId = location.state?.selectedRequestId ?? null;
+    const requestFocusNonce = location.state?.requestFocusNonce ?? null;
 
-  // Files Assigned: Count only APPROVED original copy requests (not completed/borrowed/returned)
-  const filesAssigned = requests.filter(
-    (req) =>
-      req.status === "APPROVED" &&
-      isOriginalCopy(req)
-  ).length;
+    if (loading) {
+        return <div className="loading-overlay">Loading...</div>;
+    }
 
-  // Files to be Returned: Count only BORROWED original copy requests (checked out but not returned)
-  const filesToReturn = requests.filter(
-    (req) => (req.status === "BORROWED" || req.status === "Borrowed") &&
-      isOriginalCopy(req)
-  ).length;
-
-  // Check if user has any active original file (either assigned or borrowed)
-  const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
-  const selectedRequestId = location.state?.selectedRequestId ?? null;
-  const requestFocusNonce = location.state?.requestFocusNonce ?? null;
-
-  return (
-    <>
-      <SidePanel />
-      <div className="page-content-wrapper">
-        <div className="request-page-main-content request-page">
-          <header className="request-header">
-            <div className="welcome-message">
-              <h1 className="text-wrapper-77">Request a File</h1>
+    return (
+        <>
+            <SidePanel />
+            <div className="page-content-wrapper">
+                <div className="request-page-main-content request-page">
+                    <header className="request-header">
+                        <div className="welcome-message">
+                            <h1 className="text-wrapper-77">Request a File</h1>
+                        </div>
+                        <div className="header-actions">
+                            <div className="search-wrapper">
+                                <GlobalSearch />
+                            </div>
+                            <div className="notification-button-wrapper" onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
+                                <img className="notification-button" alt="Notification button" src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png" />
+                                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+                            </div>
+                        </div>
+                    </header>
+                    <div className="request-page-container">
+                        <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} />
+                        <QRCard 
+                            userName={currentUser?.name || "User"} 
+                            userId={currentUser?.userId || "ID"} 
+                            assignedFile={assignedFile} 
+                            onQRCodeClick={() => setIsQRModalOpen(true)} 
+                        />
+                        <RequestCard 
+                            requests={requests} 
+                            onRequestCancelled={handleRequestCancelled} 
+                            selectedRequestId={selectedRequestId} 
+                            requestFocusNonce={requestFocusNonce} 
+                        />
+                    </div>
+                    <QRModal 
+                        isOpen={isQRModalOpen} 
+                        onClose={() => setIsQRModalOpen(false)} 
+                        qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"} 
+                        userName={currentUser?.name || "User"} 
+                    />
+                    <NotificationDropdown isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+                </div>
             </div>
-            <div className="header-actions">
-              <div className="search-wrapper">
-                <GlobalSearch />
-              </div>
-              <div
-                className="notification-button-wrapper"
-                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              >
-                <img
-                  className="notification-button"
-                  alt="Notification button"
-                  src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
-                />
-                {unreadCount > 0 && (
-                  <span className="notification-badge">{unreadCount}</span>
-                )}
-              </div>
-            </div>
-          </header>
-          <div className="request-page-container">
-            <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} />
-            <QRCard
-              userName={currentUser?.name || "User"}
-              userId={currentUser?.userId || "ID"}
-              assignedFile={assignedFile}
-              onQRCodeClick={() => setIsQRModalOpen(true)}
-            />
-            <RequestCard
-              requests={requests}
-              onRequestCancelled={handleRequestCancelled}
-              selectedRequestId={selectedRequestId}
-              requestFocusNonce={requestFocusNonce}
-            />
-          </div>
-          <QRModal
-            isOpen={isQRModalOpen}
-            onClose={() => setIsQRModalOpen(false)}
-            qrCodeUrl={null}
-            userName={currentUser?.name || "User"}
-            qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
-          />
-          <NotificationDropdown
-            isOpen={isNotificationOpen}
-            onClose={() => setIsNotificationOpen(false)}
-          />
-        </div>
-      </div>
-    </>
-  );
+        </>
+    );
 };
 // End of RequestPage component

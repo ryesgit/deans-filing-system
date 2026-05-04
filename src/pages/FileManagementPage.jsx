@@ -657,25 +657,6 @@ export const FileManagementPage = () => {
                             </div>
                         </div>
                     </div>
-                  )}
-                  <img
-                    className="folder-icon"
-                    alt="Folder icon"
-                    src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/folder-01-icon.svg"
-                  />
-                  <div className="text-wrapper-27">{folder.name}</div>
-                  <div className="text-wrapper-28">
-                    {formatFileCount(
-                      folder.files
-                        ? filterArchivedFiles(folder.files).length
-                        : (folder.fileCount || 0)
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
                     {/* Request Card Section */}
                     <RequestCard />
 

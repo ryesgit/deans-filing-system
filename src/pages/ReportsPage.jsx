@@ -138,47 +138,60 @@ export const ReportsPage = () => {
                         ? foldersResponse.data
                         : [];
 
-                // Build a map of folder ID -> folder name
-                const folderMap = {};
-                allFolders.forEach((folder) => {
-                    folderMap[folder.id] = folder.name;
-                });
+                const validityDue = allFiles
+                    .filter((file) => {
+                        const fileId = String(file.id);
+                        if (archivedIds.includes(fileId)) return false;
+                        const validityDate = validityMap[fileId];
+                        if (validityDate) {
+                            file.validUntil = validityDate;
+                            file.folderName = folderMap[file.categoryId] || folderMap[file.category?.id] || 'N/A';
+                            return true;
+                        }
+                        return false;
+                    })
+                    .sort((a, b) => new Date(a.validUntil) - new Date(b.validUntil));
 
-                // Read validity dates from localStorage (since backend doesn't store them)
-                let validityMap = {};
-                try {
-                    validityMap = JSON.parse(localStorage.getItem('fileValidityMap') || '{}');
-                } catch {
-                    validityMap = {};
-                }
+                setReportsData((prev) => ({
+                    ...prev,
+                    validityDue: validityDue,
+                }));
+            } catch (error) {
+                console.error("Failed to fetch validity files:", error);
+            }
+        };
 
-                // Load archived file IDs from localStorage
-                let archivedIds = [];
-                try {
-                    archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
-                } catch {
-                    archivedIds = [];
-                }
+        fetchReports();
+        fetchValidityFiles();
+    }, [user]);
 
-        setReportsData((prev) => ({
-          ...prev,
-          request: userRequests.filter(
-            (request) => !isBorrowedRequest(request) && !isReturnedRequest(request)
-          ),
-          borrowed: userRequests.filter((request) => isBorrowedRequest(request)),
-          returned: userRequests.filter((request) => isReturnedRequest(request)),
-        }));
-      } catch (error) {
-        console.error("Failed to fetch reports:", error);
-        setReportsData((prev) => ({
-          ...prev,
-          request: [],
-          borrowed: [],
-          returned: [],
-        }));
-      } finally {
-        setLoading(false);
-      }
+    const handleExport = () => {
+        const data = reportsData[activeTab];
+        if (!data || data.length === 0) {
+            alert("No data to export");
+            return;
+        }
+
+        const headers = activeTab === "validityDue" 
+            ? ["File ID", "File Name", "Folder", "Department", "Valid Until"]
+            : ["Request ID", "File Name", "Date", "Status"];
+
+        const csvRows = [headers.join(",")];
+
+        data.forEach((row) => {
+            const rowData = activeTab === "validityDue"
+                ? [row.id, row.filename || row.name, row.folderName, row.department || "N/A", row.validUntil]
+                : [row.id, getFileName(row), new Date(getRequestDate(activeTab, row)).toLocaleDateString(), row.status];
+            csvRows.push(rowData.map(v => `"${v}"`).join(","));
+        });
+
+        const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `reports_${activeTab}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
     const handleShowDetails = (transaction) => {
