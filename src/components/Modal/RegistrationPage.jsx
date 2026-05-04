@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendRegistrationConfirmationEmail } from "../../utils/email";
+import { sanitizeData } from "../../utils/sanitization";
 import "./RegistrationPage.css";
 
 export const RegistrationPage = ({ onClose }) => {
@@ -22,13 +23,24 @@ export const RegistrationPage = ({ onClose }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.name) {
+      newErrors.name = "Name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      newErrors.name = "Name must contain letters only";
+    }
+
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-    if (!formData.pupId) newErrors.pupId = "PUP ID is required";
+
+    if (!formData.pupId) {
+      newErrors.pupId = "PUP ID is required";
+    } else if (!/^\d{4}-\d{5}$/.test(formData.pupId)) {
+      newErrors.pupId = "PUP ID must follow the format YYYY-XXXXX";
+    }
+
     if (!formData.contactNumber) {
       newErrors.contactNumber = "Contact Number is required";
     } else if (
@@ -37,7 +49,28 @@ export const RegistrationPage = ({ onClose }) => {
       newErrors.contactNumber =
         "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
     }
-    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of Birth is required";
+    } else {
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      
+      if (birthDate > today) {
+        newErrors.dob = "Date of Birth cannot be in the future";
+      } else {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 16) {
+          newErrors.dob = "User must be at least 16 years old";
+        }
+      }
+    }
+
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
@@ -107,7 +140,7 @@ export const RegistrationPage = ({ onClose }) => {
 
     setIsSubmitting(true);
 
-    const registrationData = {
+    const registrationData = sanitizeData({
       userId: formData.pupId,
       name: formData.name,
       email: formData.email,
@@ -117,7 +150,7 @@ export const RegistrationPage = ({ onClose }) => {
       gender: formData.gender,
       role: formData.role,
       department: formData.department,
-    };
+    });
 
     const result = await register(registrationData);
     setIsSubmitting(false);

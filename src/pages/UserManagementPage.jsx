@@ -6,6 +6,7 @@ import { useNotifications } from "../components/NotificationDropdown/Notificatio
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
+import { sanitizeData } from "../utils/sanitization";
 import { API_BASE_URL } from "../config/apiBaseUrl";
 
 export const UserManagementPage = () => {
@@ -222,7 +223,7 @@ export const UserManagementPage = () => {
 
     const handleAddUser = async (newUser) => {
         try {
-            const userData = {
+            const userData = sanitizeData({
                 userId: newUser.username,
                 name: newUser.name,
                 // username: newUser.username, // Removed as backend does not support it
@@ -236,7 +237,7 @@ export const UserManagementPage = () => {
                 role: newUser.role,
                 department: newUser.department,
                 status: newUser.status === "active" ? "ACTIVE" : "INACTIVE",
-            };
+            });
 
             const response = await usersAPI.create(userData);
             const createdUser = response.data.user || response.data;
@@ -281,7 +282,7 @@ export const UserManagementPage = () => {
 
     const handleEditUser = async (updatedUser) => {
         try {
-            const userData = {
+            const userData = sanitizeData({
                 name: updatedUser.name,
                 // username: updatedUser.username, // Removed
                 email: updatedUser.email || null,
@@ -293,7 +294,7 @@ export const UserManagementPage = () => {
                 role: updatedUser.role,
                 department: updatedUser.department,
                 status: updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
-            };
+            });
 
             const response = await usersAPI.update(selectedUser.id, userData);
             const editedUser = response.data.user || response.data;
@@ -831,12 +832,30 @@ const UserFormModal = ({
         if (mode === "add" && !formData.username.trim()) {
             newErrors.username = "User ID is required";
         }
-        if (!formData.name.trim()) newErrors.name = "Name is required";
+        if (!formData.name.trim()) {
+            newErrors.name = "Name is required";
+        } else if (!/^[A-Za-z\s]+$/.test(formData.name.trim())) {
+            newErrors.name = "Name must contain letters only";
+        }
+
         if (!formData.email.trim()) {
             newErrors.email = "Email is required";
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = "Invalid email format";
         }
+
+        if (!formData.idNumber?.trim()) {
+            // Optional but if provided should follow format? 
+            // The request says PUP ID field, which maps to userId in registration
+            // In UserManagement, idNumber is separate. Let's apply format to idNumber too if it's meant to be PUP ID.
+        } else if (!/^\d{4}-\d{5}$/.test(formData.idNumber.trim())) {
+            newErrors.idNumber = "ID Number must follow the format YYYY-XXXXX";
+        }
+
+        if (mode === "add" && formData.username.trim() && !/^\d{4}-\d{5}$/.test(formData.username.trim())) {
+            newErrors.username = "User ID must follow the format YYYY-XXXXX";
+        }
+
         if (!formData.role) newErrors.role = "Role is required";
         if (!formData.department.trim())
             newErrors.department = "Department is required";
@@ -847,6 +866,23 @@ const UserFormModal = ({
             !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
         ) {
             newErrors.contactNumber = "Contact number must be in format +63 9XX XXX XXXX";
+        }
+
+        if (formData.dateOfBirth) {
+            const birthDate = new Date(formData.dateOfBirth);
+            const today = new Date();
+            if (birthDate > today) {
+                newErrors.dateOfBirth = "Date of Birth cannot be in the future";
+            } else {
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                if (age < 16) {
+                    newErrors.dateOfBirth = "User must be at least 16 years old";
+                }
+            }
         }
 
         return newErrors;

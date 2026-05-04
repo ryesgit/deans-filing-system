@@ -14,6 +14,7 @@ import { requestsAPI, filesAPI, categoriesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 import { useAuth } from "../components/Modal/AuthContext";
 import { sendReturnDateReminderEmail } from "../utils/email";
+import { sanitizeData } from "../utils/sanitization";
 
 const normalizeId = (value) =>
     value === null || value === undefined ? null : String(value);
@@ -223,13 +224,13 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
             descriptionParts.push(`Return Date: ${formData.returnDate}`);
         }
 
-        const requestData = {
+        const requestData = sanitizeData({
             title: formData.fileName,
             description: descriptionParts.join("\n"),
             type: "FILE_ACCESS",
             priority: formData.priority || "normal",
             fileId: formData.fileId, // Include file ID in request
-        };
+        });
 
         try {
             const response = await requestsAPI.create(requestData);
