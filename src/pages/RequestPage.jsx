@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import html2canvas from "html2canvas";
+import { useLocation } from "react-router-dom";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
@@ -750,47 +751,60 @@ const QRCard = ({
     );
 };
 
-const RequestCard = ({ requests = [], onRequestCancelled }) => {
-    const [showPDFModal, setShowPDFModal] = useState(false);
-    const [pdfUrl, setPdfUrl] = useState(null);
-    const [pdfLoading, setPdfLoading] = useState(false);
-    const [selectedRequest, setSelectedRequest] = useState(null);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [selectedRequestForDetails, setSelectedRequestForDetails] =
-        useState(null);
-    const [showCancelModal, setShowCancelModal] = useState(false);
-    const [requestToCancel, setRequestToCancel] = useState(null);
-    const [openMenuId, setOpenMenuId] = useState(null);
-    const { user } = useAuth();
+const RequestCard = ({
+  requests = [],
+  onRequestCancelled,
+  selectedRequestId = null,
+  requestFocusNonce = null,
+}) => {
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRequestForDetails, setSelectedRequestForDetails] =
+    useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [requestToCancel, setRequestToCancel] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const { user } = useAuth();
 
-    // Check if request is for soft copy based on description
-    const isSoftCopy = (description) => {
-        return description?.includes("Soft Copy Only");
-    };
+  // Check if request is for soft copy based on description
+  const isSoftCopy = (description) => {
+    return description?.includes("Soft Copy Only");
+  };
 
-    // Handle View PDF click
-    const handleViewPDF = async (request) => {
-        if (!request.fileId) {
-            alert("File not available. Please contact support.");
-            return;
-        }
+  // Handle View PDF click
+  const handleViewPDF = async (request) => {
+    if (!request.fileId) {
+      alert("File not available. Please contact support.");
+      return;
+    }
 
-        setSelectedRequest(request);
-        setShowPDFModal(true);
-        setPdfLoading(true);
-        setPdfUrl(null);
+    setSelectedRequest(request);
+    setShowPDFModal(true);
+    setPdfLoading(true);
+    setPdfUrl(null);
 
-        try {
-            const response = await filesAPI.download(request.fileId);
-            const blob = new Blob([response.data], { type: "application/pdf" });
-            const url = window.URL.createObjectURL(blob);
-            setPdfUrl(url);
-        } catch (error) {
-            console.error("Failed to load PDF:", error);
-            alert("Failed to load PDF. Please try again or contact support.");
-        } finally {
-            setPdfLoading(false);
-        }
+    try {
+      const response = await filesAPI.download(request.fileId);
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error("Failed to load PDF:", error);
+      alert("Failed to load PDF. Please try again or contact support.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  // Clean up PDF URL when modal closes
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
     };
 
     // Clean up PDF URL when modal closes
@@ -834,20 +848,73 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
         setShowCancelModal(true);
     };
 
-    const handleConfirmCancel = async () => {
-        if (!requestToCancel) return;
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [openMenuId]);
 
-        try {
-            await requestsAPI.delete(requestToCancel.id);
-            setShowCancelModal(false);
-            setRequestToCancel(null);
-            if (onRequestCancelled) {
-                onRequestCancelled(requestToCancel.id);
-            }
-        } catch (error) {
-            console.error("Failed to cancel request:", error);
-            alert("Failed to cancel request. Please try again.");
-        }
+  useEffect(() => {
+    if (selectedRequestId === null || selectedRequestId === undefined) {
+      return;
+    }
+
+    const matchedRequest = requests.find(
+      (request) => String(request.id) === String(selectedRequestId)
+    );
+
+    if (matchedRequest) {
+      setSelectedRequestForDetails(matchedRequest);
+      setShowDetailsModal(true);
+    }
+  }, [requests, selectedRequestId, requestFocusNonce]);
+
+  const handleShowDetails = (request, e) => {
+    if (e.target.closest(".status-badge") || e.target.closest(".three-dot-menu")) {
+      return;
+    }
+
+    setSelectedRequestForDetails(request);
+    setShowDetailsModal(true);
+  };
+
+  const toggleMenu = (id, e) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
+
+  const handleCancelClick = (request, e) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    setRequestToCancel(request);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!requestToCancel) return;
+
+    try {
+      await requestsAPI.delete(requestToCancel.id);
+      setShowCancelModal(false);
+      setRequestToCancel(null);
+      if (onRequestCancelled) {
+        onRequestCancelled(requestToCancel.id);
+      }
+    } catch (error) {
+      console.error("Failed to cancel request:", error);
+      alert("Failed to cancel request. Please try again.");
+    }
+  };
+
+  const getStatusClass = (status) => {
+    const statusMap = {
+      PENDING: "status-pending",
+      APPROVED: "status-approved",
+      DECLINED: "status-declined",
+      CANCELLED: "status-cancelled",
+      Pending: "status-pending",
+      Approved: "status-approved",
+      Borrowed: "status-borrowed",
+      Returned: "status-returned",
+      Declined: "status-declined",
     };
 
     const getStatusClass = (status) => {
@@ -1195,22 +1262,36 @@ const RequestCard = ({ requests = [], onRequestCancelled }) => {
 };
 
 export const RequestPage = () => {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-    const { user: currentUser } = useAuth();
+  const location = useLocation();
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const { user: currentUser } = useAuth();
 
-    const { notifications, unreadCount } = useNotifications();
+  const { notifications, unreadCount } = useNotifications();
 
-    // Fetch requests from API on mount
-    useEffect(() => {
-        const fetchRequests = async () => {
-            if (!currentUser?.userId && !currentUser?.id) {
-                setLoading(false);
-                return;
-            }
+  // Fetch requests from API on mount
+  useEffect(() => {
+    const fetchRequests = async () => {
+      if (!currentUser?.userId && !currentUser?.id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await requestsAPI.getAll();
+        const requestsData = response.data.requests || response.data;
+
+        if (!Array.isArray(requestsData)) {
+          setRequests([]);
+          return;
+        }
+
+        const filteredRequests = requestsData
+          .filter((req) => req.status !== "CANCELLED")
+          .filter((req) => belongsToUser(req, currentUser));
 
             try {
                 const response = await requestsAPI.getAll();
@@ -1457,81 +1538,85 @@ export const RequestPage = () => {
             returnDate,
         };
     };
+  };
 
-    const assignedFile = buildAssignedFile();
+  const assignedFile = buildAssignedFile();
 
-    // Files Assigned: Count only APPROVED original copy requests (not completed/borrowed/returned)
-    const filesAssigned = requests.filter(
-        (req) =>
-            req.status === "APPROVED" &&
-            isOriginalCopy(req)
-    ).length;
+  // Files Assigned: Count only APPROVED original copy requests (not completed/borrowed/returned)
+  const filesAssigned = requests.filter(
+    (req) =>
+      req.status === "APPROVED" &&
+      isOriginalCopy(req)
+  ).length;
 
-    // Files to be Returned: Count only BORROWED original copy requests (checked out but not returned)
-    const filesToReturn = requests.filter(
-        (req) => (req.status === "BORROWED" || req.status === "Borrowed") &&
-            isOriginalCopy(req)
-    ).length;
+  // Files to be Returned: Count only BORROWED original copy requests (checked out but not returned)
+  const filesToReturn = requests.filter(
+    (req) => (req.status === "BORROWED" || req.status === "Borrowed") &&
+      isOriginalCopy(req)
+  ).length;
 
-    // Check if user has any active original file (either assigned or borrowed)
-    const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
+  // Check if user has any active original file (either assigned or borrowed)
+  const hasActiveOriginalFile = filesAssigned > 0 || filesToReturn > 0;
+  const selectedRequestId = location.state?.selectedRequestId ?? null;
+  const requestFocusNonce = location.state?.requestFocusNonce ?? null;
 
-    return (
-        <>
-            <SidePanel />
-            <div className="page-content-wrapper">
-                <div className="request-page-main-content request-page">
-                    <header className="request-header">
-                        <div className="welcome-message">
-                            <h1 className="text-wrapper-77">Request a File</h1>
-                        </div>
-                        <div className="header-actions">
-                            <div className="search-wrapper">
-                                <GlobalSearch />
-                            </div>
-                            <div
-                                className={`notification-button-wrapper${isNotificationOpen ? " active" : ""}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setIsNotificationOpen(!isNotificationOpen);
-                                }}
-                            >
-                                <img
-                                    className="notification-button"
-                                    alt="Notification button"
-                                    src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
-                                />
-                                {unreadCount > 0 && (
-                                    <span className="notification-badge">{unreadCount}</span>
-                                )}
-                                <NotificationDropdown
-                                  isOpen={isNotificationOpen}
-                                  onClose={() => setIsNotificationOpen(false)}
-                                />
-                            </div>
-                        </div>
-                    </header>
-                    <div className="request-page-container">
-                        <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} />
-                        <QRCard
-                            userName={currentUser?.name || "User"}
-                            userId={currentUser?.userId || "ID"}
-                            assignedFile={assignedFile}
-                            onQRCodeClick={() => setIsQRModalOpen(true)}
-                        />
-                        <RequestCard requests={requests} onRequestCancelled={handleRequestCancelled} />
-                    </div>
-                    <QRModal
-                        isOpen={isQRModalOpen}
-                        onClose={() => setIsQRModalOpen(false)}
-                        qrCodeUrl={null}
-                        userName={currentUser?.name || "User"}
-                        qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
-                    />
-
-                </div>
+  return (
+    <>
+      <SidePanel />
+      <div className="page-content-wrapper">
+        <div className="request-page-main-content request-page">
+          <header className="request-header">
+            <div className="welcome-message">
+              <h1 className="text-wrapper-77">Request a File</h1>
             </div>
-        </>
-    );
+            <div className="header-actions">
+              <div className="search-wrapper">
+                <GlobalSearch />
+              </div>
+              <div
+                className="notification-button-wrapper"
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              >
+                <img
+                  className="notification-button"
+                  alt="Notification button"
+                  src="https://c.animaapp.com/27o9iVJi/img/notification-button@2x.png"
+                />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
+                )}
+              </div>
+            </div>
+          </header>
+          <div className="request-page-container">
+            <FormCard onSubmit={handleSubmitRequest} hasActiveOriginalFile={hasActiveOriginalFile} />
+            <QRCard
+              userName={currentUser?.name || "User"}
+              userId={currentUser?.userId || "ID"}
+              assignedFile={assignedFile}
+              onQRCodeClick={() => setIsQRModalOpen(true)}
+            />
+            <RequestCard
+              requests={requests}
+              onRequestCancelled={handleRequestCancelled}
+              selectedRequestId={selectedRequestId}
+              requestFocusNonce={requestFocusNonce}
+            />
+          </div>
+          <QRModal
+            isOpen={isQRModalOpen}
+            onClose={() => setIsQRModalOpen(false)}
+            qrCodeUrl={null}
+            userName={currentUser?.name || "User"}
+            qrValue={currentUser?.userId || currentUser?.id || "USER-UNKNOWN"}
+          />
+          <NotificationDropdown
+            isOpen={isNotificationOpen}
+            onClose={() => setIsNotificationOpen(false)}
+          />
+        </div>
+      </div>
+    </>
+  );
 };
 // End of RequestPage component

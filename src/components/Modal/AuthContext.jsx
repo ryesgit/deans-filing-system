@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../services/api';
+import { API_BASE_URL } from '../../config/apiBaseUrl';
 
 const AuthContext = createContext(null);
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const hasUserIdentity = (userData) => Boolean(userData?.id || userData?.userId);
 const isDataUrl = (value) => typeof value === 'string' && value.startsWith('data:');

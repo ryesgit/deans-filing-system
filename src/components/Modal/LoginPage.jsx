@@ -4,6 +4,9 @@ import "./LoginPage.css";
 import { Modal } from "./Modal";
 import { RegistrationPage } from "./RegistrationPage";
 
+const LOGIN_HERO_IMAGE_URL =
+  "https://storage.googleapis.com/deans-filing-system-assets-463695708385/frontend/frame_2.png";
+
 export const LoginPage = () => {
   const { login, error, clearError } = useAuth();
   const [username, setUsername] = useState("");
@@ -43,7 +46,7 @@ export const LoginPage = () => {
         <RegistrationPage onClose={() => setIsRegistrationOpen(false)} />
       </Modal>
 
-      <img className="login-page-image" alt="Frame" src="/frame_2.png" />
+      <img className="login-page-image" alt="Frame" src={LOGIN_HERO_IMAGE_URL} />
 
       <div className="login-page-right">
         {error && (
@@ -74,14 +77,14 @@ export const LoginPage = () => {
                 />
 
                 <label
-                  htmlFor="username"
+                  htmlFor="userId"
                   className="login-field-label username-label"
                 >
                   <span
                     className={`login-field-label-text ${usernameFocused ? "focused" : "default"
                       }`}
                   >
-                    Username
+                    User ID
                   </span>
                 </label>
 
@@ -93,15 +96,15 @@ export const LoginPage = () => {
 
                 <input
                   type="text"
-                  id="username"
-                  name="username"
+                  id="userId"
+                  name="userId"
                   value={username}
                   onChange={handleUsernameChange}
                   onFocus={() => setUsernameFocused(true)}
                   onBlur={() => setUsernameFocused(false)}
                   placeholder=""
                   className="login-field-input username-input"
-                  aria-label="Username"
+                  aria-label="User ID"
                   required
                 />
               </div>

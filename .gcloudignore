@@ -1,0 +1,12 @@
+.gcloudignore
+.git
+.github
+.gitignore
+node_modules
+dist
+coverage
+test-output.txt
+tests
+.env
+.env.*
+.codex

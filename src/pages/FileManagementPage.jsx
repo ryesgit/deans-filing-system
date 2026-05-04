@@ -76,6 +76,8 @@ const filterArchivedFiles = (files) => {
     return (files || []).filter((f) => !archivedIds.includes(String(f.id)));
 };
 
+const formatFileCount = (count) => `${count} file${count === 1 ? "" : "s"}`;
+
 export const FileManagementPage = () => {
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -655,6 +657,24 @@ export const FileManagementPage = () => {
                             </div>
                         </div>
                     </div>
+                  )}
+                  <img
+                    className="folder-icon"
+                    alt="Folder icon"
+                    src="https://c.animaapp.com/mhuvdo9nn0JUE7/img/folder-01-icon.svg"
+                  />
+                  <div className="text-wrapper-27">{folder.name}</div>
+                  <div className="text-wrapper-28">
+                    {formatFileCount(
+                      folder.files
+                        ? filterArchivedFiles(folder.files).length
+                        : (folder.fileCount || 0)
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
                     {/* Request Card Section */}
                     <RequestCard />

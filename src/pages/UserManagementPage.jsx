@@ -6,9 +6,7 @@ import { useNotifications } from "../components/NotificationDropdown/Notificatio
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
-
-const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+import { API_BASE_URL } from "../config/apiBaseUrl";
 
 export const UserManagementPage = () => {
     const [users, setUsers] = useState([]);

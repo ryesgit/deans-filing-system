@@ -1,9 +1,10 @@
 import emailjs from "@emailjs/browser";
+import { getRuntimeConfigValue } from "../config/runtimeConfig";
 
 // EmailJS configuration — set these in your .env file
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+const EMAILJS_SERVICE_ID = getRuntimeConfigValue("VITE_EMAILJS_SERVICE_ID");
+const EMAILJS_TEMPLATE_ID = getRuntimeConfigValue("VITE_EMAILJS_TEMPLATE_ID");
+const EMAILJS_PUBLIC_KEY = getRuntimeConfigValue("VITE_EMAILJS_PUBLIC_KEY");
 
 /**
  * Returns true when all three EmailJS env variables are present.
