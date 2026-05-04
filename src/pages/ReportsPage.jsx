@@ -138,6 +138,28 @@ export const ReportsPage = () => {
                         ? foldersResponse.data
                         : [];
 
+                // Build a map of folder ID -> folder name
+                const folderMap = {};
+                allFolders.forEach((folder) => {
+                    folderMap[folder.id] = folder.name;
+                });
+
+                // Read validity dates from localStorage
+                let validityMap = {};
+                try {
+                    validityMap = JSON.parse(localStorage.getItem('fileValidityMap') || '{}');
+                } catch {
+                    validityMap = {};
+                }
+
+                // Load archived file IDs from localStorage
+                let archivedIds = [];
+                try {
+                    archivedIds = JSON.parse(localStorage.getItem('archivedFileIds') || '[]');
+                } catch {
+                    archivedIds = [];
+                }
+
                 const validityDue = allFiles
                     .filter((file) => {
                         const fileId = String(file.id);

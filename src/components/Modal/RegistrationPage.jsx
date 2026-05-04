@@ -37,8 +37,8 @@ export const RegistrationPage = ({ onClose }) => {
 
     if (!formData.pupId) {
       newErrors.pupId = "PUP ID is required";
-    } else if (!/^\d{4}-\d{5}$/.test(formData.pupId)) {
-      newErrors.pupId = "PUP ID must follow the format YYYY-XXXXX";
+    } else if (!/^\d{4}-\d{4}-MN-\d{1}$/.test(formData.pupId)) {
+      newErrors.pupId = "PUP ID must follow the format YYYY-XXXX-MN-X";
     }
 
     if (!formData.contactNumber) {
@@ -230,6 +230,7 @@ export const RegistrationPage = ({ onClose }) => {
               name="pupId"
               value={formData.pupId}
               onChange={handleChange}
+              placeholder="YYYY-XXXX-MN-X"
               className={errors.pupId ? "invalid" : ""}
             />
             {errors.pupId && <span className="error-text">{errors.pupId}</span>}

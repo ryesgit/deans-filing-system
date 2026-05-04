@@ -845,15 +845,13 @@ const UserFormModal = ({
         }
 
         if (!formData.idNumber?.trim()) {
-            // Optional but if provided should follow format? 
-            // The request says PUP ID field, which maps to userId in registration
-            // In UserManagement, idNumber is separate. Let's apply format to idNumber too if it's meant to be PUP ID.
-        } else if (!/^\d{4}-\d{5}$/.test(formData.idNumber.trim())) {
-            newErrors.idNumber = "ID Number must follow the format YYYY-XXXXX";
+            // Optional
+        } else if (!/^\d{4}-\d{4}-MN-\d{1}$/.test(formData.idNumber.trim())) {
+            newErrors.idNumber = "ID Number must follow the format YYYY-XXXX-MN-X";
         }
 
-        if (mode === "add" && formData.username.trim() && !/^\d{4}-\d{5}$/.test(formData.username.trim())) {
-            newErrors.username = "User ID must follow the format YYYY-XXXXX";
+        if (mode === "add" && formData.username.trim() && !/^\d{4}-\d{4}-MN-\d{1}$/.test(formData.username.trim())) {
+            newErrors.username = "User ID must follow the format YYYY-XXXX-MN-X";
         }
 
         if (!formData.role) newErrors.role = "Role is required";

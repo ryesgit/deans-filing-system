@@ -103,7 +103,7 @@ export const LoginPage = () => {
                   onChange={handleUsernameChange}
                   onFocus={() => setUsernameFocused(true)}
                   onBlur={() => setUsernameFocused(false)}
-                  placeholder=""
+                  placeholder="YYYY-XXXX-MN-X"
                   className="login-field-input username-input"
                   aria-label="User ID"
                   required
