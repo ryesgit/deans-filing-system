@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendRegistrationConfirmationEmail } from "../../utils/email";
+import { sanitizeData } from "../../utils/sanitization";
 import { notificationsAPI } from "../../services/api";
 import "./RegistrationPage.css";
 
@@ -23,21 +24,53 @@ export const RegistrationPage = ({ onClose }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.name) {
+      newErrors.name = "Name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      newErrors.name = "Name must contain letters only";
+    }
+
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-    if (!formData.pupId) newErrors.pupId = "PUP ID is required";
-    if (
-      formData.contactNumber &&
+    if (!formData.pupId) {
+      newErrors.pupId = "PUP ID is required";
+    } else if (!/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.pupId)) {
+      newErrors.pupId = "PUP ID must follow the format YYYY-XXXX(X)-MN-X";
+    }
+
+    if (!formData.contactNumber) {
+      newErrors.contactNumber = "Contact Number is required";
+    } else if (
       !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
     ) {
       newErrors.contactNumber =
         "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
     }
-    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of Birth is required";
+    } else {
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      
+      if (birthDate > today) {
+        newErrors.dob = "Date of Birth cannot be in the future";
+      } else {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 16) {
+          newErrors.dob = "User must be at least 16 years old";
+        }
+      }
+    }
+
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
@@ -107,7 +140,7 @@ export const RegistrationPage = ({ onClose }) => {
 
     setIsSubmitting(true);
 
-    const registrationData = {
+    const registrationData = sanitizeData({
       userId: formData.pupId,
       name: formData.name,
       email: formData.email,
@@ -117,36 +150,46 @@ export const RegistrationPage = ({ onClose }) => {
       gender: formData.gender,
       role: formData.role,
       department: formData.department,
-    };
+    });
 
-    const result = await register(registrationData);
-    setIsSubmitting(false);
+    try {
+      const result = await register(registrationData);
+      setIsSubmitting(false);
 
-    if (result.success) {
-      setSuccessMessage(result.message);
+      if (result.success) {
+        setSuccessMessage(result.message);
 
-      // Send a registration confirmation email to the new user
-      sendRegistrationConfirmationEmail({
-        toEmail: formData.email,
-        toName: formData.name,
-      });
+        // Send a registration confirmation email to the new user
+        sendRegistrationConfirmationEmail({
+          toEmail: formData.email,
+          toName: formData.name,
+        });
 
-      // Notify all admin/staff users that a new registration is pending their review
-      notificationsAPI
-        .notifyAdmins({
-          title: "New User Registration",
-          message: `${formData.name} (${formData.role}) has registered and is awaiting approval.`,
-          type: "info",
-          link: "/users",
-          read: false,
-        })
-        .catch((err) =>
-          console.error("Failed to send admin registration notification:", err)
-        );
+        // Notify all admin/staff users that a new registration is pending their review
+        notificationsAPI
+          .notifyAdmins({
+            title: "New User Registration",
+            message: `${formData.name} (${formData.role}) has registered and is awaiting approval.`,
+            type: "info",
+            link: "/users",
+            read: false,
+          })
+          .catch((err) =>
+            console.error("Failed to send admin registration notification:", err)
+          );
 
-      setTimeout(() => {
-        onClose();
-      }, 3000);
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+      } else {
+        // Explicitly handle failure cases from the API
+        const errorMsg = result.message || 'Registration failed. Please check your details.';
+        alert(errorMsg);
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error('Registration error:', error);
+      alert('The server is currently unavailable. Please try again later.');
     }
   };
 
@@ -169,8 +212,13 @@ export const RegistrationPage = ({ onClose }) => {
       )}
 
       {successMessage && (
-        <div className="registration-success" role="alert">
-          <span>{successMessage}</span>
+        <div className="registration-success-overlay">
+          <div className="success-content">
+            <div className="success-icon">✓</div>
+            <h3>Registration Submitted!</h3>
+            <p>{successMessage}</p>
+            <p className="success-note">Closing in 3 seconds...</p>
+          </div>
         </div>
       )}
 
@@ -210,6 +258,7 @@ export const RegistrationPage = ({ onClose }) => {
               name="pupId"
               value={formData.pupId}
               onChange={handleChange}
+              placeholder="YYYY-XXXXX-MN-X"
               className={errors.pupId ? "invalid" : ""}
             />
             {errors.pupId && <span className="error-text">{errors.pupId}</span>}

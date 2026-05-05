@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidePanel } from "../components/SidePanel";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { Camera } from "lucide-react";
 import { useNotifications } from "../components/NotificationDropdown/NotificationContext";
 import { useAuth } from "../components/Modal/AuthContext";
-import { usersAPI } from "../services/api";
+import { usersAPI, authAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { UserManual } from "../DeptHeadPage/SettingsPage/UserManual.jsx";
 import "../DeptHeadPage/SettingsPage/UserManual.css";
@@ -19,31 +19,95 @@ const toBase64 = (file) =>
     });
 
 export const SettingsPage = () => {
-    const { user: currentUser, updateUser } = useAuth();
+    const { user: currentUser, updateUser, logout } = useAuth();
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [profilePicturePreview, setProfilePicturePreview] = useState(null);
     const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
+    const [isLoadingUserData, setIsLoadingUserData] = useState(false);
     const { notifications, unreadCount } = useNotifications();
     const [passwords, setPasswords] = useState({
         oldPassword: "",
         newPassword: "",
         confirmPassword: "",
     });
+    const [showPasswords, setShowPasswords] = useState({
+        old: false,
+        new: false,
+        confirm: false,
+    });
+
+    const togglePasswordVisibility = (field) => {
+        setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+    };
+
+    // Fetch latest user data on mount to ensure all fields (like Date Joined) are up to date
+    useEffect(() => {
+        const fetchLatestUserData = async () => {
+            setIsLoadingUserData(true);
+            try {
+                const response = await authAPI.getMe();
+                const userData = response.data.user || response.data;
+                if (userData) {
+                    updateUser(userData);
+                }
+            } catch (error) {
+                console.error("Failed to fetch latest user data in settings:", error);
+            } finally {
+                setIsLoadingUserData(false);
+            }
+        };
+
+        fetchLatestUserData();
+    }, []);
 
     const handlePasswordChange = (e) => {
         const { name, value } = e.target;
         setPasswords((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSaveNewPassword = (e) => {
+    const handleSaveNewPassword = async (e) => {
         e.preventDefault();
         if (passwords.newPassword !== passwords.confirmPassword) {
             alert("New password and confirmation password do not match.");
             return;
         }
-        alert("Password changed successfully!");
-        setIsPasswordModalOpen(false);
+
+        try {
+            const userIdentifier = currentUser?.id || currentUser?.userId;
+            if (!userIdentifier) {
+                throw new Error("User identifier not found.");
+            }
+
+            // Use the dedicated change-password endpoint (PUT /api/auth/change-password)
+            // This is the correct endpoint that actually hashes and persists the new password
+            await authAPI.changePassword({
+                userId: currentUser.userId,
+                id: currentUser.id,
+                currentPassword: passwords.oldPassword,
+                oldPassword: passwords.oldPassword,
+                newPassword: passwords.newPassword,
+                password: passwords.newPassword,
+            });
+
+            alert("Password changed successfully! For security reasons, you will now be logged out. Please log in again using your new password.");
+            
+            // Clear passwords state
+            setPasswords({
+                oldPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            });
+            setIsPasswordModalOpen(false);
+            
+            // Perform logout to force a fresh session with the new credentials
+            logout();
+        } catch (error) {
+            console.error("Failed to change password:", error);
+            // Provide more detailed error info if available
+            const errorMsg = error.response?.data?.message || error.message || "Failed to change password. Please ensure your old password is correct.";
+            alert(errorMsg);
+        }
     };
     const handleProfilePictureChange = async (e) => {
         const file = e.target.files[0];
@@ -220,9 +284,39 @@ export const SettingsPage = () => {
                             <div className="profile-detail-group">
                                 <span className="profile-detail-label">Date Joined</span>
                                 <span className="profile-detail-value">
-                                    {currentUser?.createdAt
-                                        ? new Date(currentUser.createdAt).toLocaleDateString()
-                                        : "N/A"}
+                                    {(() => {
+                                        // Comprehensive list of possible date fields from different parts of the system
+                                        const rawDate = currentUser?.createdAt || 
+                                                        currentUser?.created_at || 
+                                                        currentUser?.dateJoined || 
+                                                        currentUser?.date_joined || 
+                                                        currentUser?.datejoined ||
+                                                        currentUser?.joinedAt ||
+                                                        currentUser?.joined_at ||
+                                                        currentUser?.dateAdded ||
+                                                        currentUser?.date_added ||
+                                                        currentUser?.registrationDate ||
+                                                        currentUser?.registration_date ||
+                                                        currentUser?.updatedAt; // Last resort fallback
+                                        
+                                        if (!rawDate || rawDate === "N/A") {
+                                            return isLoadingUserData ? "Loading..." : "N/A";
+                                        }
+                                        
+                                        // If it's already a pre-formatted string (e.g., "MM/DD/YYYY" or "YYYY-MM-DD")
+                                        if (typeof rawDate === 'string' && 
+                                            (rawDate.includes('/') || (rawDate.includes('-') && rawDate.length <= 10))) {
+                                            return rawDate;
+                                        }
+                                        
+                                        try {
+                                            const date = new Date(rawDate);
+                                            // Handle invalid dates (e.g., if the string was something else)
+                                            return isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString();
+                                        } catch (e) {
+                                            return "N/A";
+                                        }
+                                    })()}
                                 </span>
                             </div>
                         </div>
@@ -249,43 +343,82 @@ export const SettingsPage = () => {
                                     <label className="modal-label" htmlFor="oldPassword">
                                         Old Password
                                     </label>
-                                    <input
-                                        className="modal-input"
-                                        type="password"
-                                        id="oldPassword"
-                                        name="oldPassword"
-                                        value={passwords.oldPassword}
-                                        onChange={handlePasswordChange}
-                                        required
-                                    />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            className="modal-input"
+                                            type={showPasswords.old ? "text" : "password"}
+                                            id="oldPassword"
+                                            name="oldPassword"
+                                            value={passwords.oldPassword}
+                                            onChange={handlePasswordChange}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => togglePasswordVisibility("old")}
+                                            aria-label={showPasswords.old ? "Hide password" : "Show password"}
+                                        >
+                                            <img 
+                                                src={showPasswords.old ? "/view_icon.svg" : "/show_icon.svg"} 
+                                                alt="" 
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="modal-form-group">
                                     <label className="modal-label" htmlFor="newPassword">
                                         New Password
                                     </label>
-                                    <input
-                                        className="modal-input"
-                                        type="password"
-                                        id="newPassword"
-                                        name="newPassword"
-                                        value={passwords.newPassword}
-                                        onChange={handlePasswordChange}
-                                        required
-                                    />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            className="modal-input"
+                                            type={showPasswords.new ? "text" : "password"}
+                                            id="newPassword"
+                                            name="newPassword"
+                                            value={passwords.newPassword}
+                                            onChange={handlePasswordChange}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => togglePasswordVisibility("new")}
+                                            aria-label={showPasswords.new ? "Hide password" : "Show password"}
+                                        >
+                                            <img 
+                                                src={showPasswords.new ? "/view_icon.svg" : "/show_icon.svg"} 
+                                                alt="" 
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="modal-form-group">
                                     <label className="modal-label" htmlFor="confirmPassword">
                                         Confirm New Password
                                     </label>
-                                    <input
-                                        className="modal-input"
-                                        type="password"
-                                        id="confirmPassword"
-                                        name="confirmPassword"
-                                        value={passwords.confirmPassword}
-                                        onChange={handlePasswordChange}
-                                        required
-                                    />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            className="modal-input"
+                                            type={showPasswords.confirm ? "text" : "password"}
+                                            id="confirmPassword"
+                                            name="confirmPassword"
+                                            value={passwords.confirmPassword}
+                                            onChange={handlePasswordChange}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => togglePasswordVisibility("confirm")}
+                                            aria-label={showPasswords.confirm ? "Hide password" : "Show password"}
+                                        >
+                                            <img 
+                                                src={showPasswords.confirm ? "/view_icon.svg" : "/show_icon.svg"} 
+                                                alt="" 
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="modal-actions">
                                     <button

@@ -90,7 +90,13 @@ export const ReportsPage = () => {
 
                 const userRequests = requests
                     .filter((request) => request?.status !== "CANCELLED")
-                    .filter((request) => belongsToUser(request, user));
+                    .filter((request) => {
+                        // ADMIN and STAFF can see all requests, others see only their own
+                        if (['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())) {
+                            return true;
+                        }
+                        return belongsToUser(request, user);
+                    });
 
                 setReportsData((prev) => ({
                     ...prev,
@@ -139,7 +145,7 @@ export const ReportsPage = () => {
                     folderMap[folder.id] = folder.name;
                 });
 
-                // Read validity dates from localStorage (since backend doesn't store them)
+                // Read validity dates from localStorage
                 let validityMap = {};
                 try {
                     validityMap = JSON.parse(localStorage.getItem('fileValidityMap') || '{}');
@@ -677,16 +683,39 @@ export const ReportsPage = () => {
                                     : "N/A"}
                             </span>
                         </div>
-                        {selectedTransactionForDetails.returnedAt && (
-                            <div className="details-row">
-                                <span className="file-info-label">Returned Date:</span>
-                                <span className="file-info-value">
-                                    {new Date(
-                                        selectedTransactionForDetails.returnedAt
-                                    ).toLocaleDateString()}
-                                </span>
-                            </div>
-                        )}
+                        {(() => {
+                            const req = selectedTransactionForDetails;
+                            const isReturned = isReturnedRequest(req);
+                            
+                            // If returned, show the actual return date
+                            if (isReturned && req.returnedAt) {
+                                return (
+                                    <div className="details-row">
+                                        <span className="file-info-label">Actual Returned Date:</span>
+                                        <span className="file-info-value">
+                                            {new Date(req.returnedAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                );
+                            }
+                            
+                            // If borrowed or pending, show the expected Return Date
+                            const returnDateMatch = req.description?.match(/Return Date:\s*(.+)/);
+                            const returnDate = req.returnDate || req.returnDue || (returnDateMatch ? returnDateMatch[1].trim() : null);
+                            
+                            if (returnDate && returnDate !== "N/A") {
+                                return (
+                                    <div className="details-row">
+                                        <span className="file-info-label">Expected Return Date:</span>
+                                        <span className="file-info-value">
+                                            {isNaN(new Date(returnDate).getTime()) ? returnDate : new Date(returnDate).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                );
+                            }
+                            
+                            return null;
+                        })()}
                         {selectedTransactionForDetails.notes && (
                             <div className="details-row">
                                 <span className="file-info-label">Notes:</span>

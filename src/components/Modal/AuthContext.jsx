@@ -21,18 +21,23 @@ const toText = (value, fallback = '') => {
 };
 
 const processUserData = (userData) => {
-  if (!userData) return null;
+  if (!userData || typeof userData !== 'object') return null;
 
-  const resolvedAvatar =
-    userData.avatar && userData.avatar.startsWith('/')
-      ? `${API_BASE_URL}${userData.avatar}`
-      : userData.avatar;
+  try {
+    const resolvedAvatar =
+      typeof userData.avatar === 'string' && userData.avatar.startsWith('/')
+        ? `${API_BASE_URL}${userData.avatar}`
+        : userData.avatar;
 
-  return {
-    ...userData,
-    avatar: resolvedAvatar,
-    profilePicture: userData.profilePicture || resolvedAvatar,
-  };
+    return {
+      ...userData,
+      avatar: typeof resolvedAvatar === 'string' ? resolvedAvatar : null,
+      profilePicture: userData.profilePicture || resolvedAvatar,
+    };
+  } catch (error) {
+    console.error('Error processing user data:', error);
+    return userData;
+  }
 };
 
 const getPersistedUserData = (userData) => {
@@ -191,7 +196,35 @@ export const AuthProvider = ({ children }) => {
 
   // Show a loading indicator while checking for the token
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5',
+        fontFamily: 'Poppins, Helvetica, Arial, sans-serif'
+      }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          border: '5px solid #e0e0e0',
+          borderTop: '5px solid #800000',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '20px'
+        }} />
+        <p style={{ color: '#666', fontSize: '1.1rem' }}>Loading Dean's Filing System...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
   }
 
   return (

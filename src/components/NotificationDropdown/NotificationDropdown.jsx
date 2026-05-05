@@ -120,17 +120,39 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
             await markAsRead(notification.id);
         }
 
-    const target = getNotificationTarget(notification, userRole);
-    if (target) {
-      navigate(target.pathname, {
-        state: {
-          ...(target.state || {}),
-          requestFocusNonce: Date.now(),
-        },
-      });
-      onClose();
-    }
-  };
+        const target = getNotificationTarget(notification, userRole);
+        
+        if (target) {
+            navigate(target.pathname, {
+                state: {
+                    ...(target.state || {}),
+                    requestFocusNonce: Date.now(),
+                },
+            });
+            onClose();
+        } else {
+            // Fallback: Infer destination based on message content if target/link is missing
+            const message = (notification.message || "").toLowerCase();
+            const title = (notification.title || "").toLowerCase();
+            const content = `${title} ${message}`;
+            let destination = null;
+
+            if (content.includes("file") || content.includes("folder") || content.includes("document")) {
+                destination = "/file-management";
+            } else if (content.includes("request") || content.includes("approval") || content.includes("permission")) {
+                destination = "/request";
+            } else if (content.includes("user") || content.includes("account") || content.includes("profile")) {
+                destination = "/user-management";
+            } else if (content.includes("report") || content.includes("log") || content.includes("activity")) {
+                destination = "/reports";
+            }
+
+            if (destination) {
+                navigate(destination);
+                onClose();
+            }
+        }
+    };
 
     const handleMarkAllAsRead = async (e) => {
         e.stopPropagation();
@@ -169,32 +191,30 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
                         </p>
                     </div>
                 ) : (
-                    notificationList.map((notification) => (
-                        (() => {
-                            const target = getNotificationTarget(notification, userRole);
-
-                            return (
-                                <div
-                                    key={notification.id}
-                                    className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
-                                    onClick={() => handleNotificationClick(notification)}
-                                    style={{
-                                        cursor: target ? "pointer" : "default",
-                                    }}
-                                >
-                    {notification.title && (
-                      <h4 className="notification-title">{toText(notification.title)}</h4>
-                    )}
-                    <p className="notification-message">{toText(notification.message, "No details available")}</p>
-                                    <span className="notification-time">
-                                        {formatTime(notification.createdAt || notification.time)}
-                                    </span>
-                                </div>
-                            );
-                        })()
-                    ))
+                    notificationList.map((notification) => {
+                        const target = getNotificationTarget(notification, userRole);
+                        return (
+                            <div
+                                key={notification.id}
+                                className={`notification-item ${!notification.read && !notification.isRead ? "unread" : ""}`}
+                                onClick={() => handleNotificationClick(notification)}
+                                style={{
+                                    cursor: target ? "pointer" : "default",
+                                }}
+                            >
+                                {notification.title && (
+                                    <h4 className="notification-title">{toText(notification.title)}</h4>
+                                )}
+                                <p className="notification-message">{toText(notification.message, "No details available")}</p>
+                                <span className="notification-time">
+                                    {formatTime(notification.createdAt || notification.time)}
+                                </span>
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>
-  );
+    );
 };
+

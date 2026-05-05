@@ -6,6 +6,7 @@ import { useNotifications } from "../components/NotificationDropdown/Notificatio
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
+import { sanitizeData } from "../utils/sanitization";
 import { API_BASE_URL } from "../config/apiBaseUrl";
 
 import { useLocation } from "react-router-dom";
@@ -247,7 +248,7 @@ export const UserManagementPage = () => {
 
     const handleAddUser = async (newUser) => {
         try {
-            const userData = {
+            const userData = sanitizeData({
                 userId: newUser.username,
                 name: newUser.name,
                 // username: newUser.username, // Removed as backend does not support it
@@ -261,7 +262,7 @@ export const UserManagementPage = () => {
                 role: newUser.role,
                 department: newUser.department,
                 status: newUser.status === "active" ? "ACTIVE" : "INACTIVE",
-            };
+            });
 
             const response = await usersAPI.create(userData);
             const createdUser = response.data.user || response.data;
@@ -306,7 +307,7 @@ export const UserManagementPage = () => {
 
     const handleEditUser = async (updatedUser) => {
         try {
-            const userData = {
+            const userData = sanitizeData({
                 name: updatedUser.name,
                 // username: updatedUser.username, // Removed
                 email: updatedUser.email || null,
@@ -318,7 +319,7 @@ export const UserManagementPage = () => {
                 role: updatedUser.role,
                 department: updatedUser.department,
                 status: updatedUser.status === "active" ? "ACTIVE" : "INACTIVE",
-            };
+            });
 
             const response = await usersAPI.update(selectedUser.id, userData);
             const editedUser = response.data.user || response.data;
@@ -871,12 +872,28 @@ const UserFormModal = ({
         if (mode === "add" && !formData.username.trim()) {
             newErrors.username = "User ID is required";
         }
-        if (!formData.name.trim()) newErrors.name = "Name is required";
+        if (!formData.name.trim()) {
+            newErrors.name = "Name is required";
+        } else if (!/^[A-Za-z\s]+$/.test(formData.name.trim())) {
+            newErrors.name = "Name must contain letters only";
+        }
+
         if (!formData.email.trim()) {
             newErrors.email = "Email is required";
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = "Invalid email format";
         }
+
+        if (!formData.idNumber?.trim()) {
+            // Optional
+        } else if (!/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.idNumber.trim())) {
+            newErrors.idNumber = "ID Number must follow the format YYYY-XXXX(X)-MN-X";
+        }
+
+        if (mode === "add" && formData.username.trim() && !/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.username.trim())) {
+            newErrors.username = "User ID must follow the format YYYY-XXXX(X)-MN-X";
+        }
+
         if (!formData.role) newErrors.role = "Role is required";
         // Department is not required for Staff
         if (!isStaff && !formData.department.trim())
@@ -888,6 +905,23 @@ const UserFormModal = ({
             !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
         ) {
             newErrors.contactNumber = "Contact number must be in format +63 9XX XXX XXXX";
+        }
+
+        if (formData.dateOfBirth) {
+            const birthDate = new Date(formData.dateOfBirth);
+            const today = new Date();
+            if (birthDate > today) {
+                newErrors.dateOfBirth = "Date of Birth cannot be in the future";
+            } else {
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                if (age < 16) {
+                    newErrors.dateOfBirth = "User must be at least 16 years old";
+                }
+            }
         }
 
         return newErrors;

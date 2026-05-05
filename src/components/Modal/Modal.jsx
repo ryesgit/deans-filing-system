@@ -11,7 +11,7 @@ export const Modal = ({
 }) => {
   if (!isOpen) return null;
 
-  const modalContent = (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {(title || showCloseButton) && (
@@ -40,6 +40,4 @@ export const Modal = ({
       </div>
     </div>
   );
-
-  return createPortal(modalContent, document.body);
 };
