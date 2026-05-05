@@ -306,45 +306,25 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile }) => {
         </div>
 
         <div className="form-field">
-          <select
-            className="form-select"
-            value={formData.department}
-            onChange={(e) => handleChange("department", e.target.value)}
-          >
-            <option value="">Department</option>
-            {/* Include auto-filled value if not in the hardcoded list */}
-            {formData.department && !departments.includes(formData.department) && (
-              <option key={formData.department} value={formData.department}>
-                {formData.department}
-              </option>
-            )}
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
+          <input
+            type="text"
+            className="form-input"
+            value={formData.department || ""}
+            placeholder="Department (Autofilled)"
+            readOnly
+            style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+          />
         </div>
 
         <div className="form-field">
-          <select
-            className="form-select"
-            value={formData.fileCategory}
-            onChange={(e) => handleChange("fileCategory", e.target.value)}
-          >
-            <option value="">File Category</option>
-            {/* Include auto-filled value if not in the hardcoded list */}
-            {formData.fileCategory && !categories.includes(formData.fileCategory) && (
-              <option key={formData.fileCategory} value={formData.fileCategory}>
-                {formData.fileCategory}
-              </option>
-            )}
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+          <input
+            type="text"
+            className="form-input"
+            value={formData.fileCategory || ""}
+            placeholder="File Category (Autofilled)"
+            readOnly
+            style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+          />
         </div>
       </div>
 
