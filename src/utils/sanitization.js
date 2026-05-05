@@ -44,3 +44,16 @@ export const sanitizeData = (data) => {
   
   return sanitized;
 };
+
+/**
+ * Converts a string to Title Case (capitalizes the first letter of each word).
+ * @param {string} str - The string to convert.
+ * @returns {string} - The title cased string.
+ */
+export const toTitleCase = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};

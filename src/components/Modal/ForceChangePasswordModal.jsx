@@ -53,7 +53,7 @@ export const ForceChangePasswordModal = ({ user, onPasswordChanged }) => {
     };
 
     return (
-        <Modal isOpen={true} onClose={() => {}} title="Action Required: Change Password" showCloseButton={false}>
+        <Modal isOpen={true} onClose={() => {}} title="Action Required: Change Password" showCloseButton={false} size="sm">
             <div className="force-password-container">
                 <p style={{ marginBottom: '20px', color: '#666', lineHeight: '1.5' }}>
                     Welcome to the Dean's Filing System! For your security, you are required to change your default password before proceeding.

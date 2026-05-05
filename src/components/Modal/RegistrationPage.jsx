@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendRegistrationConfirmationEmail } from "../../utils/email";
-import { sanitizeData } from "../../utils/sanitization";
+import { sanitizeData, toTitleCase } from "../../utils/sanitization";
 import { notificationsAPI } from "../../services/api";
 import { Modal } from "./Modal";
 import "./RegistrationPage.css";
@@ -44,13 +44,11 @@ export const RegistrationPage = ({ onClose }) => {
       newErrors.pupId = "PUP ID must follow the format YYYY-XXXX(X)-MN-X";
     }
 
-    if (!formData.contactNumber) {
-      newErrors.contactNumber = "Contact Number is required";
-    } else if (
-      !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
-    ) {
-      newErrors.contactNumber =
-        "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
+    if (formData.contactNumber && formData.contactNumber.trim()) {
+      if (!/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))) {
+        newErrors.contactNumber =
+          "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
+      }
     }
 
     if (!formData.dob) {
@@ -120,6 +118,8 @@ export const RegistrationPage = ({ onClose }) => {
       }
 
       setFormData((prev) => ({ ...prev, [name]: numericValue }));
+    } else if (name === "name") {
+      setFormData((prev) => ({ ...prev, [name]: toTitleCase(value) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }

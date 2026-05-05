@@ -25,7 +25,7 @@ export const PromptModal = ({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title}>
+        <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
             <form onSubmit={handleSubmit}>
                 <div className="prompt-modal-body" style={{ padding: '10px 0' }}>
                     <p style={{ marginBottom: '15px', fontSize: '15px', color: '#555', fontWeight: '500' }}>{message}</p>
