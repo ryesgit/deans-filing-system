@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../services/api';
 import { API_BASE_URL } from '../../config/apiBaseUrl';
+import { ForceChangePasswordModal } from './ForceChangePasswordModal';
 
 const AuthContext = createContext(null);
 
@@ -127,6 +128,12 @@ export const AuthProvider = ({ children }) => {
       const userData = processUserData(rawUserData);
 
       localStorage.setItem('authToken', token);
+      
+      // Force password change if using default password
+      if (credentials.password === "password123") {
+        userData.mustChangePassword = true;
+      }
+      
       persistUser(userData);
 
       setIsAuthenticated(true);
@@ -178,6 +185,14 @@ export const AuthProvider = ({ children }) => {
     // This is the most bulletproof way to fix "white screen" issues on logout
     // because it completely tears down the React tree and starts fresh.
     window.location.href = '/login';
+  };
+
+  const handlePasswordChanged = () => {
+    if (user) {
+      const updatedUser = { ...user, mustChangePassword: false };
+      setUser(updatedUser);
+      persistUser(updatedUser);
+    }
   };
 
   const clearError = () => {
@@ -236,6 +251,9 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
+      {user && user.mustChangePassword && (
+        <ForceChangePasswordModal user={user} onPasswordChanged={handlePasswordChanged} />
+      )}
     </AuthContext.Provider>
   );
 };

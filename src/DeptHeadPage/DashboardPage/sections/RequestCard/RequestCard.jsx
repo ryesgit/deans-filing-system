@@ -6,6 +6,7 @@ import {
   notificationsAPI,
 } from "../../../../services/api";
 import { Modal } from "../../../../components/Modal/Modal";
+import { AlertModal, PromptModal } from "../../../../components/Modal";
 import "./style.css";
 
 const toText = (value, fallback = "") => {
@@ -34,6 +35,18 @@ export const RequestCard = ({
   const [selectedRequestForDetails, setSelectedRequestForDetails] =
     useState(null);
   const { user } = useAuth();
+
+  // Modal states for dialog replacements
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, message: "", title: "", type: "info" });
+  const [promptConfig, setPromptConfig] = useState({ isOpen: false, message: "", title: "", onConfirm: () => { } });
+
+  const showAlert = (message, title = "Notice", type = "info") => {
+    setAlertConfig({ isOpen: true, message, title, type });
+  };
+
+  const showPrompt = (message, onConfirm, title = "Provide Reason") => {
+    setPromptConfig({ isOpen: true, message, onConfirm, title });
+  };
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -87,7 +100,7 @@ export const RequestCard = ({
   // Handle View PDF click
   const handleViewPDF = async (request) => {
     if (!request.fileId) {
-      alert("File not available. Please contact support.");
+      showAlert("File not available. Please contact support.", "Error", "error");
       return;
     }
 
@@ -103,7 +116,7 @@ export const RequestCard = ({
       setPdfUrl(url);
     } catch (error) {
       console.error("Failed to load PDF:", error);
-      alert("Failed to load PDF. Please try again or contact support.");
+      showAlert("Failed to load PDF. Please try again or contact support.", "Error", "error");
     } finally {
       setPdfLoading(false);
     }
@@ -156,45 +169,47 @@ export const RequestCard = ({
     }
   };
 
-  const handleDecline = async (requestId) => {
-    const reason = window.prompt("Please enter the reason for declining this request:");
-    if (reason === null) return; // User cancelled the prompt
+  const handleDecline = (requestId) => {
+    showPrompt("Please enter the reason for declining this request:", async (reason) => {
+      if (!reason) return;
 
-    try {
-      await requestsAPI.decline(requestId, reason);
+      try {
+        await requestsAPI.decline(requestId, reason);
 
-      // Create notification for the user
-      const request = requests.find((r) => r.id === requestId);
-      if (request) {
-        try {
-          await notificationsAPI.create({
-            userId: request.userId,
-            message: `Your request for ${
-              request.fileName || "item"
-            } has been DECLINED. Reason: ${reason || "No reason provided."}`,
-            type: "error",
-            read: false,
-          });
-        } catch (notifError) {
-          console.error("Failed to create notification:", notifError);
+        // Create notification for the user
+        const request = requests.find((r) => r.id === requestId);
+        if (request) {
+          try {
+            await notificationsAPI.create({
+              userId: request.userId,
+              message: `Your request for ${request.fileName || "item"
+                } has been DECLINED. Reason: ${reason || "No reason provided."}`,
+              type: "error",
+              read: false,
+            });
+          } catch (notifError) {
+            console.error("Failed to create notification:", notifError);
+          }
         }
-      }
 
-      // Refetch requests to ensure UI is in sync with database
-      const response = await requestsAPI.getAll();
-      const requestsArray = Array.isArray(response.data.requests)
-        ? response.data.requests
-        : [];
-      const filteredRequests = requestsArray.filter(
-        (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
-      );
-      const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
-        ? filteredRequests
-        : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
-      setRequests(roleFilteredRequests.slice(0, 5));
-    } catch (error) {
-      console.error("Failed to decline request:", error);
-    }
+        // Refetch requests to ensure UI is in sync with database
+        const response = await requestsAPI.getAll();
+        const requestsArray = Array.isArray(response.data.requests)
+          ? response.data.requests
+          : [];
+        const filteredRequests = requestsArray.filter(
+          (req) => req.status !== "CANCELLED" && req.status !== "COMPLETED"
+        );
+        const roleFilteredRequests = ['ADMIN', 'STAFF'].includes(user?.role?.toUpperCase())
+          ? filteredRequests
+          : filteredRequests.filter((req) => req.userId === user.userId || req.userId === user.id);
+        setRequests(roleFilteredRequests.slice(0, 5));
+        setPromptConfig({ ...promptConfig, isOpen: false });
+      } catch (error) {
+        console.error("Failed to decline request:", error);
+        showAlert(error.message || "Failed to decline request", "Error", "error");
+      }
+    }, "Decline Request");
   };
 
   const handleShowDetails = (request, e) => {
@@ -494,6 +509,23 @@ export const RequestCard = ({
           </div>
         )}
       </Modal>
+
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+      />
+
+      <PromptModal
+        isOpen={promptConfig.isOpen}
+        onClose={() => setPromptConfig({ ...promptConfig, isOpen: false })}
+        onConfirm={promptConfig.onConfirm}
+        title={promptConfig.title}
+        message={promptConfig.message}
+        placeholder="Type the reason here..."
+      />
     </>
   );
 };

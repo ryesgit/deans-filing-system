@@ -14,7 +14,8 @@ import { requestsAPI, filesAPI, categoriesAPI } from "../services/api";
 import { Modal } from "../components/Modal/Modal";
 import { useAuth } from "../components/Modal/AuthContext";
 import { sendReturnDateReminderEmail } from "../utils/email";
-import { sanitizeData } from "../utils/sanitization";
+import { sanitizeData, sanitizeInput } from "../utils/sanitization";
+import { AlertModal, ConfirmModal as ReusableConfirmModal } from "../components/Modal";
 
 const normalizeId = (value) =>
     value === null || value === undefined ? null : String(value);
@@ -42,50 +43,7 @@ const belongsToUser = (request, currentUser) => {
     return currentUserIds.some((userId) => requestUserIds.includes(userId));
 };
 
-const ConfirmModal = ({
-    isOpen,
-    onClose,
-    onConfirm,
-    title,
-    children,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
-}) => {
-    if (!isOpen) return null;
 
-    return (
-        <div className="confirm-modal-overlay" onClick={onClose}>
-            <div
-                className="confirm-modal-content"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <button className="confirm-modal-close" onClick={onClose}>
-                    ×
-                </button>
-                <h2 className="confirm-modal-title">{title}</h2>
-                <div className="confirm-modal-body">{children}</div>
-                <div className="confirm-modal-actions">
-                    {cancelText && (
-                        <button
-                            className="confirm-modal-btn confirm-modal-cancel"
-                            onClick={onClose}
-                        >
-                            {cancelText}
-                        </button>
-                    )}
-                    {confirmText && (
-                        <button
-                            className="confirm-modal-btn confirm-modal-confirm"
-                            onClick={onConfirm}
-                        >
-                            {confirmText}
-                        </button>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 const QRModal = ({ isOpen, onClose, userName, qrValue }) => {
     if (!isOpen) return null;
@@ -105,6 +63,8 @@ const QRModal = ({ isOpen, onClose, userName, qrValue }) => {
         </div>
     );
 };
+
+
 
 const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
     const { user } = useAuth();
@@ -188,7 +148,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
             !formData.fileCategory ||
             !formData.purpose
         ) {
-            alert("Please fill in all required fields");
+            showAlert("Please fill in all required fields", "Incomplete Form", "error");
             return;
         }
 
@@ -204,17 +164,17 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
         );
 
         if (isDuplicate) {
-            alert("You already have a pending request for this file. Please wait for it to be processed.");
+            showAlert("You already have a pending request for this file. Please wait for it to be processed.", "Duplicate Request", "info");
             return;
         }
 
         if (formData.copyType === "original") {
             if (!formData.returnDate) {
-                alert("Please select a return date for original copy requests");
+                showAlert("Please select a return date for original copy requests", "Missing Date", "error");
                 return;
             }
             if (!formData.priority) {
-                alert("Please select priority for original copy requests");
+                showAlert("Please select priority for original copy requests", "Missing Priority", "error");
                 return;
             }
 
@@ -227,7 +187,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             if (diffDays < 1 || diffDays > 3) {
-                alert("For original copies, the return date must be between 1 and 3 days from today.");
+                showAlert("For original copies, the return date must be between 1 and 3 days from today.", "Invalid Date", "error");
                 return;
             }
         }
@@ -236,9 +196,14 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
     };
 
     const handleConfirmSubmit = async () => {
+        // Sanitize user inputs to prevent XSS (TC-REQ-003)
+        const sanitizedPurpose = sanitizeInput(formData.purpose);
+        const sanitizedFileName = sanitizeInput(formData.fileName);
+        const sanitizedDept = sanitizeInput(formData.department);
+
         const descriptionParts = [
-            `Purpose: ${formData.purpose}`,
-            `Department: ${formData.department}`,
+            `Purpose: ${sanitizedPurpose}`,
+            `Department: ${sanitizedDept}`,
             `Category: ${formData.fileCategory}`,
             `Copy Type: ${formData.copyType === "soft" ? "Soft Copy Only" : "Original Copy"
             }`,
@@ -263,10 +228,12 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
             handleClear();
         } catch (error) {
             console.error("Failed to submit request:", error);
-            alert(
+            showAlert(
                 error.response?.data?.message ||
                 error.message ||
-                "Failed to submit request"
+                "Failed to submit request",
+                "Submission Error",
+                "error"
             );
             setShowSubmitModal(false);
         }
@@ -441,7 +408,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
                 </button>
             </div>
 
-            <ConfirmModal
+            <ReusableConfirmModal
                 isOpen={showSubmitModal}
                 onClose={() => setShowSubmitModal(false)}
                 onConfirm={handleConfirmSubmit}
@@ -487,9 +454,9 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
                         </div>
                     </>
                 )}
-            </ConfirmModal>
+            </ReusableConfirmModal>
 
-            <ConfirmModal
+            <ReusableConfirmModal
                 isOpen={showClearModal}
                 onClose={() => setShowClearModal(false)}
                 onConfirm={handleConfirmClear}
@@ -500,9 +467,9 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
                 <p className="confirm-modal-message">
                     Are you sure you want to clear all fields?
                 </p>
-            </ConfirmModal>
+            </ReusableConfirmModal>
 
-            <ConfirmModal
+            <ReusableConfirmModal
                 isOpen={showFileLimitModal}
                 onClose={() => setShowFileLimitModal(false)}
                 onConfirm={() => setShowFileLimitModal(false)}
@@ -519,7 +486,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
                     <br />
                     <strong>Note:</strong> You can still request soft copies.
                 </p>
-            </ConfirmModal>
+            </ReusableConfirmModal>
         </div>
     );
 };
@@ -666,7 +633,7 @@ const QRCard = ({
                 )}
             </div>
 
-            <ConfirmModal
+            <ReusableConfirmModal
                 isOpen={showDownloadModal}
                 onClose={() => setShowDownloadModal(false)}
                 onConfirm={() => setShowDownloadModal(false)}
@@ -693,7 +660,7 @@ const QRCard = ({
                         </button>
                     )}
                 </div>
-            </ConfirmModal>
+            </ReusableConfirmModal>
         </div>
     );
 };
@@ -1045,7 +1012,7 @@ const RequestCard = ({
                 )}
             </Modal>
 
-            <ConfirmModal
+            <ReusableConfirmModal
                 isOpen={showCancelModal}
                 onClose={() => {
                     setShowCancelModal(false);
@@ -1067,7 +1034,7 @@ const RequestCard = ({
                         </>
                     )}
                 </p>
-            </ConfirmModal>
+            </ReusableConfirmModal>
         </>
     );
 };
@@ -1080,6 +1047,12 @@ export const RequestPage = () => {
     const [isQRModalOpen, setIsQRModalOpen] = useState(false);
     const { user: currentUser } = useAuth();
     const { unreadCount } = useNotifications();
+
+    // Alert Modal State
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, message: "", title: "", type: "info" });
+    const showAlert = (message, title = "Notice", type = "info") => {
+        setAlertConfig({ isOpen: true, message, title, type });
+    };
 
     useEffect(() => {
         const fetchRequests = async () => {
@@ -1318,6 +1291,14 @@ export const RequestPage = () => {
                     />
                 </div>
             </div>
+
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
         </>
     );
 };
