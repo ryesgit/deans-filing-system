@@ -8,6 +8,7 @@ import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
 import { sanitizeData } from "../utils/sanitization";
 import { API_BASE_URL } from "../config/apiBaseUrl";
+import { AlertModal, ConfirmModal, PromptModal } from "../components/Modal";
 
 import { useLocation } from "react-router-dom";
 
@@ -46,6 +47,23 @@ export const UserManagementPage = () => {
 
     const { notifications, unreadCount } = useNotifications();
     const [pendingUsersList, setPendingUsersList] = useState([]);
+
+    // Modal states for dialog replacements
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, message: "", title: "", type: "info" });
+    const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, message: "", title: "", onConfirm: () => { } });
+    const [promptConfig, setPromptConfig] = useState({ isOpen: false, message: "", title: "", onConfirm: () => { } });
+
+    const showAlert = (message, title = "Notice", type = "info") => {
+        setAlertConfig({ isOpen: true, message, title, type });
+    };
+
+    const showConfirm = (message, onConfirm, title = "Confirm Action") => {
+        setConfirmConfig({ isOpen: true, message, onConfirm, title });
+    };
+
+    const showPrompt = (message, onConfirm, title = "Provide Reason") => {
+        setPromptConfig({ isOpen: true, message, onConfirm, title });
+    };
 
     const handleApprove = async (id) => {
         // Find the pending user before removing from list so we have their email
@@ -100,27 +118,28 @@ export const UserManagementPage = () => {
                 });
             }
 
-            alert("User approved successfully! A confirmation email has been sent.");
+            showAlert("User approved successfully! A confirmation email has been sent.", "Success", "success");
         } catch (error) {
             console.error("Failed to approve user:", error);
-            alert(error.message || "Failed to approve user");
+            showAlert(error.message || "Failed to approve user", "Error", "error");
         }
     };
 
-    const handleDecline = async (id) => {
-        const reason = prompt("Please provide a reason for declining this user:");
-        if (reason === null) return;
-
-        try {
-            await usersAPI.reject(id, reason);
-            setPendingUsersList(
-                pendingUsersList.filter((user) => user.id !== id)
-            );
-            alert("User registration declined successfully!");
-        } catch (error) {
-            console.error("Failed to decline user:", error);
-            alert(error.message || "Failed to decline user");
-        }
+    const handleDecline = (id) => {
+        showPrompt("Please provide a reason for declining this user:", async (reason) => {
+            if (!reason) return;
+            try {
+                await usersAPI.reject(id, reason);
+                setPendingUsersList(
+                    pendingUsersList.filter((user) => user.id !== id)
+                );
+                showAlert("User registration declined successfully!", "Success", "success");
+                setPromptConfig({ ...promptConfig, isOpen: false });
+            } catch (error) {
+                console.error("Failed to decline user:", error);
+                showAlert(error.message || "Failed to decline user", "Error", "error");
+            }
+        }, "Decline User");
     };
 
     // Fetch users from API on mount
@@ -301,7 +320,7 @@ export const UserManagementPage = () => {
             setIsAddUserModalOpen(false);
         } catch (error) {
             console.error("Failed to add user:", error);
-            alert(error.message || "Failed to add user");
+            showAlert(error.message || "Failed to add user", "Error", "error");
         }
     };
 
@@ -361,18 +380,23 @@ export const UserManagementPage = () => {
             setSelectedUser(null);
         } catch (error) {
             console.error("Failed to edit user:", error);
-            alert(error.message || "Failed to edit user");
+            showAlert(error.message || "Failed to edit user", "Error", "error");
         }
     };
 
-    const handleDeleteUser = async (userIdToDelete) => {
-        try {
-            await usersAPI.delete(userIdToDelete);
-            setUsers(users.filter((user) => user.userId !== userIdToDelete));
-        } catch (error) {
-            console.error("Failed to delete user:", error);
-            alert(error.message || "Failed to delete user");
-        }
+    const handleDeleteUser = (userIdToDelete) => {
+        const user = users.find(u => u.userId === userIdToDelete);
+        showConfirm(`Are you sure you want to delete ${user?.name || 'this user'}?`, async () => {
+            try {
+                await usersAPI.delete(userIdToDelete);
+                setUsers(users.filter((user) => user.userId !== userIdToDelete));
+                setConfirmConfig({ ...confirmConfig, isOpen: false });
+                setSelectedUser(null);
+            } catch (error) {
+                console.error("Failed to delete user:", error);
+                showAlert(error.message || "Failed to delete user", "Error", "error");
+            }
+        }, "Confirm Delete");
     };
 
     const handleFilterApply = (filters) => {
@@ -696,8 +720,34 @@ export const UserManagementPage = () => {
                     />
                 )}
 
-
             </div>
+
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+            />
+
+            <ConfirmModal
+                isOpen={confirmConfig.isOpen}
+                onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+                onConfirm={confirmConfig.onConfirm}
+                title={confirmConfig.title}
+                type="danger"
+            >
+                {confirmConfig.message}
+            </ConfirmModal>
+
+            <PromptModal
+                isOpen={promptConfig.isOpen}
+                onClose={() => setPromptConfig({ ...promptConfig, isOpen: false })}
+                onConfirm={promptConfig.onConfirm}
+                title={promptConfig.title}
+                message={promptConfig.message}
+                placeholder="Type the reason here..."
+            />
         </>
     );
 };
