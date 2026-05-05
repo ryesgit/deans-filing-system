@@ -63,7 +63,7 @@ export const RecentRequestsCard = () => {
         <div className="recent-requests-header">
           <h3 className="recent-requests-title">Recent Requests</h3>
         </div>
-        <div className="recent-requests-loading">Loading...</div>
+        <div className="empty-state-message">Loading...</div>
       </div>
     );
   }
@@ -76,7 +76,7 @@ export const RecentRequestsCard = () => {
 
       <div className="recent-requests-list">
         {requests.length === 0 ? (
-          <div className="no-recent-requests">No recent requests.</div>
+          <div className="empty-state-message">No recent requests.</div>
         ) : (
           requests.map((request) => (
             <div key={request.id} className="recent-request-item">

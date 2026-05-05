@@ -477,6 +477,16 @@
   background-color: #ffffff;
 }
 
+.request-page .request-table th:first-child,
+.request-page .request-table td:first-child {
+  width: 140px; /* Increased width to prevent ID truncation */
+}
+
+.request-page .request-table th:nth-child(2),
+.request-page .request-table td:nth-child(2) {
+  width: 250px; /* Give File Name more room */
+}
+
 .request-page .request-table tbody {
   flex: 1;
   overflow-y: auto;
@@ -504,6 +514,7 @@
   font-size: 14px;
   font-weight: 400;
   letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
 .request-page .file-name-cell {

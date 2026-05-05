@@ -20,14 +20,20 @@ export const NotificationCard = () => {
 
   return (
     <div className="notification-card">
-      <div className="rectangle-8" />
-      <div className="text-wrapper-72">Notifications</div>
+      <div className="notification-header">
+        <h3 className="notification-title">Notifications</h3>
+      </div>
       <div className="notification-list">
-        {notifications.slice(0, 3).map((notification, index) => (
-          <div key={index} className={`notification-item ${notification.read ? "read" : "unread"}`}>
-            {toText(notification.message, "No details available")}
-          </div>
-        ))}
+        {notifications.length > 0 ? (
+          notifications.slice(0, 3).map((notification, index) => (
+            <div key={index} className={`notification-item ${notification.read ? "read" : "unread"}`}>
+              <span className="dot"></span>
+              <p className="notif-text">{toText(notification.message, "No details available")}</p>
+            </div>
+          ))
+        ) : (
+          <div className="no-notifs">No notifications yet</div>
+        )}
       </div>    
     </div>
   );

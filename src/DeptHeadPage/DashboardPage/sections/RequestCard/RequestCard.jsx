@@ -262,7 +262,7 @@ export const RequestCard = ({
 
           <div className="request-table-body">
             {requests.length === 0 ? (
-              <div className="no-requests-message">No recent requests.</div>
+              <div className="empty-state-message">No recent requests.</div>
             ) : (
               requests.map((request) => (
                 <div
