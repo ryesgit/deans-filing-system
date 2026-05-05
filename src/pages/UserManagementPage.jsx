@@ -477,11 +477,11 @@ export const UserManagementPage = () => {
                             <div className="header-cell">Date of Birth</div>
                             <div className="header-cell">Role</div>
                             <div className="header-cell">Department</div>
-                            <div className="header-cell"></div>
+                            <div className="header-cell">Action</div>
                         </div>
                         <div className="pending-users-table-body">
                             {pendingUsersList.length === 0 ? (
-                                <div className="no-pending-users-message">
+                                <div className="empty-state-message">
                                     No pending users.
                                 </div>
                             ) : (
@@ -602,7 +602,9 @@ export const UserManagementPage = () => {
                         </div>
                     </div>
 
-                    {viewMode === "grid" ? (
+                    {filteredUsers.length === 0 ? (
+                        <div className="empty-state-message">No users found.</div>
+                    ) : viewMode === "grid" ? (
                         <div className="cards-container">
                             {filteredUsers.map((user) => (
                                 <div

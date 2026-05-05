@@ -318,8 +318,8 @@ export const ReportsPage = () => {
 
         if (data.length === 0) {
             return (
-                <div className="table-container">
-                    <p>No files with validity dates found.</p>
+                <div className="empty-state-message">
+                    No files with validity dates found.
                 </div>
             );
         }
@@ -404,8 +404,8 @@ export const ReportsPage = () => {
 
         if (archivedFiles.length === 0) {
             return (
-                <div className="table-container">
-                    <p>No archived files found.</p>
+                <div className="empty-state-message">
+                    No archived files found.
                 </div>
             );
         }
@@ -473,8 +473,8 @@ export const ReportsPage = () => {
 
         if (data.length === 0) {
             return (
-                <div className="table-container">
-                    <p>No {activeTab} records found.</p>
+                <div className="empty-state-message">
+                    No {activeTab} records found.
                 </div>
             );
         }

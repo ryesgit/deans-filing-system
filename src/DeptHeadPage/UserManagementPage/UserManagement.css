@@ -1261,15 +1261,24 @@
   font-size: 14px;
   font-weight: 400;
   letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+/* Only truncate the Name column (2nd cell) */
+.pending-user-row .table-cell:nth-child(2) {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .pending-user-row .action-buttons {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.pending-users-table-header .header-cell:last-child {
+  text-align: right;
+  padding-right: 20px;
 }
 
 .pending-user-row .approve-btn,
@@ -1394,18 +1403,56 @@
 
   .pending-users-table-header,
   .pending-user-row {
-    min-width: 580px;
+    min-width: 950px; /* Increased to prevent crowding */
     white-space: nowrap;
+    grid-template-columns: 140px 2fr 1fr 2fr 180px; /* Wider ID column */
+    gap: 20px;
   }
 
-  .pending-user-row .table-cell,
+  .pending-users-table-header .header-cell:last-child {
+    text-align: center; /* Center header text over buttons */
+    padding-right: 0;
+  }
+
+  .pending-user-row .action-buttons {
+    justify-content: center; /* Center buttons in their column */
+    gap: 10px;
+  }
+
+  /* Hide DOB column on mobile to save space */
+  .pending-users-table-header .header-cell:nth-child(3),
+  .pending-user-row .table-cell:nth-child(3) {
+    display: none;
+  }
+
+  .pending-user-row .table-cell:first-child {
+    overflow: visible; /* Ensure ID is never cut */
+  }
+
+  .pending-user-row .table-cell:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .pending-users-table-header .header-cell {
     white-space: nowrap;
+    padding: 0 5px; /* Add subtle internal padding */
   }
 
   .pending-user-row .action-buttons {
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 8px;
+  }
+
+  .pending-user-row .table-cell:last-child {
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+  }
+
+  .pending-user-row .approve-btn,
+  .pending-user-row .decline-btn {
+    flex-shrink: 0;
+    min-width: fit-content;
   }
 
   /* ── List View Mobile Optimizations ───────────────────────────────── */

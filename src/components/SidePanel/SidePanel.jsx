@@ -28,6 +28,7 @@ export const SidePanel = () => {
   };
 
   const handleLogout = () => {
+    setIsMobileMenuOpen(false);
     setShowLogoutModal(true);
   };
 

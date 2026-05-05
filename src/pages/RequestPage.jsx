@@ -808,25 +808,23 @@ const RequestCard = ({
             <div className="request-card">
                 <h3 className="request-card-title">Request Status</h3>
                 <div className="table-container">
-                    <table className="request-table">
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>File Name</th>
-                                <th>Return Date</th>
-                                <th>Status</th>
-                                <th style={{ textAlign: "center" }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {requests.length === 0 ? (
+                    {requests.length === 0 ? (
+                        <div className="empty-state-message">
+                            No requests yet. Submit a request to get started!
+                        </div>
+                    ) : (
+                        <table className="request-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan="5" className="no-requests-row">
-                                        No requests yet. Submit a request to get started!
-                                    </td>
+                                    <th>Request ID</th>
+                                    <th>File Name</th>
+                                    <th>Return Date</th>
+                                    <th>Status</th>
+                                    <th style={{ textAlign: "center" }}>Actions</th>
                                 </tr>
-                            ) : (
-                                requests.map((request) => (
+                            </thead>
+                            <tbody>
+                                {requests.map((request) => (
                                     <tr
                                         key={request.id}
                                         className="table-row"
@@ -888,10 +886,10 @@ const RequestCard = ({
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
 

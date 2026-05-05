@@ -37,7 +37,7 @@
 
 .request-table-header {
   display: grid;
-  grid-template-columns: 0.8fr 1.8fr 2.2fr 1.2fr 1fr 2.1fr;
+  grid-template-columns: 0.8fr minmax(0, 1.8fr) minmax(0, 2.2fr) 1.2fr 1fr 2.1fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #f9f9f9;
@@ -70,7 +70,7 @@
 
 .request-row {
   display: grid;
-  grid-template-columns: 0.8fr 1.8fr 2.2fr 1.2fr 1fr 2.1fr;
+  grid-template-columns: 0.8fr minmax(0, 1.8fr) minmax(0, 2.2fr) 1.2fr 1fr 2.1fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #ffffff;
@@ -95,6 +95,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0; /* Critical for truncation in CSS Grid */
 }
 
 .action-buttons {
@@ -306,6 +307,22 @@
   .header-cell,
   .table-cell {
     white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+    display: block;
+    min-width: 0;
+  }
+
+  /* Hard max-width matching the pixel grid columns */
+  .faculty-name-col.table-cell { max-width: 130px; }
+  .file-name-col.table-cell    { max-width: 160px; }
+  .copy-type-col.table-cell    { max-width: 90px;  }
+  .date-col.table-cell         { max-width: 110px; }
+
+  /* Status col: allow badges/buttons to be visible */
+  .status-col.table-cell {
+    overflow: visible !important;
+    max-width: 140px;
   }
 
   .status-badge {
