@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { sendRegistrationConfirmationEmail } from "../../utils/email";
+import { sanitizeData, toTitleCase } from "../../utils/sanitization";
 import { notificationsAPI } from "../../services/api";
+import { Modal } from "./Modal";
 import "./RegistrationPage.css";
 
 export const RegistrationPage = ({ onClose }) => {
@@ -20,24 +22,56 @@ export const RegistrationPage = ({ onClose }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.name) {
+      newErrors.name = "Name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      newErrors.name = "Name must contain letters only";
+    }
+
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-    if (!formData.pupId) newErrors.pupId = "PUP ID is required";
-    if (
-      formData.contactNumber &&
-      !/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))
-    ) {
-      newErrors.contactNumber =
-        "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
+    if (!formData.pupId) {
+      newErrors.pupId = "PUP ID is required";
+    } else if (!/^\d{4}-\d{4,5}-MN-\d{1}$/.test(formData.pupId)) {
+      newErrors.pupId = "PUP ID must follow the format YYYY-XXXX(X)-MN-X";
     }
-    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+
+    if (formData.contactNumber && formData.contactNumber.trim()) {
+      if (!/^\+639\d{9}$/.test(formData.contactNumber.replace(/\s/g, ""))) {
+        newErrors.contactNumber =
+          "Please enter a valid Philippine mobile number (e.g., +63 9XX XXX XXXX)";
+      }
+    }
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of Birth is required";
+    } else {
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      
+      if (birthDate > today) {
+        newErrors.dob = "Date of Birth cannot be in the future";
+      } else {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 16) {
+          newErrors.dob = "User must be at least 16 years old";
+        }
+      }
+    }
+
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
@@ -84,6 +118,8 @@ export const RegistrationPage = ({ onClose }) => {
       }
 
       setFormData((prev) => ({ ...prev, [name]: numericValue }));
+    } else if (name === "name") {
+      setFormData((prev) => ({ ...prev, [name]: toTitleCase(value) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -107,7 +143,7 @@ export const RegistrationPage = ({ onClose }) => {
 
     setIsSubmitting(true);
 
-    const registrationData = {
+    const registrationData = sanitizeData({
       userId: formData.pupId,
       name: formData.name,
       email: formData.email,
@@ -117,36 +153,47 @@ export const RegistrationPage = ({ onClose }) => {
       gender: formData.gender,
       role: formData.role,
       department: formData.department,
-    };
+    });
 
-    const result = await register(registrationData);
-    setIsSubmitting(false);
+    try {
+      const result = await register(registrationData);
+      setIsSubmitting(false);
 
-    if (result.success) {
-      setSuccessMessage(result.message);
+      if (result.success) {
+        setRegisteredEmail(formData.email);
+        setSuccessMessage(result.message);
+        setShowSuccessModal(true);
 
-      // Send a registration confirmation email to the new user
-      sendRegistrationConfirmationEmail({
-        toEmail: formData.email,
-        toName: formData.name,
-      });
+        // Send a registration confirmation email to the new user
+        sendRegistrationConfirmationEmail({
+          toEmail: formData.email,
+          toName: formData.name,
+        }).then(sent => {
+          if (sent) console.log("Confirmation email sent to user");
+          else console.warn("Confirmation email failed to send");
+        });
 
-      // Notify all admin/staff users that a new registration is pending their review
-      notificationsAPI
-        .notifyAdmins({
-          title: "New User Registration",
-          message: `${formData.name} (${formData.role}) has registered and is awaiting approval.`,
-          type: "info",
-          link: "/users",
-          read: false,
-        })
-        .catch((err) =>
-          console.error("Failed to send admin registration notification:", err)
-        );
-
-      setTimeout(() => {
-        onClose();
-      }, 3000);
+        // Notify all admin/staff users that a new registration is pending their review
+        notificationsAPI
+          .notifyAdmins({
+            title: "New User Registration",
+            message: `${formData.name} (${formData.role}) has registered and is awaiting approval.`,
+            type: "info",
+            link: "/users",
+            read: false,
+          })
+          .catch((err) =>
+            console.error("Failed to send admin registration notification:", err)
+          );
+      } else {
+        // Explicitly handle failure cases from the API
+        const errorMsg = result.message || 'Registration failed. Please check your details.';
+        alert(errorMsg);
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error('Registration error:', error);
+      alert('The server is currently unavailable. Please try again later.');
     }
   };
 
@@ -168,11 +215,59 @@ export const RegistrationPage = ({ onClose }) => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="registration-success" role="alert">
-          <span>{successMessage}</span>
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          onClose();
+        }}
+        title="Registration Submitted"
+      >
+        <div className="registration-success-modal">
+          <div className="success-icon" style={{ 
+            fontSize: '48px', 
+            color: '#4ccf47', 
+            textAlign: 'center',
+            marginBottom: '20px'
+          }}>✓</div>
+          <p style={{ 
+            textAlign: 'center', 
+            fontSize: '16px', 
+            color: '#333',
+            lineHeight: '1.6'
+          }}>
+            {successMessage || "Your registration has been submitted successfully!"}
+          </p>
+          <p style={{ 
+            textAlign: 'center', 
+            fontSize: '14px', 
+            color: '#666',
+            marginTop: '15px'
+          }}>
+            A confirmation email has been sent to <strong>{registeredEmail}</strong>. 
+            Please wait for administrator approval before logging in.
+          </p>
+          <div style={{ textAlign: 'center', marginTop: '30px' }}>
+            <button 
+              onClick={() => {
+                setShowSuccessModal(false);
+                onClose();
+              }}
+              style={{
+                padding: '10px 30px',
+                backgroundColor: '#800000',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Close
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="form-grid">
@@ -210,6 +305,7 @@ export const RegistrationPage = ({ onClose }) => {
               name="pupId"
               value={formData.pupId}
               onChange={handleChange}
+              placeholder="YYYY-XXXXX-MN-X"
               className={errors.pupId ? "invalid" : ""}
             />
             {errors.pupId && <span className="error-text">{errors.pupId}</span>}

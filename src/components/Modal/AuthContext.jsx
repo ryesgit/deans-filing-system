@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../services/api';
 import { API_BASE_URL } from '../../config/apiBaseUrl';
+import { ForceChangePasswordModal } from './ForceChangePasswordModal';
 
 const AuthContext = createContext(null);
 
@@ -21,18 +22,23 @@ const toText = (value, fallback = '') => {
 };
 
 const processUserData = (userData) => {
-  if (!userData) return null;
+  if (!userData || typeof userData !== 'object') return null;
 
-  const resolvedAvatar =
-    userData.avatar && userData.avatar.startsWith('/')
-      ? `${API_BASE_URL}${userData.avatar}`
-      : userData.avatar;
+  try {
+    const resolvedAvatar =
+      typeof userData.avatar === 'string' && userData.avatar.startsWith('/')
+        ? `${API_BASE_URL}${userData.avatar}`
+        : userData.avatar;
 
-  return {
-    ...userData,
-    avatar: resolvedAvatar,
-    profilePicture: userData.profilePicture || resolvedAvatar,
-  };
+    return {
+      ...userData,
+      avatar: typeof resolvedAvatar === 'string' ? resolvedAvatar : null,
+      profilePicture: userData.profilePicture || resolvedAvatar,
+    };
+  } catch (error) {
+    console.error('Error processing user data:', error);
+    return userData;
+  }
 };
 
 const getPersistedUserData = (userData) => {
@@ -122,6 +128,12 @@ export const AuthProvider = ({ children }) => {
       const userData = processUserData(rawUserData);
 
       localStorage.setItem('authToken', token);
+      
+      // Force password change if using default password
+      if (credentials.password === "password123") {
+        userData.mustChangePassword = true;
+      }
+      
       persistUser(userData);
 
       setIsAuthenticated(true);
@@ -161,12 +173,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear all auth data from storage
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    
+    // Clear sensitive state
     setIsAuthenticated(false);
     setUser(null);
-    setError(null);
-    navigate('/login');
+
+    // Use window.location.href for a full page reload to /login.
+    // This is the most bulletproof way to fix "white screen" issues on logout
+    // because it completely tears down the React tree and starts fresh.
+    window.location.href = '/login';
+  };
+
+  const handlePasswordChanged = () => {
+    if (user) {
+      const updatedUser = { ...user, mustChangePassword: false };
+      setUser(updatedUser);
+      persistUser(updatedUser);
+    }
   };
 
   const clearError = () => {
@@ -191,12 +217,43 @@ export const AuthProvider = ({ children }) => {
 
   // Show a loading indicator while checking for the token
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5',
+        fontFamily: 'Poppins, Helvetica, Arial, sans-serif'
+      }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          border: '5px solid #e0e0e0',
+          borderTop: '5px solid #800000',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '20px'
+        }} />
+        <p style={{ color: '#666', fontSize: '1.1rem' }}>Loading Dean's Filing System...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
   }
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+      {user && user.mustChangePassword && (
+        <ForceChangePasswordModal user={user} onPasswordChanged={handlePasswordChanged} />
+      )}
     </AuthContext.Provider>
   );
 };

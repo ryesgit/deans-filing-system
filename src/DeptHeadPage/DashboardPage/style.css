@@ -286,7 +286,7 @@
 
 .department-head-page .notification-button-wrapper {
     position: relative;
-    z-index: 2000;
+    z-index: 1000;
     cursor: pointer;
     overflow: visible;
     border-radius: 50%;

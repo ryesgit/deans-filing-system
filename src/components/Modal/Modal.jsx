@@ -8,12 +8,17 @@ export const Modal = ({
   title,
   children,
   showCloseButton = true,
+  size = "md", // sm, md, lg, full
+  className = "",
 }) => {
   if (!isOpen) return null;
 
-  const modalContent = (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+  return createPortal(
+    <div className={`modal-overlay ${className}`} onClick={onClose}>
+      <div 
+        className={`modal-content modal-${size}`} 
+        onClick={(e) => e.stopPropagation()}
+      >
         {(title || showCloseButton) && (
           <div className="modal-header">
             <h2>{title}</h2>
@@ -38,8 +43,7 @@ export const Modal = ({
         )}
         <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-
-  return createPortal(modalContent, document.body);
 };

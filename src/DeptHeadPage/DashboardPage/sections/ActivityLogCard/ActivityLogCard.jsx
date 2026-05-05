@@ -128,7 +128,7 @@ export const ActivityLogCard = () => {
             </div>
           ))
         ) : (
-          <div style={{ textAlign: "center", width: "100%", color: "#8c8c8c" }}>
+          <div className="empty-state-message">
             No activity log yet
           </div>
         )}

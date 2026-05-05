@@ -45,8 +45,7 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-color: #b0b0b0;
-  /* Maroon/Burgundy */
+  background-color: #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,7 +85,7 @@
 }
 
 .profile-avatar-icon {
-  color: white;
+  color: #4b5563;
 }
 
 .profile-name {
@@ -382,12 +381,44 @@ input:checked+.slider:before {
 .modal-input {
   width: 100%;
   padding: 0.75rem;
+  padding-right: 3rem; /* Space for the visibility toggle */
   border: 1px solid #d1d5db;
   border-radius: 10px;
   font-size: 1rem;
   font-family: "Poppins", sans-serif;
   box-sizing: border-box;
   /* Ensures padding doesn't affect width */
+}
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.password-toggle-btn img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.password-toggle-btn:hover img {
+  opacity: 1;
 }
 
 .modal-input:focus {

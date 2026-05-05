@@ -691,7 +691,9 @@ export const FileManagementPage = () => {
                         </div>
 
                         <div className="folder-grid">
-                            {folders.map((folder) => (
+                            {folders.length === 0 ? (
+                                <div className="empty-state-message">No folders found.</div>
+                            ) : folders.map((folder) => (
                                 <div
                                     key={folder.id}
                                     className="folder-card"
@@ -774,7 +776,9 @@ export const FileManagementPage = () => {
                                 </div>
 
                                 <div className="files-list-content">
-                                    {filterArchivedFiles(selectedFolder.files).map((file) => (
+                                    {filterArchivedFiles(selectedFolder.files).length === 0 ? (
+                                        <div className="empty-state-message">No files in this folder.</div>
+                                    ) : filterArchivedFiles(selectedFolder.files).map((file) => (
                                         <div key={file.id} className="file-row">
                                             <div data-label="File ID">{toText(file.id, "N/A")}</div>
                                             <div data-label="File Name">

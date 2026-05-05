@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { sanitizeInput } from "../../utils/sanitization";
 import "./LoginPage.css";
 import { Modal } from "./Modal";
 import { RegistrationPage } from "./RegistrationPage";
@@ -29,7 +30,7 @@ export const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login({ userId: username, password });
+    await login({ userId: sanitizeInput(username), password });
   };
 
   const handleRegisterClick = () => {
@@ -102,7 +103,7 @@ export const LoginPage = () => {
                   onChange={handleUsernameChange}
                   onFocus={() => setUsernameFocused(true)}
                   onBlur={() => setUsernameFocused(false)}
-                  placeholder=""
+                  placeholder="YYYY-XXXXX-MN-X"
                   className="login-field-input username-input"
                   aria-label="User ID"
                   required
