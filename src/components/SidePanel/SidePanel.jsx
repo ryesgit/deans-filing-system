@@ -34,7 +34,8 @@ export const SidePanel = () => {
   const confirmLogout = () => {
     setIsMobileMenuOpen(false);
     logout();
-    setShowLogoutModal(false);
+    // After calling logout (which navigates via window.location.href),
+    // we don't need to do anything else.
   };
 
   useEffect(() => {

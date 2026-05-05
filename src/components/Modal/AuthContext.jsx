@@ -166,12 +166,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear all auth data from storage
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    
+    // Clear sensitive state
     setIsAuthenticated(false);
     setUser(null);
-    setError(null);
-    navigate('/login');
+
+    // Use window.location.href for a full page reload to /login.
+    // This is the most bulletproof way to fix "white screen" issues on logout
+    // because it completely tears down the React tree and starts fresh.
+    window.location.href = '/login';
   };
 
   const clearError = () => {

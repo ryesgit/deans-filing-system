@@ -37,7 +37,7 @@
 
 .request-table-header {
   display: grid;
-  grid-template-columns: 1.3fr 1.5fr 2.2fr 1.2fr 1fr 2.2fr;
+  grid-template-columns: 0.8fr 1.8fr 2.2fr 1.2fr 1fr 2.1fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #f9f9f9;
@@ -70,7 +70,7 @@
 
 .request-row {
   display: grid;
-  grid-template-columns: 1.3fr 1.5fr 2.2fr 1.2fr 1fr 2fr;
+  grid-template-columns: 0.8fr 1.8fr 2.2fr 1.2fr 1fr 2.1fr;
   gap: 10px;
   padding: 15px 20px;
   background-color: #ffffff;
@@ -199,6 +199,7 @@
 
 .status-col {
   justify-self: center;
+  overflow: visible !important; /* Prevent clipping on hover scale */
 }
 
 .no-requests-message {
@@ -289,14 +290,14 @@
   /* IDENTICAL columns + padding on header AND rows */
   .request-table-header {
     display: grid;
-    grid-template-columns: 90px 110px 160px 90px 110px 140px !important;
+    grid-template-columns: 70px 130px 160px 90px 110px 140px !important;
     gap: 10px;
     padding: 12px 16px !important;
   }
 
   .request-row {
     display: grid;
-    grid-template-columns: 90px 110px 160px 90px 110px 140px !important;
+    grid-template-columns: 70px 130px 160px 90px 110px 140px !important;
     gap: 10px;
     padding: 12px 16px !important;
     margin-bottom: 6px;

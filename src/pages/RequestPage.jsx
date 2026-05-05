@@ -108,14 +108,14 @@ const QRModal = ({ isOpen, onClose, userName, qrValue }) => {
 
 const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
     const { user } = useAuth();
-    const isRestrictedRole = ["FACULTY", "STUDENT"].includes(user?.role?.toUpperCase());
+    const isUserRole = ["FACULTY", "STUDENT"].includes(user?.role?.toUpperCase());
 
     const [formData, setFormData] = useState({
         fileName: "",
         department: "",
         fileCategory: "",
         purpose: "",
-        copyType: isRestrictedRole ? "original" : "soft",
+        copyType: "original", // Default to original for all, or adjust based on role
         returnDate: "",
         priority: "",
         fileId: null,
@@ -287,7 +287,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
             department: "",
             fileCategory: "",
             purpose: "",
-            copyType: isRestrictedRole ? "original" : "soft",
+            copyType: "original",
             returnDate: "",
             priority: "",
             fileId: null,
@@ -353,7 +353,7 @@ const FormCard = ({ onSubmit, hasActiveOriginalFile, requests }) => {
                 <div className="copy-type-section">
                     <label className="copy-type-label">Copy Type</label>
                     <div className="copy-type-buttons">
-                        {!isRestrictedRole && (
+                        {isUserRole && (
                             <label
                                 className={`copy-type-label-btn ${formData.copyType === "soft" ? "active" : ""
                                     }`}
