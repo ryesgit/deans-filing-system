@@ -23,6 +23,16 @@ export const SettingsPage = () => {
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+
+    const getInitials = (name) => {
+        if (!name) return "?";
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .substring(0, 2);
+    };
     const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
     const [isLoadingUserData, setIsLoadingUserData] = useState(false);
     const { notifications, unreadCount } = useNotifications();
@@ -205,8 +215,8 @@ export const SettingsPage = () => {
                                         alt=""
                                     />
                                 ) : (
-                                    <div className="profile-avatar-icon" style={{ fontSize: 80 }}>
-                                        {currentUser?.name?.charAt(0).toUpperCase()}
+                                    <div className="profile-avatar-icon" style={{ fontSize: 60, fontWeight: 700 }}>
+                                        {getInitials(currentUser?.name)}
                                     </div>
                                 )}
                                 <div className="profile-avatar-overlay">

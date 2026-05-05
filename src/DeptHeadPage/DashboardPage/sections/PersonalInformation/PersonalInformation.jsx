@@ -9,6 +9,16 @@ export const PersonalInformation = () => {
     return null;
   }
 
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   return (
     <div className="personal-information">
       <div className="pi-content">
@@ -16,7 +26,13 @@ export const PersonalInformation = () => {
 
         <div className="profile-section">
           <div className={`profile-2 ${!user.avatar ? 'profile-placeholder' : ''}`}>
-            {user.avatar && <img className="profile-image" alt="" src={user.avatar} />}
+            {user.avatar ? (
+              <img className="profile-image" alt="" src={user.avatar} />
+            ) : (
+              <div className="profile-initials">
+                {getInitials(user.name)}
+              </div>
+            )}
           </div>
           
           <div className="User-name">{user.name || 'N/A'}</div>

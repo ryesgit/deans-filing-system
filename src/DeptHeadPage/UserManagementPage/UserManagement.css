@@ -83,7 +83,7 @@
 
 .notification-button-wrapper {
   position: relative;
-  z-index: 2000;
+  z-index: 1000;
   cursor: pointer;
   height: 45px;
   width: 45px;
@@ -433,8 +433,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #800000;
-  color: #ffffff;
+  background-color: #e5e7eb;
+  color: #4b5563;
   font-family: "Poppins", Helvetica;
   font-size: 32px;
   font-weight: 600;
@@ -532,8 +532,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #800000;
-  color: #ffffff;
+  background-color: #e5e7eb;
+  color: #4b5563;
   font-family: "Poppins", Helvetica;
   font-size: 20px;
   font-weight: 600;

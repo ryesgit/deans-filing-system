@@ -26,7 +26,7 @@ export const AlertModal = ({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title}>
+        <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
             <div className="alert-modal-content" style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ 
                     width: '80px',

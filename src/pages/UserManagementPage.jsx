@@ -6,7 +6,7 @@ import { useNotifications } from "../components/NotificationDropdown/Notificatio
 import { usersAPI } from "../services/api";
 import { GlobalSearch } from "../components/GlobalSearch/GlobalSearch";
 import { sendApprovalEmail } from "../utils/email";
-import { sanitizeData } from "../utils/sanitization";
+import { sanitizeData, toTitleCase } from "../utils/sanitization";
 import { API_BASE_URL } from "../config/apiBaseUrl";
 import { AlertModal, ConfirmModal, PromptModal } from "../components/Modal";
 
@@ -909,6 +909,8 @@ const UserFormModal = ({
         } else if (name === "contactNumber") {
             const formatted = formatPhoneNumber(value);
             setFormData((prev) => ({ ...prev, [name]: formatted }));
+        } else if (name === "name") {
+            setFormData((prev) => ({ ...prev, [name]: toTitleCase(value) }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }

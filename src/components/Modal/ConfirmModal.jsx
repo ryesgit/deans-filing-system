@@ -12,7 +12,7 @@ export const ConfirmModal = ({
     type = "primary", // primary, danger
 }) => {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title}>
+        <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
             <div className="confirm-modal-body" style={{ padding: '10px 0', fontSize: '16px', color: '#333' }}>
                 {children}
             </div>

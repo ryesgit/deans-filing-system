@@ -9,24 +9,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
+  z-index: 9999;
   animation: modalFadeIn 0.3s ease-out;
 }
 
 .modal-content {
   background: #ffffff;
-  border-radius: 24px; /* More rounded for modern look */
+  border-radius: 24px;
   padding: 35px 40px;
-  max-width: 800px;
   width: 90%;
+  max-width: 800px; /* Default size (md) */
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(128, 0, 0, 0.1); /* Subtle maroon border */
-  border-top: 6px solid #800000; /* Distinctive brand accent */
+  border: 1px solid rgba(128, 0, 0, 0.1);
+  border-top: 6px solid #800000;
   animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: 20px;
 }
+
+/* Modal Sizes */
+.modal-sm { max-width: 450px; }
+.modal-md { max-width: 800px; }
+.modal-lg { max-width: 1000px; }
+.modal-full { max-width: 95vw; }
 
 .modal-header {
   display: flex;
@@ -109,12 +116,18 @@
 }
 
 @media (max-width: 768px) {
+  .modal-overlay {
+    padding: 10px;
+    align-items: center; /* Keep centered on mobile */
+  }
+
   .modal-content {
-    width: 95%;
+    width: 100%;
+    max-width: calc(100vw - 32px); /* Ensure margin on small phones */
+    margin: 16px;
     padding: 25px 20px;
-    border-radius: 16px;
+    border-radius: 20px;
     max-height: 90vh;
-    margin: 10px;
   }
 
   .modal-header h2 {
@@ -124,6 +137,25 @@
   .modal-header {
     margin-bottom: 15px;
     padding-bottom: 10px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse; /* Stack buttons on small screens */
+    gap: 10px;
+  }
+
+  .modal-btn {
+    width: 100%;
+    padding: 14px 20px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 380px) {
+  .modal-content {
+    padding: 20px 15px;
+    max-width: calc(100vw - 20px);
+    margin: 10px;
   }
 }
 
