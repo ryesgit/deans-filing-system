@@ -66,11 +66,12 @@ export const UserManagementPage = () => {
     };
 
     const handleApprove = async (id) => {
-        // Find the pending user before removing from list so we have their email
-        const approvedUser = pendingUsersList.find((u) => u.id === id);
+        const pendingUser = pendingUsersList.find((u) => u.id === id);
 
         try {
-            await usersAPI.approve(id);
+            const approvalResponse = await usersAPI.approve(id);
+            const approvedUser =
+                approvalResponse.data?.user || approvalResponse.data || pendingUser;
             setPendingUsersList(
                 pendingUsersList.filter((user) => user.id !== id)
             );
@@ -109,16 +110,27 @@ export const UserManagementPage = () => {
                 : [];
             setUsers(mappedUsers);
 
-            // Send approval confirmation email to the user
+            let approvalEmailSent = false;
             if (approvedUser?.email) {
-                await sendApprovalEmail({
+                approvalEmailSent = await sendApprovalEmail({
                     toEmail: approvedUser.email,
                     toName: approvedUser.name,
                     pupId: approvedUser.userId,
                 });
+            } else {
+                console.warn("Approved user has no email address; approval email skipped.", {
+                    approvedUser,
+                    pendingUser,
+                });
             }
 
-            showAlert("User approved successfully! A confirmation email has been sent.", "Success", "success");
+            showAlert(
+                approvalEmailSent
+                    ? "User approved successfully! A confirmation email has been sent."
+                    : "User approved successfully, but the confirmation email was not sent. Check the user's email address and EmailJS configuration.",
+                approvalEmailSent ? "Success" : "Email Not Sent",
+                approvalEmailSent ? "success" : "info"
+            );
         } catch (error) {
             console.error("Failed to approve user:", error);
             showAlert(error.message || "Failed to approve user", "Error", "error");
